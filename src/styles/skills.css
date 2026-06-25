@@ -1,0 +1,31 @@
+/* Skills-specific styles (extracted from section.css) */
+
+/* Container for the looping skills (replaces .skills-list) */
+/* Note: LogoLoop handles the flex layout internally, so we style .skill-pill directly */
+
+.skill-pill {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  font-weight: 600;
+  display: inline-block; /* Ensures proper rendering in LogoLoop */
+  white-space: nowrap; /* Prevents text wrapping in the loop */
+  transition: transform 0.3s ease; /* Smooth hover effects */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 767px) {
+  .skill-pill {
+    padding: 6px 10px; /* Smaller padding for compact mobile view */
+    font-weight: 500; /* Slightly lighter for readability */
+    font-size: 0.9rem; /* Smaller font to fit better */
+  }
+}
+
+@media (max-width: 480px) {
+  .skill-pill {
+    padding: 4px 8px; /* Even tighter for very small screens */
+    font-size: 0.8rem; /* Further reduced for phones */
+  }
+}

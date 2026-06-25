@@ -1,0 +1,470 @@
+/* Hero specific overrides (keeps your herosection.css intact) */
+.hero-section{
+  position:relative;
+  min-height:82vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding-top:90px; /* avoid header overlap */
+}
+.darkveil-canvas-wrap{ position:absolute; inset:0; z-index:0; }
+.hero-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  padding: 36px;
+  max-width:980px;
+  margin:0 auto;
+}
+.hero-title{
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  margin:0 0 12px;
+  line-height:1.05;
+  letter-spacing:-0.02em;
+  color: #fff;
+  text-shadow: 0 6px 40px rgba(0,0,0,0.5);
+}
+.hero-sub{ color: var(--muted); margin:0 0 20px; }
+
+/* hero actions */
+.hero-actions{ display:flex; gap:12px; justify-content:center; margin-bottom:18px; }
+.hero-meta{ display:flex; gap:18px; justify-content:center; margin-top:10px; color:var(--muted); }
+.meta-item{ text-align:center; font-size:0.9rem; }
+
+/* About Section */
+#about {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: none;
+  background: transparent;
+}
+
+#about::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #ffffff60, #ffffff10) border-box;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: borderGlow 5s ease-in-out infinite alternate;
+  pointer-events: none; /* makes sure it doesn’t block clicks */
+  z-index: 0;
+}
+
+/* Subtle animated glow */
+@keyframes borderGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Ensure inner content stays above the border layer */
+#about .section-inner {
+  position: relative;
+  z-index: 1;
+  background: transparent; /* no extra box background */
+  border: none;
+}
+
+/* --- Centering for Section Title and Description --- */
+.section-title {
+  text-align: center; /* Centers the "Projects" title */
+}
+
+.section-desc {
+  text-align: center; /* Centers the description text */
+}
+
+/* blog posts & cards */
+.posts-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:18px;
+}
+.post-card{
+  padding:18px;
+  border-radius:12px;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* contact info cards */
+.contact-info{ display:flex; flex-direction:column; gap:12px; }
+.contact-card{
+  padding:14px;
+  border-radius:10px;
+  background: rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.03);
+}
+
+/* small success */
+.form-success{
+  margin-top:10px;
+  color:#8fffdc;
+  font-weight:700;
+}
+
+/* small transitions */
+.page-section, .project-card, .post-card{
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.page-section:hover{ transform: translateY(-2px); }
+
+
+/* About Me Section Layout */
+.about-me-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns: text and card */
+  gap: 40px;
+  align-items: center;
+}
+
+.about-text-content {
+  /* Ensure text content is well-aligned */
+  max-width: 550px;
+}
+
+.about-description {
+  margin-top: 20px;
+  color: var(--muted);
+}
+
+.about-card-container {
+  /* Center the cardswap component within its container */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Responsiveness for About Me Section */
+@media (max-width: 1024px) {
+  .about-me-grid {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+    text-align: center;
+  }
+
+  .about-text-content {
+    max-width: 100%;
+  }
+
+  .about-card-container {
+    padding: 0;
+    margin-top: 30px;
+  }
+}
+
+
+/* --- TiltedCard Integration Styles for Project.js --- */
+
+.tilted-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px; /* Increased gap for a cleaner, modern look */
+  padding-top: 50px;
+}
+
+/* Custom Overlay Content Styling for a Modern Look */
+.tilted-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+  border-radius: 15px;
+  padding: 25px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: #fff;
+  transition: background 0.3s ease;
+}
+
+.tilted-card-figure:hover .tilted-card-overlay {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+.project-overlay-content {
+  /* Ensure content is positioned correctly within the overlay */
+  position: relative;
+  z-index: 10;
+}
+
+.project-overlay-header {
+  margin-bottom: 10px;
+}
+
+.project-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #888; /* Subtle color for eyebrow */
+  margin-bottom: 5px;
+}
+
+.project-overlay-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.project-description {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  /* Limit description to a few lines for a clean look */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.tag:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.project-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #007bff; /* A vibrant primary color */
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Adjust TiltedCard.css base styles for better integration */
+/* --- Responsive and Centering Updates for Project Cards --- */
+
+/* Ensure cards are centered and responsive */
+.tilted-card-figure {
+  max-width: 400px; /* Caps width on large screens for balance */
+  width: 75%; /* Default width on large screens */
+  height: 400px; /* Default height */
+  margin: 0 auto; /* Centers horizontally if needed */
+}
+
+.tilted-card-img {
+  height: 400px; /* Matches container for full coverage */
+}
+
+/* Phones and small devices (< 768px) */
+@media (max-width: 767px) {
+  .tilted-card-figure {
+    width: 90%; /* Smaller width for compact screens */
+    height: 300px; /* Shorter height to fit better */
+    max-width: none; /* Allow full responsive width */
+  }
+  .tilted-card-img {
+    height: 300px; /* Match container height */
+  }
+  .swiper-container-custom {
+    padding: 0 20px; /* Reduce side padding to prevent edge cutoff */
+  }
+  .swiper-slide {
+    padding-bottom: 30px; /* Less space for pagination on small screens */
+  }
+  /* Adjust overlay text for smaller cards */
+  .project-overlay-content h3 {
+    font-size: 1.2rem; /* Slightly smaller title */
+  }
+  .project-description {
+    font-size: 0.85rem; /* Smaller description */
+  }
+  .project-tags .tag {
+    font-size: 0.7rem; /* Smaller tags */
+    padding: 4px 8px;
+  }
+  .project-actions .btn {
+    font-size: 0.85rem; /* Smaller buttons */
+    padding: 8px 16px;
+  }
+}
+
+/* Tablets (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tilted-card-figure {
+    width: 80%; /* Medium width for tablets */
+    height: 350px; /* Medium height */
+  }
+  .tilted-card-img {
+    height: 350px;
+  }
+  .swiper-container-custom {
+    padding: 0 30px; /* Moderate padding */
+  }
+}
+
+/* Laptops, Desktops, and larger (> 1024px) - Keeps original look */
+@media (min-width: 1024px) {
+  .tilted-card-figure {
+    width: 75%; /* Original width */
+    height: 400px; /* Original height */
+  }
+  .tilted-card-img {
+    height: 400px;
+  }
+  .swiper-container-custom {
+    padding: 0 50px; /* Original padding */
+  }
+}
+
+/* Additional tweaks for very large screens (e.g., 4K desktops) */
+@media (min-width: 1440px) {
+  .tilted-card-figure {
+    max-width: 500px; /* Slightly larger cap for big screens */
+  }
+}
+
+/* --- Swiper Carousel Styles for Project.js --- */
+
+/* Override the previous grid layout */
+.projects-grid {
+  display: block; /* Swiper will handle the layout */
+}
+
+.swiper-container-custom {
+  position: relative;
+  padding: 0 50px; /* Space for custom arrows */
+  margin-top: 50px;
+  /* Important: Ensure the container does not cause overflow */
+  overflow: hidden;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+  /* Ensure smooth transitions for the swiper slides */
+  transition: transform 0.5s ease-in-out;
+}
+
+.swiper-slide {
+  /* Ensure the TiltedCard fits perfectly inside the slide */
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 50px; /* Space for pagination dots */
+}
+
+/* Custom Modern Navigation Arrows */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.swiper-button-prev-custom {
+  left: 0;
+}
+
+.swiper-button-next-custom {
+  right: 0;
+}
+
+/* Arrow icon styling */
+.swiper-button-prev-custom svg,
+.swiper-button-next-custom svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Swiper Pagination Dots (for a cleaner look) */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 1;
+  transition: background 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  background: #007bff; /* Use the primary color for active dot */
+}
+
+/* Hide default Swiper arrows if they are somehow still visible */
+.swiper-button-prev,
+.swiper-button-next {
+  display: none !important;
+}
+/* Hide default Swiper arrows if they are somehow still visible */
+.swiper-button-prev,
+.swiper-button-next {
+  display: none !important;
+}
