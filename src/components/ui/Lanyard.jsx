@@ -38,9 +38,92 @@ export default function Lanyard({
     backImage = null,
     imageFit = 'cover',
     lanyardImage = null,
-    lanyardWidth = 1
+    lanyardWidth = 1,
+    anchorOffsetX = 0
 }) {
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+    const [sceneConfig, setSceneConfig] = useState({
+        anchorX: 3.5,
+        anchorY: 4,
+        cardScale: 2.25,
+        cardY: -1.2,
+        ropeSegments: [0.5, 1, 1.5, 2],
+    });
+
+    useEffect(() => {
+        const updateScene = () => {
+
+            const w = window.innerWidth;
+
+            if (w <= 600) {
+
+                setSceneConfig({
+                    anchorX: 0,
+                    anchorY: 5.2,
+                    cardScale: 2.85,
+                    cardY: -0.55,
+                    ropeSegments: [0.32, 0.64, 0.96, 1.28]
+                });
+
+            }
+
+            else if (w <= 900) {
+
+                setSceneConfig({
+                    anchorX: 1,
+                    anchorY: 4.5,
+                    cardScale: 2.45,
+                    cardY: -0.9,
+                    ropeSegments: [0.42, 0.84, 1.26, 1.68]
+                });
+
+            }
+
+            else if (w <= 1200) {
+
+                setSceneConfig({
+                    anchorX: 2,
+                    anchorY: 4,
+                    cardScale: 2.25,
+                    cardY: -1.2,
+                    ropeSegments: [0.5, 1, 1.5, 2]
+                });
+
+            }
+
+            else if (w <= 1600) {
+
+                setSceneConfig({
+                    anchorX: 2.8,
+                    anchorY: 4,
+                    cardScale: 2.25,
+                    cardY: -1.2,
+                    ropeSegments: [0.5, 1, 1.5, 2]
+                });
+
+            }
+
+            else {
+
+                setSceneConfig({
+                    anchorX: 3.5,
+                    anchorY: 4,
+                    cardScale: 2.25,
+                    cardY: -1.2,
+                    ropeSegments: [0.5, 1, 1.5, 2]
+                });
+
+            }
+
+        };
+
+        updateScene();
+
+        window.addEventListener("resize", updateScene);
+
+        return () => window.removeEventListener("resize", updateScene);
+    }, []);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -48,30 +131,34 @@ export default function Lanyard({
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-const hitRef = useRef(null);
-
-  return (
-    <div className="lanyard-wrapper">
-      <div ref={hitRef} className="lanyard-hit-zone" />
-      <Canvas
-        camera={{ position: position, fov: fov }}
-        dpr={[1, isMobile ? 1.5 : 2]}
-        gl={{ alpha: transparent }}
-        style={{ pointerEvents: 'none' }}
-        onCreated={({ gl }) => gl.setClearColor(0x000000, transparent ? 0 : 1)}
-      >
+    return (
+        <div className="lanyard-wrapper">
+            <Canvas
+                camera={{ position: position, fov: fov }}
+                dpr={[1, isMobile ? 1.5 : 2]}
+                gl={{ alpha: transparent }}
+                style={{ position: 'absolute', inset: 0, touchAction: 'pan-y' }}
+                onCreated={({ gl }) => {
+                    gl.setClearColor(0x000000, transparent ? 0 : 1);
+                    gl.domElement.style.touchAction = 'pan-y';
+                }}
+            >
                 <ambientLight intensity={Math.PI} />
-<Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
-          <Band
-            isMobile={isMobile}
-            frontImage={frontImage}
-            backImage={backImage}
-            imageFit={imageFit}
-            lanyardImage={lanyardImage}
-            lanyardWidth={lanyardWidth}
-            hitRef={hitRef}
-          />
-        </Physics>
+                <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
+                    <Band
+                        isMobile={isMobile}
+                        frontImage={frontImage}
+                        backImage={backImage}
+                        imageFit={imageFit}
+                        lanyardImage={lanyardImage}
+                        lanyardWidth={lanyardWidth}
+                        anchorOffsetX={sceneConfig.anchorX}
+                        anchorY={sceneConfig.anchorY}
+                        cardScale={sceneConfig.cardScale}
+                        cardY={sceneConfig.cardY}
+                        ropeSegments={sceneConfig.ropeSegments}
+                    />
+                </Physics>
                 <Environment blur={0.75}>
                     <Lightformer
                         intensity={2}
@@ -107,22 +194,28 @@ const hitRef = useRef(null);
     );
 }
 function Band({
-  maxSpeed = 50,
-  minSpeed = 0,
-  isMobile = false,
-  frontImage = null,
-  backImage = null,
-  imageFit = 'cover',
-  lanyardImage = null,
-  lanyardWidth = 1,
-  hitRef = { current: null }
+    maxSpeed = 50,
+    minSpeed = 0,
+    isMobile = false,
+    frontImage = null,
+    backImage = null,
+    imageFit = 'cover',
+    lanyardImage = null,
+    lanyardWidth = 1,
+    anchorOffsetX = 2.5,
 }) {
     const band = useRef(),
         fixed = useRef(),
         j1 = useRef(),
         j2 = useRef(),
         j3 = useRef(),
-        card = useRef();
+        card = useRef(),
+        anchorGroup = useRef();
+
+    const scrollImpulse = useRef(0);
+    const anchorShakeX = useRef(0);
+    const anchorShakeY = useRef(0);
+    const anchorShakeZ = useRef(0);
     const vec = new THREE.Vector3(),
         ang = new THREE.Vector3(),
         rot = new THREE.Vector3(),
@@ -282,6 +375,34 @@ function Band({
         }
     }, [hovered, dragged]);
 
+    useEffect(() => {
+        if (!isMobile) return;
+
+        let lastY = window.scrollY;
+        let lastTime = performance.now();
+
+        const handleScroll = () => {
+            const now = performance.now();
+            const currentY = window.scrollY;
+
+            const dy = currentY - lastY;
+            const dt = Math.max(now - lastTime, 16);
+
+            const velocity = dy / dt;
+
+            scrollImpulse.current += THREE.MathUtils.clamp(velocity * 0.8, -1.4, 1.4);
+
+            lastY = currentY;
+            lastTime = now;
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [isMobile]);
+
     useFrame((state, delta) => {
         if (dragged) {
             vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
@@ -304,32 +425,63 @@ function Band({
             curve.points[2].copy(j1.current.lerped);
             curve.points[3].copy(fixed.current.translation());
             band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
-ang.copy(card.current.angvel());
-      rot.copy(card.current.rotation());
-      card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
-    }
+            ang.copy(card.current.angvel());
+            rot.copy(card.current.rotation());
+            card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
+        }
 
-    // project card position to screen and move hit zone
-    if (card.current && hitRef.current) {
-      const pos = new THREE.Vector3();
-      card.current.getWorldPosition ? card.current.getWorldPosition(pos) : pos.copy(card.current.translation());
-      const translation = card.current.translation();
-      pos.set(translation.x, translation.y, translation.z);
-      pos.project(state.camera);
-      const x = (pos.x * 0.5 + 0.5) * state.size.width;
-      const y = (-pos.y * 0.5 + 0.5) * state.size.height;
-      hitRef.current.style.left = `${x - 80}px`;
-      hitRef.current.style.top = `${y - 120}px`;
+        // project card to screen coords and move hit zone + enable canvas events on hover
+        if (card.current) {
+            const translation = card.current.translation();
+            const pos = new THREE.Vector3(translation.x, translation.y, translation.z);
+            pos.project(state.camera);
+            const x = (pos.x * 0.5 + 0.5) * state.size.width;
+            const y = (-pos.y * 0.5 + 0.5) * state.size.height;
+
+            // enable canvas pointer events only when dragging so touch works
+            const canvas = state.gl.domElement;
+            if (dragged) {
+                canvas.style.pointerEvents = 'all';
+                canvas.style.touchAction = 'none';
+            } else {
+                canvas.style.pointerEvents = 'none';
+            }
+        }
+    });
+
+    if (isMobile && anchorGroup.current) {
+        const impulse = scrollImpulse.current;
+
+        scrollImpulse.current *= 0.9;
+
+        anchorShakeX.current += impulse * 0.035;
+        anchorShakeY.current += Math.abs(impulse) * 0.018;
+        anchorShakeZ.current += impulse * 0.015;
+
+        anchorShakeX.current *= 0.88;
+        anchorShakeY.current *= 0.9;
+        anchorShakeZ.current *= 0.9;
+
+        anchorGroup.current.position.x = anchorOffsetX + anchorShakeX.current;
+        anchorGroup.current.position.y = 4 + anchorShakeY.current;
+        anchorGroup.current.position.z = anchorShakeZ.current;
+
+        if (fixed.current) {
+            fixed.current.setNextKinematicTranslation({
+                x: anchorOffsetX + anchorShakeX.current,
+                y: 4 + anchorShakeY.current,
+                z: anchorShakeZ.current
+            });
+        }
     }
-  });
 
     curve.curveType = 'chordal';
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
     return (
         <>
-            <group position={[0, 4, 0]}>
-                <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+            <group ref={anchorGroup} position={[anchorOffsetX, 4, 0]}>
+                <RigidBody ref={fixed} {...segmentProps} type="kinematicPosition" />
                 <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
@@ -341,17 +493,26 @@ ang.copy(card.current.angvel());
                 </RigidBody>
                 <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
                     <CuboidCollider args={[0.8, 1.125, 0.01]} />
-<group
-            scale={2.25}
-            position={[0, -1.2, -0.05]}
-            onPointerOver={() => hover(true)}
-            onPointerOut={() => hover(false)}
-            onPointerUp={e => (e.target.releasePointerCapture(e.pointerId), drag(false))}
-            onPointerDown={e => (
-              e.target.setPointerCapture(e.pointerId),
-              drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())))
-            )}
-          >
+                    <group
+                        scale={2.25}
+                        position={[0, -1.2, -0.05]}
+                        onPointerOver={() => {
+                            if (!isMobile) hover(true);
+                        }}
+                        onPointerOut={() => {
+                            if (!isMobile) hover(false);
+                        }}
+                        onPointerUp={e => {
+                            if (isMobile) return;
+                            e.target.releasePointerCapture(e.pointerId);
+                            drag(false);
+                        }}
+                        onPointerDown={e => {
+                            if (isMobile) return;
+                            e.target.setPointerCapture(e.pointerId);
+                            drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())));
+                        }}
+                    >
                         <mesh geometry={nodes.card.geometry}>
                             <meshPhysicalMaterial
                                 map={cardMap}
