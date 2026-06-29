@@ -33,7 +33,6 @@
   flex-direction: column;
   height: 100%;
   justify-content: stretch;
-  pointer-events: all;
   position: relative;
   z-index: 2;
   flex: 1;
@@ -69,57 +68,91 @@
 }
 
 .hero-glass-text {
-  align-items: flex-start;
-  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  height: 100%;
   justify-content: flex-end;
-  padding: clamp(2rem, 5vw, 4rem);
-  padding-block-end: clamp(2.5rem, 5vw, 5rem);
-  padding-inline-end: clamp(2rem, 6vw, 5rem);
-  padding-inline-start: clamp(2rem, 6vw, 5rem);
+  align-items: flex-start;
+
+  height: 100%;
   width: 100%;
+
+  padding-inline:
+    clamp(2rem, 6vw, 6rem);
+
+  padding-bottom:
+    clamp(2rem, 5vw, 5rem);
+
+  gap:
+    clamp(.5rem, 1vw, .9rem);
+
+  box-sizing: border-box;
+
 }
 
 .hero-glass-hi {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: clamp(1.6rem, 3vw, 2.6rem);
-  font-weight: 400;
-  letter-spacing: 0.12em;
+
+  font-family: var(--font-content);
+
+  font-size: var(--hero-hi-size, clamp(1.5rem, 1.2vw + 1rem, 2.4rem));
+
+  font-weight: var(--fw-medium);
+
+  line-height: 1;
+
+  letter-spacing: var(--ls-wide);
+
+  color: rgba(255, 255, 255, .78);
+
   margin: 0;
-  text-align: start;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(255, 255, 255, 0.15);
+
+  display: block;
+
 }
 
 .hero-glass-name {
-  color: #ffffff;
-  font-size: clamp(4.5rem, 11vw, 12rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 0.88;
+
+  display: flex;
+  flex-direction: column;
+
+  font-family: var(--font-display);
+
+  font-size: var(--hero-name-size);
+
+  font-weight: var(--fw-black);
+
+  line-height: var(--lh-tight);
+
+  letter-spacing: var(--ls-tight);
+
+  color: #fff;
+
   margin: 0;
-  text-align: start;
-  text-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 0 60px rgba(255, 255, 255, 0.2),
-    0 0 120px rgba(200, 180, 255, 0.15);
+
+}
+
+.hero-glass-name span{
+    display:block;
+    white-space:nowrap;
 }
 
 .hero-glass-sub {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: clamp(1rem, 2vw, 1.8rem);
-  font-weight: 300;
-  letter-spacing: 0.4em;
+
+  font-family: var(--font-content);
+
+  font-size: var(--hero-sub-size);
+  font-weight: var(--fw-light);
+
+  letter-spacing: var(--ls-ultra);
+
+  line-height: 1.2;
+
   margin: 0;
-  text-align: start;
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(255, 255, 255, 0.1);
+
+  color: rgba(255, 255, 255, .65);
+
   text-transform: uppercase;
+
 }
 
 
@@ -127,17 +160,15 @@
 
 @media (min-width: 601px) and (max-width: 900px) {
   .hero-glass-hi {
-    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-size: var(--hero-hi-size-tablet);
   }
 
   .hero-glass-name {
-    font-size: clamp(3.8rem, 13vw, 7rem);
-    line-height: 0.9;
+    font-size: var(--hero-name-size-tablet);
   }
 
   .hero-glass-sub {
-    font-size: clamp(0.85rem, 2.8vw, 1.4rem);
-    letter-spacing: 0.3em;
+    font-size: var(--hero-sub-size-tablet);
   }
 
   .hero-glass-text {
@@ -147,93 +178,122 @@
   }
 }
 
+/* ── Small Desktop / Laptop 901px – 1200px ─────────────── */
 
-/* ── Mobile  ≤600px ──────────────────────────────────────── */
-
-@media (max-width: 600px) {
-
-  /* Stack vertically: lanyard on top, text below */
-  .hero-overlay {
-    align-items: center;
-    flex-direction: column;
-    justify-content: flex-start;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Lanyard fills the top ~60 % of the viewport */
-  .hero-lanyard {
-
-    height: 42vh;
-
-    min-height: 280px;
-
-    max-height: 420px;
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: flex-start;
-
-    padding-top: 10px;
-
-  }
-
-  .hero-lanyard .lanyard-wrapper {
-    height: 100%;
-    inset: unset;
-    left: 50%;
-    overflow: visible;
-    position: absolute;
-    top: 0;
-    transform: translateX(-50%);
-    width: 100%;
-  }
-
-  /* Disable drag/pointer interaction on mobile */
-  .hero-lanyard canvas {
-    pointer-events: none;
-    touch-action: none;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  /* Text block sits below the card, full width, no overlap */
-  .hero-text {
-    flex: unset;
-    height: auto;
-    inset: unset;
-    position: relative;
-    width: 100%;
-    z-index: 2;
-  }
+@media (min-width: 901px) and (max-width: 1200px) {
 
   .hero-glass-text {
-    align-items: center;
-    gap: 0.8rem;
-    height: auto;
-    justify-content: flex-start;
-    padding: 1.5rem 1.5rem 2.5rem;
-    text-align: center;
+    width: 100%;
+    height: 100%;
+
+    justify-content: flex-end;
+
+    padding-inline: 3rem;
+    padding-bottom: 6.2rem;
+
+    gap: .9rem;
   }
 
   .hero-glass-hi {
-    font-size: clamp(1.3rem, 5.5vw, 2rem);
-    letter-spacing: 0.08em;
-    text-align: center;
+    font-size: clamp(1.45rem, 2vw, 2rem);
   }
 
   .hero-glass-name {
-    font-size: clamp(3rem, 14vw, 5rem);
-    letter-spacing: -0.02em;
-    line-height: 0.9;
-    text-align: center;
+    font-size: clamp(7.8rem, 8vw, 7rem);
+    line-height: .86;
   }
 
   .hero-glass-sub {
-    font-size: clamp(0.75rem, 3.5vw, 1.2rem);
-    letter-spacing: 0.25em;
-    text-align: center;
+    font-size: clamp(.95rem, 1.3vw, 1.2rem);
+  }
+
+}
+/* ── Mobile  ≤600px ──────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .hero-section {
+    height: 100svh;
+    min-height: 720px;
+  }
+
+  .hero-overlay {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-lanyard {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .hero-lanyard .lanyard-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .hero-lanyard canvas {
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+
+  .hero-lanyard,
+  .hero-lanyard .lanyard-wrapper,
+  .hero-lanyard canvas {
+    pointer-events: none !important;
+    touch-action: pan-y !important;
+  }
+
+  .hero-glass-text {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    padding-bottom: 2.6rem;
+    gap: 0.8rem;
+    text-align: start;
+    pointer-events: none;
+  }
+
+  .hero-glass-hi {
+    font-size:var(--hero-hi-size-mobile);
+    letter-spacing: 0.08em;
+    text-align: start;
+  }
+
+  .hero-glass-name {
+    font-size:var(--hero-name-size-mobile);
+    line-height: 0.88;
+    letter-spacing: -0.035em;
+    text-align: start;
+  }
+
+  .hero-glass-sub {
+    font-size:var(--hero-sub-size-mobile);
+    letter-spacing: 0.24em;
+    text-align: start;
+  }
+
+  .hero-text-shield {
+    display: none;
   }
 }

@@ -39,17 +39,19 @@ export default function Lanyard({
     imageFit = 'cover',
     lanyardImage = null,
     lanyardWidth = 1,
-    anchorOffsetX = 0
+    rtl = false
 }) {
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
     const [sceneConfig, setSceneConfig] = useState({
         anchorX: 3.5,
-        anchorY: 4,
+        anchorY: 3.9,
         cardScale: 2.25,
-        cardY: -1.2,
-        ropeSegments: [0.5, 1, 1.5, 2],
+        cardY: -1.15,
+        ropeScale: 1,
     });
+    
+    const dir = rtl ? -1 : 1;
 
     useEffect(() => {
         const updateScene = () => {
@@ -60,10 +62,10 @@ export default function Lanyard({
 
                 setSceneConfig({
                     anchorX: 0,
-                    anchorY: 5.2,
-                    cardScale: 2.85,
-                    cardY: -0.55,
-                    ropeSegments: [0.32, 0.64, 0.96, 1.28]
+                    anchorY: 4.8,
+                    cardScale: 3.50,
+                    cardY: -2,
+                    ropeScale: 1
                 });
 
             }
@@ -71,11 +73,11 @@ export default function Lanyard({
             else if (w <= 900) {
 
                 setSceneConfig({
-                    anchorX: 1,
+                    anchorX: dir * 1,
                     anchorY: 4.5,
                     cardScale: 2.45,
                     cardY: -0.9,
-                    ropeSegments: [0.42, 0.84, 1.26, 1.68]
+                    ropeScale: 1
                 });
 
             }
@@ -83,11 +85,11 @@ export default function Lanyard({
             else if (w <= 1200) {
 
                 setSceneConfig({
-                    anchorX: 2,
-                    anchorY: 4,
-                    cardScale: 2.25,
-                    cardY: -1.2,
-                    ropeSegments: [0.5, 1, 1.5, 2]
+                    anchorX: dir * 2,
+                    anchorY: 5,
+                    cardScale: 3.3,
+                    cardY: -1.0,
+                    ropeScale: 1
                 });
 
             }
@@ -95,11 +97,11 @@ export default function Lanyard({
             else if (w <= 1600) {
 
                 setSceneConfig({
-                    anchorX: 2.8,
-                    anchorY: 4,
-                    cardScale: 2.25,
-                    cardY: -1.2,
-                    ropeSegments: [0.5, 1, 1.5, 2]
+                    anchorX: dir * 2.8,
+                    anchorY: 4.15,
+                    cardScale: 2.65,
+                    cardY: -1.0,
+                    ropeScale: 1
                 });
 
             }
@@ -107,11 +109,11 @@ export default function Lanyard({
             else {
 
                 setSceneConfig({
-                    anchorX: 3.5,
-                    anchorY: 4,
-                    cardScale: 2.25,
-                    cardY: -1.2,
-                    ropeSegments: [0.5, 1, 1.5, 2]
+                    anchorX: dir * 3.5,
+                    anchorY: 5.15,
+                    cardScale: 3.75,
+                    cardY: -0.95,
+                    ropeScale: 1
                 });
 
             }
@@ -137,10 +139,16 @@ export default function Lanyard({
                 camera={{ position: position, fov: fov }}
                 dpr={[1, isMobile ? 1.5 : 2]}
                 gl={{ alpha: transparent }}
-                style={{ position: 'absolute', inset: 0, touchAction: 'pan-y' }}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    pointerEvents: isMobile ? 'none' : 'auto',
+                    touchAction: isMobile ? 'pan-y' : 'auto'
+                }}
                 onCreated={({ gl }) => {
                     gl.setClearColor(0x000000, transparent ? 0 : 1);
-                    gl.domElement.style.touchAction = 'pan-y';
+                    gl.domElement.style.pointerEvents = isMobile ? 'none' : 'auto';
+                    gl.domElement.style.touchAction = isMobile ? 'pan-y' : 'auto';
                 }}
             >
                 <ambientLight intensity={Math.PI} />
@@ -156,7 +164,7 @@ export default function Lanyard({
                         anchorY={sceneConfig.anchorY}
                         cardScale={sceneConfig.cardScale}
                         cardY={sceneConfig.cardY}
-                        ropeSegments={sceneConfig.ropeSegments}
+                        ropeScale={sceneConfig.ropeScale}
                     />
                 </Physics>
                 <Environment blur={0.75}>
@@ -194,15 +202,33 @@ export default function Lanyard({
     );
 }
 function Band({
+
     maxSpeed = 50,
+
     minSpeed = 0,
+
     isMobile = false,
+
     frontImage = null,
+
     backImage = null,
+
     imageFit = 'cover',
+
     lanyardImage = null,
+
     lanyardWidth = 1,
+
     anchorOffsetX = 2.5,
+
+    anchorY = 4,
+
+    cardScale = 2.25,
+
+    cardY = -1.2,
+
+    ropeScale = 1
+
 }) {
     const band = useRef(),
         fixed = useRef(),
@@ -359,13 +385,48 @@ function Band({
     );
     const [dragged, drag] = useState(false);
     const [hovered, hover] = useState(false);
+    const idleStartedAt = useRef(null);
 
-    useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
-    useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
-    useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
+    const ropeSegments = [
+        0.5 * ropeScale,
+        1.0 * ropeScale,
+        1.5 * ropeScale,
+        2.0 * ropeScale
+    ];
+
+    const ropeLength = isMobile
+        ? ropeScale * 0.72
+        : ropeScale;
+
+    const cardJointOffset = isMobile
+        ? 2.1 * ropeScale
+        : (1.65 + (cardScale - 2.25) * 0.9 + (cardY + 1.2)) * ropeScale;
+
+    const ropeStartAnchor = isMobile
+        ? [0, 0, 0]
+        : [0, 1, 0];
+
+    useRopeJoint(
+        fixed,
+        j1,
+        [ropeStartAnchor, [0, 0, 0], ropeLength]
+    );
+
+    useRopeJoint(
+        j1,
+        j2,
+        [[0, 0, 0], [0, 0, 0], ropeLength]
+    );
+
+    useRopeJoint(
+        j2,
+        j3,
+        [[0, 0, 0], [0, 0, 0], ropeLength]
+    );
+
     useSphericalJoint(j3, card, [
         [0, 0, 0],
-        [0, 1.5, 0]
+        [0, cardJointOffset, 0],
     ]);
 
     useEffect(() => {
@@ -405,6 +466,8 @@ function Band({
 
     useFrame((state, delta) => {
         if (dragged) {
+            idleStartedAt.current = state.clock.elapsedTime;
+
             vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
             dir.copy(vec).sub(state.camera.position).normalize();
             vec.add(dir.multiplyScalar(state.camera.position.length()));
@@ -427,25 +490,51 @@ function Band({
             band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
             ang.copy(card.current.angvel());
             rot.copy(card.current.rotation());
-            card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z });
+
+            card.current.setAngvel({
+                x: ang.x,
+                y: ang.y - rot.y * 0.25,
+                z: ang.z
+            });
+
+            /* Idle physics motion - keeps the card alive after initial drop */
+            if (!dragged && card.current) {
+                if (idleStartedAt.current === null) {
+                    idleStartedAt.current = state.clock.elapsedTime;
+                }
+
+                const idleAge = state.clock.elapsedTime - idleStartedAt.current;
+
+                /*
+                  Wait a bit so the card finishes the initial drop first.
+                  Then apply tiny physical torque forever.
+                */
+                if (idleAge > 1.4) {
+                    const t = state.clock.elapsedTime;
+
+                    card.current.wakeUp();
+
+                    card.current.applyTorqueImpulse(
+                        {
+                            x: Math.sin(t * 0.85) * (isMobile ? 0.0018 : 0.0024),
+                            y: Math.cos(t * 0.65) * (isMobile ? 0.0012 : 0.0016),
+                            z: Math.sin(t * 0.95) * (isMobile ? 0.0014 : 0.0019),
+                        },
+                        true
+                    );
+                }
+            }
         }
 
         // project card to screen coords and move hit zone + enable canvas events on hover
-        if (card.current) {
-            const translation = card.current.translation();
-            const pos = new THREE.Vector3(translation.x, translation.y, translation.z);
-            pos.project(state.camera);
-            const x = (pos.x * 0.5 + 0.5) * state.size.width;
-            const y = (-pos.y * 0.5 + 0.5) * state.size.height;
+        const canvas = state.gl.domElement;
 
-            // enable canvas pointer events only when dragging so touch works
-            const canvas = state.gl.domElement;
-            if (dragged) {
-                canvas.style.pointerEvents = 'all';
-                canvas.style.touchAction = 'none';
-            } else {
-                canvas.style.pointerEvents = 'none';
-            }
+        if (isMobile) {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.touchAction = 'pan-y';
+        } else {
+            canvas.style.pointerEvents = dragged ? 'all' : 'auto';
+            canvas.style.touchAction = dragged ? 'none' : 'auto';
         }
     });
 
@@ -463,13 +552,14 @@ function Band({
         anchorShakeZ.current *= 0.9;
 
         anchorGroup.current.position.x = anchorOffsetX + anchorShakeX.current;
-        anchorGroup.current.position.y = 4 + anchorShakeY.current;
+        anchorGroup.current.position.y =
+            anchorY + anchorShakeY.current;
         anchorGroup.current.position.z = anchorShakeZ.current;
 
         if (fixed.current) {
             fixed.current.setNextKinematicTranslation({
                 x: anchorOffsetX + anchorShakeX.current,
-                y: 4 + anchorShakeY.current,
+                y: anchorY + anchorShakeY.current,
                 z: anchorShakeZ.current
             });
         }
@@ -480,22 +570,27 @@ function Band({
 
     return (
         <>
-            <group ref={anchorGroup} position={[anchorOffsetX, 4, 0]}>
+            <group
+
+                ref={anchorGroup}
+
+                position={[anchorOffsetX, anchorY, 0]}
+            >
                 <RigidBody ref={fixed} {...segmentProps} type="kinematicPosition" />
-                <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
+                <RigidBody position={[ropeSegments[0], 0, 0]} ref={j1} {...segmentProps}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
+                <RigidBody position={[ropeSegments[1], 0, 0]} ref={j2} {...segmentProps}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
+                <RigidBody position={[ropeSegments[2], 0, 0]} ref={j3} {...segmentProps}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
+                <RigidBody position={[ropeSegments[3], 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
                     <CuboidCollider args={[0.8, 1.125, 0.01]} />
                     <group
-                        scale={2.25}
-                        position={[0, -1.2, -0.05]}
+                        scale={cardScale}
+                        position={[0, cardY, -0.05]}
                         onPointerOver={() => {
                             if (!isMobile) hover(true);
                         }}
@@ -523,21 +618,27 @@ function Band({
                                 metalness={0.8}
                             />
                         </mesh>
-                        <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
-                        <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+                        <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} renderOrder={2} />
+                        <mesh geometry={nodes.clamp.geometry} material={materials.metal} renderOrder={2} />
                     </group>
                 </RigidBody>
             </group>
             <mesh ref={band}>
                 <meshLineGeometry />
-                <meshLineMaterial
-                    color="white"
+                {/* <meshLineMaterial
+                    color="black"
                     depthTest={false}
                     resolution={isMobile ? [1000, 2000] : [1000, 1000]}
                     useMap
                     map={texture}
                     repeat={[-4, 1]}
                     lineWidth={lanyardWidth}
+                /> */}
+                <meshLineMaterial
+                    depthTest={false}
+                    resolution={isMobile ? [1000, 2000] : [1000, 1000]}
+                    lineWidth={lanyardWidth}
+                    color="#1a1a1a"
                 />
             </mesh>
         </>

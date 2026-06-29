@@ -1,5 +1,6 @@
 import React from "react";
 import StaggeredMenu from "./ui/StaggeredMenu";
+import LanguageSwitcher from "../components/buttons/LanguageSwitcher";
 // ✅ Define menu items once
 const menuItems = [
   { label: "Home", link: "/#home" },
@@ -18,6 +19,8 @@ const socialItems = [
 
 export default function Header({ isFixed }) {
   return (
+    <>
+    
     <StaggeredMenu
       position="right"
       colors={["#B19EEF", "#5227FF", "#1A1528"]}
@@ -30,5 +33,7 @@ export default function Header({ isFixed }) {
       displaySocials={true}
       displayItemNumbering={true}
     />
+    <LanguageSwitcher />
+    </>
   );
 }

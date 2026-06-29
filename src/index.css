@@ -1,21 +1,153 @@
+:root {
+
+ /* Fonts ------------------------------------------------ */
+
+    --font-display-en: "Satoshi", sans-serif;
+    --font-heading-en: "Satoshi", sans-serif;
+    --font-content-en: "Inter", sans-serif;
+
+    --font-display-ar: "IBM Plex Sans Arabic", sans-serif;
+    --font-heading-ar: "IBM Plex Sans Arabic", sans-serif;
+    --font-content-ar: "IBM Plex Sans Arabic", sans-serif;
+
+    --font-display: var(--font-display-en);
+    --font-heading: var(--font-heading-en);
+    --font-content: var(--font-content-en);
+
+    --font-mono: "JetBrains Mono", monospace;
+
+
+  /* ===========================================================
+   FONT WEIGHTS
+=========================================================== */
+
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+
+
+  /* ===========================================================
+   HERO DESKTOP
+=========================================================== */
+
+  --hero-hi-size:
+    clamp(1.4rem, 1vw + .9rem, 2.4rem);
+
+  --hero-name-size:
+    clamp(6rem, 3rem + 8vw, 13rem);
+
+  --hero-sub-size:
+    clamp(1rem, .8vw + .6rem, 1.5rem);
+
+
+  /* ===========================================================
+   HERO TABLET
+=========================================================== */
+
+  --hero-hi-size-tablet:
+    clamp(1.35rem, 3vw, 2rem);
+
+  --hero-name-size-tablet:
+    clamp(4.5rem, 11vw, 7rem);
+
+  --hero-sub-size-tablet:
+    clamp(.9rem, 2vw, 1.2rem);
+
+
+  /* ===========================================================
+   HERO MOBILE
+=========================================================== */
+
+  --hero-hi-size-mobile:
+    clamp(1.2rem, 5vw, 1.8rem);
+
+  --hero-name-size-mobile:
+    clamp(3.2rem, 14vw, 5.8rem);
+
+  --hero-sub-size-mobile:
+    clamp(.75rem, 3.5vw, 1rem);
+
+
+  /* ===========================================================
+   LINE HEIGHTS
+=========================================================== */
+
+  --lh-tight: .82;
+  --lh-heading: .95;
+  --lh-body: 1.6;
+
+
+  /* ===========================================================
+   LETTER SPACING
+=========================================================== */
+
+  --ls-tight: -0.055em;
+  --ls-normal: 0;
+  --ls-wide: .08em;
+  --ls-ultra: .22em;
+
+}
+
+html,
+body,
+#root {
+
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    max-width: 100%;
+
+}
+
+html,
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+    transition:
+        background .3s ease,
+        color .3s ease;
+
+}
+
+body {
+
+    font-family: var(--font-content);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+
+    font-family: source-code-pro,
+                 Menlo,
+                 Monaco,
+                 Consolas,
+                 "Courier New",
+                 monospace;
+
 }
 
-html, body, #root {
-  overflow-x: hidden;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+body.ltr {
+
+    direction: ltr;
+
+    --font-display: var(--font-display-en);
+    --font-heading: var(--font-heading-en);
+    --font-content: var(--font-content-en);
+
 }
 
+body.rtl {
+
+    direction: rtl;
+
+    --font-display: var(--font-display-ar);
+    --font-heading: var(--font-heading-ar);
+    --font-content: var(--font-content-ar);
+
+}

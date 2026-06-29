@@ -25,7 +25,7 @@ const Homepage = () => {
 
   return (
     <main>
-<div id="home">
+      <div id="home">
         <HeroSection />
       </div>
       <section id="about">

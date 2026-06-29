@@ -1,13 +1,17 @@
 import { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Silk from './ui/Silk';
 import Lanyard from './ui/Lanyard';
 import '../styles/herosection.css';
 
 export default function HeroSection() {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   return (
     <div className="hero-section">
       <Silk
-        speed={4}
+        speed={9}
         scale={1.2}
         color="#3d1a6e"
         noiseIntensity={1.2}
@@ -39,9 +43,11 @@ export default function HeroSection() {
       <div className="hero-overlay">
         <div className="hero-text-shield" />
         <div className="hero-glass-text">
-          <p className="hero-glass-hi" data-text="Hello, I'm">Hello, I'm</p>
-          <h1 className="hero-glass-name" data-text="FAHAD AL-SHWIHANI">FAHAD<br />AL-SHWIHANI</h1>
-          <p className="hero-glass-sub" data-text="WELCOME TO MY PORTFOLIO">WELCOME TO MY PORTFOLIO</p>
+          <p className="hero-glass-hi" data-text={t("hero.hi")}>{t("hero.hi")}</p>
+          <h1 className="hero-glass-name" data-text={t("hero.name")}>
+            <span>FAHAD</span>
+            <span>AL SHWIHANI</span></h1>
+          <p className="hero-glass-sub" data-text={t("hero.welcome")}>{t("hero.welcome")}</p>
         </div>
         <div className="hero-lanyard">
           <Lanyard
@@ -49,7 +55,7 @@ export default function HeroSection() {
             gravity={[0, -40, 0]}
             frontImage="/ME.jpeg"
             imageFit="cover"
-            anchorOffsetX={3.5}
+            rtl={isRTL}
           />
         </div>
       </div>
