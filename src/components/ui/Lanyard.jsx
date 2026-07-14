@@ -98,9 +98,9 @@ export default function Lanyard({
             else if (w <= 1600) {
 
                 setSceneConfig({
-                    anchorX: dir * 2.8,
-                    anchorY: 4.15,
-                    cardScale: 2.65,
+                    anchorX: dir * 3.0,
+                    anchorY: 4.6,
+                    cardScale: 3.45,
                     cardY: -1.0,
                     ropeScale: 1
                 });
@@ -340,10 +340,16 @@ function Band({
             ctx.fillText(name, centerX, nameY);
 
             // Role — visibly smaller and lighter, never competing with the name.
+            // Arabic needs noticeably more line-height than Latin here: Thmanyah's
+            // taller ascenders/descenders collide at the same tight spacing that
+            // reads fine for the English Inter lines (same lesson as the hero
+            // terminal's banner/prompt sizing).
             ctx.fillStyle = '#666666';
             ctx.font = isArabic ? '500 32px "Thmanyah Sans", sans-serif' : '400 30px Inter, Arial, sans-serif';
-            ctx.fillText(roleLine1, centerX, nameY + 46);
-            ctx.fillText(roleLine2, centerX, nameY + 86);
+            const roleGap1 = isArabic ? 62 : 46;
+            const roleGap2 = isArabic ? 116 : 86;
+            ctx.fillText(roleLine1, centerX, nameY + roleGap1);
+            ctx.fillText(roleLine2, centerX, nameY + roleGap2);
 
             const tex = new THREE.CanvasTexture(c);
             tex.colorSpace = THREE.SRGBColorSpace;
