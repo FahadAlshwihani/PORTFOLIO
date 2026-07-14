@@ -1,0 +1,520 @@
+/* ============================================================
+   EXPERIENCE SECTION — "Professional Journey"
+   The spine is the primary element. Every timeline stop shares
+   ONE marker anchor (dot + date, grouped, never positioned
+   independently), and each experience is ONE cohesive content
+   column that alternates which side of the spine it sits on.
+   A large, extremely subtle logo watermark forms an independent
+   background layer behind the full experience item.
+   Sections: Base → Tablet (601–900px) → Mobile (≤600px)
+   ============================================================ */
+
+.experience-section {
+  background: #000;
+}
+
+.experience-inner {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-block: clamp(6rem, 10vw, 9rem);
+  padding-inline: clamp(2rem, 6vw, 6rem);
+  box-sizing: border-box;
+}
+
+.experience-eyebrow {
+  font-family: var(--font-heading);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .5);
+  margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.experience-timeline {
+  position: relative;
+}
+
+/* ── Each chapter owns its own spine segment, which grows in
+     independently — segments sit flush so the fully-grown result
+     reads as one continuous line. Zero column-gap keeps the true
+     midpoint pinned exactly at 50%, so the line and the marker's
+     dot always meet at the same coordinate; visual breathing room
+     comes from margin on the marker/content, not the grid gap. ── */
+
+.experience-chapter {
+  --experience-content-offset: clamp(2.5rem, 5vw, 4rem);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding-top: 3rem;
+  padding-bottom: 3.5rem;
+}
+
+.experience-chapter:first-child {
+  padding-top: 0;
+}
+
+.experience-chapter:last-child {
+  padding-bottom: 0;
+}
+
+.experience-line-segment {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, .16);
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top;
+  transition: transform .7s ease;
+}
+
+.experience-chapter.is-visible .experience-line-segment {
+  transform: translateX(-50%) scaleY(1);
+}
+
+.experience-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0;
+  align-items: start;
+}
+
+/* ── The marker: dot + date share ONE wrapper, so they can never
+     drift apart. The dot is pinned to the exact grid midpoint via
+     absolute positioning (not text-flow or transforms that would
+     break under RTL); the date block is vertically centered against
+     that same dot because the dot is centered on the marker's own
+     height, and the marker's only flow content IS the date block. ── */
+
+.experience-marker {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  justify-self: end;
+}
+
+.experience-chapter--alt .experience-marker {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.experience-date-block {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  text-align: end;
+  padding-inline-end: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.experience-chapter--alt .experience-date-block {
+  text-align: start;
+  padding-inline-end: 0;
+  padding-inline-start: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.experience-year {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 1rem + 2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .5s ease, transform .5s ease;
+  transition-delay: .45s;
+}
+
+.experience-range {
+  font-family: var(--font-heading);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .45);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .4s ease, transform .4s ease;
+  transition-delay: .52s;
+}
+
+.experience-dot {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: -5px;
+  transform: translateY(-50%) scale(.5);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transition: opacity .4s ease, transform .4s ease;
+  transition-delay: .35s;
+}
+
+.experience-chapter--alt .experience-dot {
+  inset-inline-end: auto;
+  inset-inline-start: -5px;
+}
+
+.experience-dot--current {
+  background: #7ee0a8;
+  box-shadow: 0 0 0 6px rgba(126, 224, 168, .14), 0 0 16px rgba(126, 224, 168, .45);
+  animation: experience-dot-pulse 2.6s ease-in-out infinite;
+}
+
+.experience-chapter.is-visible .experience-year,
+.experience-chapter.is-visible .experience-range {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.experience-chapter.is-visible .experience-dot {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+@keyframes experience-dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 6px rgba(126, 224, 168, .14), 0 0 16px rgba(126, 224, 168, .45);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(126, 224, 168, .08), 0 0 20px rgba(126, 224, 168, .6);
+  }
+}
+
+/* ── The content column: ONE cohesive block, alternating which
+     side of the spine it sits on. It is the foreground layer and
+     does not own or clip the experience watermark. ── */
+
+.experience-content {
+  position: relative;
+  z-index: 2;
+  grid-column: 2;
+  justify-self: start;
+  max-width: 34rem;
+  min-width: 0;
+  margin-inline-start: var(--experience-content-offset);
+  text-align: start;
+}
+
+.experience-chapter--alt .experience-content {
+  grid-column: 1;
+  justify-self: end;
+  margin-inline-start: 0;
+  margin-inline-end: var(--experience-content-offset);
+}
+
+/* Independent background layer owned by the full timeline stop. It stays
+   a sibling of the row, while its bounds mirror the alternating content
+   column so the timeline itself remains visually clean. */
+.experience-watermark {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
+  width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+  padding-inline-start: var(--experience-content-offset);
+  object-fit: contain;
+  object-position: center;
+  filter: contrast(1.08);
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transition: opacity 1s ease;
+  transition-delay: .5s;
+}
+
+.experience-chapter--alt .experience-watermark {
+  inset-inline-start: 0;
+  padding-inline-start: 0;
+  padding-inline-end: var(--experience-content-offset);
+}
+
+.experience-watermark--emara {
+  transform: scale(.96);
+  transform-origin: center;
+}
+
+.experience-chapter.is-visible .experience-watermark {
+  opacity: .09;
+}
+
+.experience-chapter.is-visible .experience-watermark--emara {
+  opacity: .075;
+}
+
+.experience-logo,
+.experience-company,
+.experience-role,
+.experience-description-line,
+.experience-chip {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+
+.experience-logo {
+  transform: translateY(16px) scale(.92);
+  transition-delay: .6s;
+}
+
+.experience-company {
+  transition-delay: .68s;
+}
+
+.experience-role {
+  transition-delay: .76s;
+}
+
+.experience-description-line:nth-child(1) { transition-delay: .84s; }
+.experience-description-line:nth-child(2) { transition-delay: .92s; }
+.experience-description-line:nth-child(3) { transition-delay: 1s; }
+.experience-description-line:nth-child(n+4) { transition-delay: 1.08s; }
+
+.experience-chip:nth-child(1) { transition-delay: 1.05s; }
+.experience-chip:nth-child(2) { transition-delay: 1.1s; }
+.experience-chip:nth-child(3) { transition-delay: 1.15s; }
+.experience-chip:nth-child(4) { transition-delay: 1.2s; }
+.experience-chip:nth-child(n+5) { transition-delay: 1.25s; }
+
+.experience-chapter.is-visible .experience-logo {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.experience-chapter.is-visible .experience-company,
+.experience-chapter.is-visible .experience-role,
+.experience-chapter.is-visible .experience-description-line,
+.experience-chapter.is-visible .experience-chip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-line-segment,
+  .experience-year,
+  .experience-range,
+  .experience-dot,
+  .experience-watermark,
+  .experience-logo,
+  .experience-company,
+  .experience-role,
+  .experience-description-line,
+  .experience-chip {
+    transition: none;
+    animation: none;
+    opacity: 1;
+  }
+
+  .experience-line-segment {
+    transform: translateX(-50%) scaleY(1);
+  }
+
+  .experience-dot {
+    transform: translateY(-50%) scale(1);
+  }
+
+  .experience-watermark {
+    opacity: .09;
+  }
+
+  .experience-watermark--emara {
+    opacity: .075;
+  }
+
+  .experience-year,
+  .experience-range,
+  .experience-logo,
+  .experience-company,
+  .experience-role,
+  .experience-description-line,
+  .experience-chip {
+    transform: none;
+  }
+}
+
+/* ── Element styling ──────────────────────────────────────── */
+
+.experience-logo {
+  display: block;
+  height: 56px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  object-position: left center;
+  margin: 0 0 1.25rem;
+}
+
+.experience-company {
+  margin: 0 0 .5rem;
+}
+
+/* Same flat "paper strip" marker as the About section's highlight —
+   never a rounded pill or badge — applied only to the company name. */
+.experience-company-mark {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1rem + 1.4vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  background: #fff;
+  color: #111;
+  border-radius: 2px;
+  padding: .02em .15em;
+  margin: -.02em -.15em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.experience-role {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, .7);
+  margin: 0 0 1.1rem;
+}
+
+.experience-description {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  margin: 0 0 1.1rem;
+  max-width: 42ch;
+}
+
+.experience-description-line {
+  font-family: var(--font-editorial);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, .72);
+}
+
+.experience-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.experience-chip {
+  font-family: var(--font-heading);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .03em;
+  color: rgba(255, 255, 255, .75);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 4px;
+  padding: .3rem .6rem;
+  line-height: 1;
+}
+
+/* ── Tablet 601px – 900px ─────────────────────────────────── */
+
+@media (min-width: 601px) and (max-width: 900px) {
+  .experience-inner {
+    padding-block: 5rem;
+    padding-inline: 2rem;
+  }
+
+  .experience-date-block,
+  .experience-chapter--alt .experience-date-block {
+    padding-inline-start: 1.5rem;
+    padding-inline-end: 1.5rem;
+  }
+
+  .experience-content {
+    margin-inline-start: 1.5rem;
+  }
+
+  .experience-chapter--alt .experience-content {
+    margin-inline-end: 1.5rem;
+  }
+
+  .experience-chapter {
+    --experience-content-offset: 1.5rem;
+    padding-top: 2.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+/* ── Mobile ≤600px: single column, spine + marker move to the
+     inline-start gutter (left in English, right in Arabic), no
+     alternation — every experience follows the same pattern. ── */
+
+@media (max-width: 600px) {
+  .experience-inner {
+    padding-block: 3.5rem;
+    padding-inline: 1.5rem;
+  }
+
+  .experience-chapter {
+    --experience-content-offset: 1.75rem;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .experience-line-segment {
+    inset-inline-start: .875rem;
+    transform: scaleY(0);
+  }
+
+  .experience-chapter.is-visible .experience-line-segment {
+    transform: scaleY(1);
+  }
+
+  .experience-row {
+    display: block;
+  }
+
+  .experience-marker,
+  .experience-chapter--alt .experience-marker {
+    display: block;
+    grid-column: unset;
+    justify-self: stretch;
+    width: 100%;
+    margin-bottom: 1.25rem;
+  }
+
+  .experience-date-block,
+  .experience-chapter--alt .experience-date-block {
+    text-align: start;
+    padding-inline-start: 1.75rem;
+    padding-inline-end: 0;
+  }
+
+  .experience-dot,
+  .experience-chapter--alt .experience-dot {
+    inset-inline-start: .875rem;
+    inset-inline-end: auto;
+    margin-inline-start: -5px;
+  }
+
+  .experience-content,
+  .experience-chapter--alt .experience-content {
+    grid-column: 1;
+    justify-self: stretch;
+    width: 100%;
+    margin-inline: 0;
+    padding-inline-start: 1.75rem;
+  }
+
+  .experience-watermark,
+  .experience-chapter--alt .experience-watermark {
+    inset-inline-start: 0;
+    width: 100%;
+    padding-inline-start: var(--experience-content-offset);
+    padding-inline-end: 0;
+  }
+
+  .experience-description {
+    max-width: none;
+  }
+}

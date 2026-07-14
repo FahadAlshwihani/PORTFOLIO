@@ -1,0 +1,194 @@
+.folder {
+  --dir: 1;
+  --fan-spread: 1;
+  position: relative;
+  transition: transform 0.2s ease-in;
+  cursor: pointer;
+}
+
+/* Transforms are physical (translateX/rotateZ), so the fan direction is
+   flipped explicitly for RTL instead of relying on logical properties,
+   which don't cover transforms. */
+.folder:dir(rtl) {
+  --dir: -1;
+}
+
+/* Closed-folder hover/focus preview — restores the original React Bits
+   feel: the folder lifts, the front flap leans open, and the stacked
+   papers rise just enough to read as "there are files in here" without
+   fanning out. Scoped to :not(.open) so this preview never fires once the
+   folder is actually open (papers get their own hover behavior then). */
+.folder:not(.open):hover,
+.folder:not(.open):focus-visible {
+  transform: translateY(-8px);
+}
+
+.folder:not(.open):hover .folder__front,
+.folder:not(.open):focus-visible .folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.folder:not(.open):hover .right,
+.folder:not(.open):focus-visible .right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+.folder:not(.open):hover .paper,
+.folder:not(.open):focus-visible .paper {
+  transform: translate(-50%, 0%);
+}
+
+.folder.open {
+  transform: translateY(-8px);
+}
+
+.folder.open .folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.folder.open .right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+.folder__back {
+  position: relative;
+  width: 132px;
+  height: 104px;
+  background: var(--folder-back-color);
+  border-radius: 0px 10px 10px 10px;
+}
+
+.folder__back::after {
+  position: absolute;
+  z-index: 0;
+  bottom: 98%;
+  inset-inline-start: 0;
+  content: '';
+  width: 34px;
+  height: 10px;
+  background: var(--folder-back-color);
+  border-radius: 5px 5px 0 0;
+}
+
+.paper {
+  position: absolute;
+  z-index: 2;
+  bottom: 10%;
+  left: 50%;
+  transform: translate(-50%, 10%);
+  width: 58%;
+  height: 58%;
+  /* Near-white with a subtle per-paper tint, computed in JS (computeFan)
+     so it scales cleanly for any number of papers instead of a fixed set
+     of nth-child rules capped at 3 (or 5). */
+  background: rgba(255, 255, 255, var(--paper-tint, 0.9));
+  border-radius: 10px;
+  opacity: 1;
+  transition:
+    transform 0.32s ease-in-out,
+    width 0.32s ease-in-out,
+    height 0.32s ease-in-out,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+  overflow: hidden;
+}
+
+/* Closed-state stacking depth (the "peek" seen on hover) is intentionally
+   capped at a few layers via nth-child rather than scaled to N like the
+   open fan — in a real stack of papers only the front few are ever
+   visible no matter how many sheets exist underneath. Sizing follows the
+   original vendor component (narrower/taller at the back, wider/shorter
+   up front) so the peek reads as layered sheets, not one flat card. */
+.folder:not(.open) .paper:nth-child(1) {
+  width: 68%;
+  height: 76%;
+}
+
+.folder:not(.open) .paper:nth-child(2) {
+  width: 62%;
+  height: 68%;
+}
+
+/* Open state: each paper's position/rotation/stack order comes from CSS
+   custom properties computed per-paper in Folder.jsx (computeFan), not
+   hardcoded nth-child rules — this is what lets the same component fan
+   out any number of papers instead of exactly 3. --fan-x/--fan-rot are
+   unitless numbers multiplied by %/deg here, and flipped by --dir so the
+   fan mirrors correctly under RTL. Width/height are reset to a uniform
+   size here so the closed-state peek sizing above never leaks into the
+   fan, where every project file should read as equally weighted. */
+.folder.open .paper {
+  width: 58%;
+  height: 58%;
+  transform: translate(
+    calc(-50% + (var(--fan-x, 0) * var(--fan-spread, 1) * 1%) * var(--dir, 1) + var(--magnet-x, 0px)),
+    calc((var(--fan-y, -70) * 1%) + var(--magnet-y, 0px))
+  ) rotateZ(calc(var(--fan-rot, 0) * 1deg * var(--dir, 1)));
+  z-index: calc(10 + var(--fan-z, 0));
+  /* Staggered per paper (computeFan) so they cascade outward like real
+     sheets sliding out, instead of the whole fan snapping open at once.
+     Only applied on the way open — closing collapses everything together. */
+  transition-delay: var(--fan-delay, 0ms);
+}
+
+.folder:not(.open) .paper {
+  transition-delay: 0ms;
+}
+
+/* The hovered/focused paper becomes the primary focus — lifts slightly,
+   gains a touch of contrast, and always renders above every sibling
+   regardless of fan stack order (z-index 100 comfortably clears
+   computeFan's z range). Deliberately no shadow or glow — focus reads
+   purely through opacity/brightness/contrast/transform/z-index, so the
+   flat paper shapes stay clean. */
+.folder.open .paper:hover,
+.folder.open .paper:has(.paper-btn:focus-visible) {
+  transform: translate(
+    calc(-50% + (var(--fan-x, 0) * var(--fan-spread, 1) * 1%) * var(--dir, 1) + var(--magnet-x, 0px)),
+    calc((var(--fan-y, -70) * 1%) + var(--magnet-y, 0px) - 5px)
+  ) rotateZ(calc(var(--fan-rot, 0) * 1deg * var(--dir, 1))) scale(1.035);
+  z-index: 100;
+  opacity: 1;
+  filter: contrast(1.03);
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* Every other paper quietly steps back while one is focused — dimmed, not
+   hidden, so the hovered file dominates without the fan feeling broken. */
+.folder.open .folder__back:has(.paper:hover) .paper:not(:hover),
+.folder.open .folder__back:has(.paper-btn:focus-visible) .paper:not(:has(.paper-btn:focus-visible)) {
+  opacity: .75;
+  filter: brightness(.76);
+}
+
+.folder__front {
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  background: var(--folder-color);
+  border-radius: 5px 10px 10px 10px;
+  transform-origin: bottom;
+  transition: transform 0.3s ease-in-out;
+}
+
+.folder:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* !important: the hover/focus and sibling-dim rules above declare their
+     own full `transition` shorthand at higher specificity than a plain
+     `.paper`, which would otherwise silently win over this override and
+     keep animating on hover even with reduced motion requested. */
+  .folder,
+  .folder__front,
+  .paper {
+    transition-duration: 0.001ms !important;
+  }
+}

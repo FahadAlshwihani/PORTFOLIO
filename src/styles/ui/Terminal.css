@@ -1,0 +1,138 @@
+.hero-terminal-stage {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono, "JetBrains Mono"), "IBM Plex Mono", "Geist Mono", ui-monospace, monospace;
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.hero-terminal-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5ch;
+  min-height: 1.75em;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.hero-terminal-connecting {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.hero-terminal-connected {
+  margin-bottom: 0.75em;
+}
+
+/* Exactly one command is ever on screen: its prompt line plus, while it's
+   showing, its own output beneath it. The next command in the loop replaces
+   this in place rather than appending below it, so the terminal's visible
+   line count is fixed by construction — never by viewport size. Typed and
+   deleted character-by-character (see Terminal.js) — no opacity/fade here,
+   that isn't how a terminal behaves. */
+.hero-terminal-active {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.term-prompt {
+  color: #5b9dff;
+  font-size: 1.08em;
+  font-weight: 600;
+  user-select: none;
+}
+
+.term-command-exec {
+  color: #ffffff;
+}
+
+.term-command {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.term-text {
+  color: #ffffff;
+}
+
+.term-key {
+  color: #5fd7d0;
+}
+
+.term-string {
+  color: #7ee0a8;
+}
+
+.term-punct {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.term-status {
+  color: #7ee0a8;
+}
+
+.term-check {
+  color: #7ee0a8;
+}
+
+.term-file {
+  color: #5fd7d0;
+}
+
+.term-bool {
+  color: #e8a35c;
+}
+
+.term-error {
+  color: #ff6b6b;
+}
+
+.term-cursor {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1em;
+  background: #ffffff;
+  animation: hero-terminal-blink 1s steps(1, end) infinite;
+}
+
+/* whoami's banner — site-identity purple gradient sweeping across the
+   letters, not the plain white the rest of the terminal uses. Sized on its
+   own clamp() (in herosection.css, alongside its former .hero-glass-name
+   breakpoints) since a 29-char-wide monospace block needs a much smaller
+   scale than the huge display-font name it replaces. */
+.hero-ascii-banner {
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: pre;
+  max-width: 100%;
+  overflow-x: auto;
+  background: linear-gradient(90deg, #b19eef, #8d6cff, #5227ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes hero-terminal-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .term-cursor {
+    animation: none;
+  }
+}

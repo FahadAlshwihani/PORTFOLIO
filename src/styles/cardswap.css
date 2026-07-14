@@ -1,0 +1,165 @@
+/* src/styles/cardswap.css */
+
+.card-swap-wrapper {
+    /* This wrapper is for the card container and the controls */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    /* Space between cards and controls */
+}
+
+.card-swap-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1500px;
+    /* Increased perspective for better 3D effect */
+    overflow: visible;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    user-select: none;
+    /* Added a subtle shadow and border to the container itself */
+    border-radius: 20px;
+    /* background: rgba(255, 255, 255, 0.01); */
+    /* box-shadow: 0 0 50px rgba(0, 255, 213, 0.05); */
+}
+
+/* Card style - Modern Glassmorphism */
+.card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-style: preserve-3d;
+    will-change: transform, box-shadow;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    color: #fff;
+    /* Glass effect with a subtle gradient */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition:
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.5s ease,
+        background 0.5s ease;
+}
+
+.card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    box-shadow:
+        0 15px 50px rgba(0, 0, 0, 0.7),
+        0 0 30px rgba(0, 255, 213, 0.2);
+    /* Accent glow on hover */
+    transform: translateZ(30px) rotateY(0deg);
+    /* More pronounced lift */
+}
+
+/* Typography */
+.card h3 {
+    font-size: 1.8rem;
+    /* Slightly larger title */
+    margin-bottom: 12px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #8b5cf6, #00ffd5);
+    /* Updated gradient to match project theme */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card p {
+    font-size: 1.1rem;
+    /* Slightly larger body text */
+    line-height: 1.6;
+    color: rgba(240, 240, 240, 0.9);
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+/* Glow effect on hover */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    /* Tighter inset */
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(0, 255, 213, 0.3), rgba(139, 92, 246, 0.3));
+    /* Accent colors */
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+    filter: blur(10px);
+    /* Soft glow */
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+/* New Controls Styling */
+.card-swap-controls {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    /* Space from the card */
+}
+
+.card-swap-btn {
+    /* Reusing the btn-ghost style from global.css but with icon-specific adjustments */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 50%;
+    /* Circular button */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--accent, #00ffd5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card-swap-btn:hover {
+    background: rgba(0, 255, 213, 0.1);
+    /* Hover effect with accent color */
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 255, 213, 0.3);
+}
+
+.card-swap-btn:active {
+    transform: scale(0.95);
+}
+
+.card-swap-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Responsive scaling */
+@media (max-width: 768px) {
+    .card-swap-container {
+        transform: scale(0.8);
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-swap-container {
+        transform: scale(0.65);
+        margin: 0 auto;
+    }
+}

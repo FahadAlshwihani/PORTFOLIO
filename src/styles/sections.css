@@ -1,0 +1,77 @@
+/* Hero specific overrides (keeps your herosection.css intact) */
+.hero-section{
+  position:relative;
+  min-height:82vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding-top:90px; /* avoid header overlap */
+}
+.darkveil-canvas-wrap{ position:absolute; inset:0; z-index:0; }
+.hero-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  padding: 36px;
+  max-width:980px;
+  margin:0 auto;
+}
+.hero-title{
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  margin:0 0 12px;
+  line-height:1.05;
+  letter-spacing:-0.02em;
+  color: #fff;
+  text-shadow: 0 6px 40px rgba(0,0,0,0.5);
+}
+.hero-sub{ color: var(--muted); margin:0 0 20px; }
+
+/* hero actions */
+.hero-actions{ display:flex; gap:12px; justify-content:center; margin-bottom:18px; }
+.hero-meta{ display:flex; gap:18px; justify-content:center; margin-top:10px; color:var(--muted); }
+.meta-item{ text-align:center; font-size:0.9rem; }
+
+/* --- Centering for Section Title and Description --- */
+.section-title {
+  text-align: center; /* Centers the "Projects" title */
+}
+
+.section-desc {
+  text-align: center; /* Centers the description text */
+}
+
+/* blog posts & cards */
+.posts-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap:18px;
+}
+.post-card{
+  padding:18px;
+  border-radius:12px;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* contact info cards */
+.contact-info{ display:flex; flex-direction:column; gap:12px; }
+.contact-card{
+  padding:14px;
+  border-radius:10px;
+  background: rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.03);
+}
+
+/* small success */
+.form-success{
+  margin-top:10px;
+  color:#8fffdc;
+  font-weight:700;
+}
+
+/* small transitions */
+.page-section, .project-card, .post-card{
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.page-section:hover{ transform: translateY(-2px); }

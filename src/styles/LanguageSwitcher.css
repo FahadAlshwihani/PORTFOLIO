@@ -1,0 +1,57 @@
+/* ============================================================
+   LANGUAGE SWITCHER — a tiny terminal command, not a UI control.
+   No background, no border, no capsule, no icon — just two lines of
+   monospace text sitting directly in the header, same typography
+   language as the Hero/Contact terminal. Pure flexbox placement (no
+   left/right), so it mirrors naturally under RTL via the header's own
+   direction.
+   ============================================================ */
+
+.lang-switch {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .12rem;
+  color: #fff;
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  cursor: pointer;
+}
+
+.lang-switch-tag {
+  font-size: .62rem;
+  letter-spacing: .06em;
+  line-height: 1;
+  color: rgba(255, 255, 255, .4);
+}
+
+.lang-switch-value {
+  font-size: .92rem;
+  font-weight: 500;
+  letter-spacing: .02em;
+  line-height: 1;
+  color: #fff;
+  transition: color .2s ease;
+}
+
+/* Just a color shift — no glow, no shadow, no scale/lift. */
+.lang-switch:hover .lang-switch-value,
+.lang-switch:focus-visible .lang-switch-value {
+  color: #5227FF;
+}
+
+.lang-switch:focus-visible {
+  outline: 2px solid #5227FFaa;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lang-switch-value {
+    transition: none;
+  }
+}

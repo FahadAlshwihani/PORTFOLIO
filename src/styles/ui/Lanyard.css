@@ -1,0 +1,29 @@
+/* shields the text side from canvas pointer capture — desktop only */
+.hero-text-shield {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 45%;
+  z-index: 10;
+  pointer-events: all;
+}
+
+.lanyard-hit-zone {
+  position: absolute;
+  width: 160px;
+  height: 240px;
+  z-index: 10;
+  cursor: grab;
+  pointer-events: all;
+  background: transparent;
+  border-radius: 12px;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lanyard-hit-zone:active {
+  cursor: grabbing;
+}
+

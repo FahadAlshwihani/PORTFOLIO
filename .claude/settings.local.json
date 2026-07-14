@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx eslint *)",
+      "Bash(npx skills *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/pbakaus/impecable)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/pbakaus/impeccable)",
+      "PowerShell(winget upgrade *)",
+      "Bash(npm view *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

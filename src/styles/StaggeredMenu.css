@@ -1,0 +1,538 @@
+.staggered-menu-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 40;
+}
+
+.staggered-menu-wrapper.fixed-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.staggered-menu-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2em;
+  background: transparent;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.staggered-menu-header > * {
+  pointer-events: auto;
+}
+
+.sm-header-start {
+  display: flex;
+  align-items: center;
+}
+
+.sm-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #e9e9ef;
+  font-weight: 500;
+  line-height: 1;
+  overflow: visible;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+
+.sm-toggle:hover {
+  opacity: 0.75;
+}
+
+.sm-toggle:focus-visible {
+  outline: 2px solid #ffffffaa;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Same reasoning as the nav items: Arabic needs the display-optimized
+   cut, not the site's general UI font. English keeps whatever it
+   already renders here — untouched. */
+html[dir='rtl'] .sm-toggle {
+  font-family: var(--font-display);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-toggle {
+    transition: none;
+  }
+}
+
+.sm-line:last-of-type {
+  margin-top: 6px;
+}
+
+.sm-toggle-textWrap {
+  position: relative;
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  white-space: nowrap;
+  width: var(--sm-toggle-width, auto);
+  min-width: var(--sm-toggle-width, auto);
+}
+
+.sm-toggle-textInner {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.sm-toggle-line {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+/* Thmanyah Display's Arabic glyphs (غ's loop especially) need more
+   vertical room than a 1em/line-height:1 box provides — that combination
+   forces the line box to exactly the font-size regardless of the font's
+   actual ascent/descent, and .sm-toggle-textWrap's overflow:hidden mask
+   then crops whatever doesn't fit. Growing both the mask window and each
+   line by the same amount keeps them in lockstep (each still shows
+   exactly one full line), and since the GSAP cycle animation drives
+   yPercent as a percentage of the element's own height, not a fixed
+   pixel value, the reveal timing stays correct automatically. English
+   keeps its original 1em/line-height:1 box untouched. */
+html[dir='rtl'] .sm-toggle-textWrap {
+  height: 1.4em;
+}
+
+html[dir='rtl'] .sm-toggle-line {
+  height: 1.4em;
+  line-height: 1.4;
+}
+
+.sm-icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.sm-panel-itemWrap {
+  position: relative;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.sm-icon-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+}
+
+.sm-line {
+  display: none !important;
+}
+
+.staggered-menu-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: clamp(260px, 38vw, 420px);
+  height: 100%;
+  background: white;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  /* Top padding shrinks fluidly with available height instead of jumping
+     at a breakpoint — reclaims room for the nav list + utility area on
+     any short viewport (phone, tablet/iPad landscape, a small laptop
+     window), not just ones narrower than some guessed pixel width. */
+  padding: clamp(3.5em, 9svh, 6em) 2em 2em 2em;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+[data-position='left'] .staggered-menu-panel {
+  right: auto;
+  left: 0;
+}
+
+.sm-prelayers {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: clamp(260px, 38vw, 420px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+[data-position='left'] .sm-prelayers {
+  right: auto;
+  left: 0;
+}
+
+.sm-prelayer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  transform: translateX(0);
+}
+
+.sm-panel-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 3svh, 1.25rem);
+}
+
+.sm-socials {
+  margin-top: auto;
+  /* Floors at 1.25rem so the gap above the utility area never collapses
+     to nothing, however tight the viewport gets — this is what keeps the
+     nav list and Contact block from reading as "colliding". */
+  padding-top: clamp(1.25rem, 4svh, 2rem);
+  /* Safe-area applies everywhere (it's 0 on devices/browsers without an
+     inset, so this is a no-op on desktop) rather than only under a
+     width breakpoint, so it also protects short mobile-browser viewports
+     that happen to be wide (e.g. a phone in landscape). */
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Small-height screens: space becomes tight enough that the utility
+   area risks sitting flush against — or behind — mobile browser chrome.
+   Keyed on height alone so it applies regardless of viewport width. */
+@media (max-height: 560px) {
+  .sm-socials {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+}
+
+.sm-socials-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--sm-accent, #ff0000);
+}
+
+/* Default (baseline) layout: $LANG stacks on its own row below the
+   social links. This is the right call for anything short on width OR
+   height — phones, tablets/iPads in either orientation, small laptop
+   windows — which in practice is most viewports. Only genuinely
+   spacious desktop screens get the side-by-side row (below). Logical
+   alignment (flex-start/flex-end), no left/right, so it mirrors
+   automatically under RTL. */
+.sm-socials-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.sm-socials-lang {
+  align-self: flex-end;
+}
+
+/* True desktop only: enough width for the panel to sit near its 420px
+   cap (38vw reaches that around ~1100px viewport width) AND enough
+   height for the nav list + Connect block to breathe without crowding.
+   Both conditions are needed at once — a tall-but-narrow viewport (e.g.
+   a portrait tablet) still doesn't have the horizontal room this row
+   layout wants. */
+@media (min-width: 1100px) and (min-height: 700px) {
+  .sm-socials-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+
+  .sm-socials-lang {
+    align-self: auto;
+  }
+}
+
+.sm-socials-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sm-socials-list .sm-socials-link {
+  opacity: 1;
+}
+
+.sm-socials-list:hover .sm-socials-link {
+  opacity: 0.35;
+}
+
+.sm-socials-list:hover .sm-socials-link:hover {
+  opacity: 1;
+}
+
+.sm-socials-link:focus-visible {
+  outline: 2px solid var(--sm-accent, #ff0000);
+  outline-offset: 3px;
+}
+
+.sm-socials-list:focus-within .sm-socials-link {
+  opacity: 0.35;
+}
+
+.sm-socials-list:focus-within .sm-socials-link:focus-visible {
+  opacity: 1;
+}
+
+.sm-socials-link {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #111;
+  text-decoration: none;
+  position: relative;
+  padding: 2px 0;
+  display: inline-block;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.sm-socials-link:hover {
+  color: var(--sm-accent, #ff0000);
+}
+
+/* $LANG lives here as a utility beside GitHub/LinkedIn, not as a
+   numbered nav destination — same sibling-dimming/hover group as the
+   other Connect links (shares the .sm-socials-link class), just with
+   its own two-line layout and terminal-style monospace tag. */
+.sm-socials-lang {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  font-family: var(--font-mono);
+}
+
+.sm-socials-lang-tag {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.sm-socials-lang-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+}
+
+/* "↳" and "English" stay monospace no matter what — only the Arabic
+   language name (.sm-socials-lang-value--ar) swaps to Thmanyah Display,
+   since that's the one string here that's an actual heading-weight
+   Arabic word rather than UI/code text. */
+.sm-socials-lang-arrow,
+.sm-socials-lang-value {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: inherit;
+}
+
+.sm-socials-lang-value--ar {
+  font-family: var(--font-display);
+}
+
+.sm-panel-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.sm-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sm-panel-item {
+  position: relative;
+  color: #000;
+  font-weight: 600;
+  font-size: 3.5rem;
+  cursor: pointer;
+  line-height: 1;
+  letter-spacing: -2px;
+  text-transform: uppercase;
+  opacity: 1;
+  transition:
+    background 0.25s,
+    color 0.25s,
+    opacity 0.25s ease;
+  display: inline-block;
+  text-decoration: none;
+  padding-inline-end: 1.4em;
+}
+
+/* Arabic display metrics differ from Latin: "Thmanyah Sans" (the site's
+   general UI/body cut, inherited here by default) reads heavy and its
+   glyphs weren't drawn for this size; the tight -2px Latin-display
+   tracking also fights Arabic's cursive letter-joining, which is what
+   was producing the "broken" look. Scoped to RTL only — English keeps
+   inheriting exactly what it already renders (Thmanyah Display has no
+   Latin coverage, so English here has always fallen through to the
+   plain serif in the stack; this rule must not change that). Extra
+   line-height gives Arabic's taller ascenders/loops room so nothing
+   gets clipped by .sm-panel-itemWrap's overflow:hidden mask.  */
+html[dir='rtl'] .sm-panel-item {
+  font-family: var(--font-display);
+  letter-spacing: normal;
+  line-height: 1.4;
+}
+
+/* Small purple accent + underline mark for the currently scrolled
+   section — subtle, no background fill. */
+.sm-panel-item[data-active] {
+  color: var(--sm-accent, #5227ff);
+}
+
+.sm-panel-item[data-active]::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0.08em;
+  width: 0.45em;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sm-accent, #5227ff);
+}
+
+.staggered-menu-panel .sm-socials-list .sm-socials-link {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.staggered-menu-panel .sm-socials-list:hover .sm-socials-link:not(:hover) {
+  opacity: 0.35;
+}
+
+.staggered-menu-panel .sm-socials-list:focus-within .sm-socials-link:not(:focus-visible) {
+  opacity: 0.35;
+}
+
+.staggered-menu-panel .sm-socials-list .sm-socials-link:hover,
+.staggered-menu-panel .sm-socials-list .sm-socials-link:focus-visible {
+  opacity: 1;
+}
+
+.sm-panel-itemLabel {
+  display: inline-block;
+  will-change: transform;
+  transform-origin: 50% 100%;
+}
+
+.sm-panel-item:hover {
+  color: var(--sm-accent, #5227ff);
+}
+
+/* Hovering one item quietly dims the rest — same sibling-dim language
+   already used for the Connect links. Opacity only: no scale, no glow,
+   no shadow. Applies independently of the active-section accent above,
+   so the two effects layer instead of fighting each other. */
+.sm-panel-list:hover .sm-panel-item:not(:hover) {
+  opacity: 0.4;
+}
+
+.sm-panel-list[data-numbering] {
+  counter-reset: smItem;
+}
+
+.sm-panel-list[data-numbering] .sm-panel-item::after {
+  counter-increment: smItem;
+  content: counter(smItem, decimal-leading-zero);
+  position: absolute;
+  top: 0.1em;
+  inset-inline-end: 2.8em;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--sm-accent, #5227ff);
+  letter-spacing: 0;
+  pointer-events: none;
+  user-select: none;
+  opacity: var(--sm-num-opacity, 0);
+}
+
+@media (max-width: 1024px) {
+  .staggered-menu-panel {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .staggered-menu-panel {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}
+
+/* Root cause of the mobile toolbar overlap: 100vh is the LARGEST
+   possible viewport (browser chrome hidden), so .fixed-wrapper — and
+   therefore the panel's height:100% — was sized taller than the space
+   actually visible once Chrome/Safari's bottom toolbar is showing,
+   pushing the last ~50-100px of content underneath it. 100dvh tracks
+   the true visible viewport and shrinks/grows with the toolbar.
+   Unconditional (not width-gated): declared only after the 100vh
+   fallback, so browsers without dvh support silently keep the 100vh
+   value, and on desktop dvh simply equals vh (no dynamic toolbar), so
+   this never needs a breakpoint to "turn on". */
+.staggered-menu-wrapper.fixed-wrapper {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.staggered-menu-wrapper:not([data-open]) {
+  pointer-events: none;
+}

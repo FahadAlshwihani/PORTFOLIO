@@ -1,0 +1,283 @@
+/* ============================================================
+   CONTACT SECTION — the closing terminal command.
+   Hero opens the portfolio with a terminal; this section closes it
+   with one. Same mono typography and prompt/cursor language as the
+   Hero terminal (imported from Terminal.css and reused directly,
+   not redeclared), evolved into a static "already printed" window
+   instead of a typing animation.
+   Sections: Base → Tablet (≤900px) → Mobile (≤560px)
+   ============================================================ */
+
+.contact-section {
+  background: #000;
+  padding-block: clamp(6rem, 11vw, 10rem);
+  overflow-x: hidden;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.contact-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── The window ───────────────────────────────────────────── */
+
+.contact-terminal {
+  width: min(850px, calc(100% - 3rem));
+  margin-inline: auto;
+  background: #060606;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.contact-terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  /* Window chrome is physical UI, not language content — stays LTR
+     the same way the Hero terminal stage does. */
+  direction: ltr;
+}
+
+.contact-terminal-dots {
+  display: flex;
+  gap: .5rem;
+  flex: 0 0 auto;
+}
+
+/* Real macOS traffic-light chrome: solid color at rest, a faint dark
+   glyph fades in on hover — same subtle reveal macOS itself uses,
+   purely decorative (no actual close/minimize/maximize behavior). */
+.contact-terminal-dots span {
+  width: .72rem;
+  height: .72rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .5rem;
+  line-height: 1;
+  color: transparent;
+  transition: color .15s ease;
+  user-select: none;
+}
+
+.contact-dot-close { background: #FF5F57; }
+.contact-dot-minimize { background: #FEBC2E; }
+.contact-dot-maximize { background: #28C840; }
+
+.contact-terminal-dots span:hover {
+  color: rgba(0, 0, 0, .55);
+}
+
+.contact-terminal-title {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .38);
+  letter-spacing: .01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── The body: already-printed output, no typing animation ──── */
+
+.contact-terminal-body {
+  padding: clamp(1.6rem, 4.5vw, 2.75rem);
+  font-family: var(--font-mono);
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+/* One command's prompt + command word + its output, breathing room
+   between each — "leave a small empty line between each command." */
+.contact-block {
+  margin-bottom: 1.5em;
+}
+
+.contact-block:last-child {
+  margin-bottom: 0;
+}
+
+.contact-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .6ch;
+  line-height: 1.7;
+}
+
+/* The prompt is always the full "fahad@portfolio:~$", never a bare ">",
+   colored like a real shell — user/$ in the site's purple, host in
+   white, the connective punctuation muted. Kept as one nowrap run so
+   it never wraps away from the command that follows it. */
+.contact-prompt-full {
+  white-space: nowrap;
+  user-select: none;
+}
+
+.prompt-user, .prompt-dollar {
+  color: #5227FF;
+}
+
+.prompt-at, .prompt-path {
+  color: rgba(255, 255, 255, .4);
+}
+
+.prompt-host {
+  color: #ffffff;
+}
+
+.contact-command {
+  color: #ffffff;
+}
+
+.contact-output {
+  color: rgba(255, 255, 255, .74);
+  margin: 0;
+  padding-inline-start: 2.2ch;
+  line-height: 1.6;
+}
+
+.contact-output--status {
+  color: #7ee0a8;
+}
+
+/* ls-style listings: directories in purple, plain files in white —
+   same distinction a real colored `ls` makes. */
+.contact-listing {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-listing p {
+  margin: 0;
+}
+
+.contact-dir {
+  color: #8f7bff;
+}
+
+.contact-file {
+  color: #ffffff;
+}
+
+.contact-final-line {
+  margin-top: 0;
+}
+
+/* ── Contact actions: terminal-style buttons, not website CTAs ─ */
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.3em 0 1.6em;
+  padding-inline-start: 2.2ch;
+}
+
+.contact-action {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .03);
+  text-decoration: none;
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.contact-action:hover {
+  border-color: #5227FF;
+  background: rgba(255, 255, 255, .055);
+  transform: translateY(-2px);
+}
+
+.contact-action-icon {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: rgba(255, 255, 255, .85);
+  transition: color .2s ease;
+}
+
+/* WhatsApp's official color lives only inside its own icon, and only
+   on hover — set as --contact-icon-brand per-icon in Contact.jsx, same
+   mechanic already used for Skills' brand icons. The PDF icon has no
+   brand color, so it never gets the var and stays monochrome. */
+.contact-action:hover .contact-action-icon {
+  color: var(--contact-icon-brand, rgba(255, 255, 255, .85));
+}
+
+.contact-action-text {
+  display: flex;
+  flex-direction: column;
+  gap: .18rem;
+  font-family: var(--font-mono);
+}
+
+.contact-action-title {
+  font-size: .95rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.contact-action-subtitle {
+  font-size: .76rem;
+  color: rgba(255, 255, 255, .48);
+}
+
+.contact-note {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .4);
+  padding-inline-start: 2.2ch;
+  margin: 0 0 1.3em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-section {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Tablet ≤900px ────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .contact-terminal {
+    width: min(700px, calc(100% - 2.5rem));
+  }
+}
+
+/* ── Mobile ≤560px ────────────────────────────────────────── */
+
+@media (max-width: 560px) {
+  .contact-terminal-body {
+    padding: 1.4rem 1.15rem;
+  }
+
+  .contact-output,
+  .contact-listing,
+  .contact-actions,
+  .contact-note {
+    padding-inline-start: 0;
+  }
+
+  .contact-actions {
+    flex-direction: column;
+  }
+
+  .contact-action {
+    flex-basis: auto;
+  }
+}

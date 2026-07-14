@@ -1,0 +1,213 @@
+/* ============================================================
+   SKILLS SECTION — "Technology Stack"
+   A curated summary of the stack proven in the Projects section,
+   grouped into independent, differently-paced LogoLoops instead
+   of one giant marquee. Minimal pill design continues the site's
+   existing chip language (Experience/Projects); no glass cards,
+   no gradients, no shadows.
+   Sections: Base → Tablet (≤900px) → Mobile (≤640px)
+   ============================================================ */
+
+.skills-section {
+  background: #000;
+  padding-block: clamp(6rem, 10vw, 9rem);
+  /* Belt-and-suspenders alongside the global html/body overflow-x:hidden —
+     the full-bleed loops below intentionally extend to the viewport edges
+     and must never be able to introduce a horizontal scrollbar. */
+  overflow-x: hidden;
+}
+
+/* Pure horizontal constraint, reused by the header block and each category
+   title — deliberately holds no vertical padding of its own so it can sit
+   between full-bleed loop rows without doubling up on spacing. */
+.skills-container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(2rem, 6vw, 6rem);
+  box-sizing: border-box;
+}
+
+.skills-eyebrow {
+  font-family: var(--font-heading);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .5);
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.skills-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 1rem + 2.4vw, 2.8rem);
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: #fff;
+  margin: 0 0 .75rem;
+  text-align: center;
+}
+
+.skills-subtitle {
+  font-family: var(--font-editorial);
+  font-size: clamp(1rem, .85rem + .3vw, 1.15rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, .6);
+  text-align: center;
+  max-width: 52ch;
+  margin: 0 auto;
+}
+
+/* ── Categories: each owns one independent LogoLoop ──────── */
+
+.skills-categories {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.75rem, 5vw, 4rem);
+  margin-block-start: clamp(3rem, 6vw, 5rem);
+}
+
+.skills-category {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Stronger, editorial-weight heading — deliberately distinct from the
+   small uppercase labels used elsewhere, so each category reads as its
+   own header rather than blending into the loop beneath it. */
+.skills-category-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1rem + .4vw, 1.3rem);
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  text-align: start;
+  border-inline-start: 3px solid #5227FF;
+  padding-inline-start: .85rem;
+}
+
+/* A little breathing room so a hovered pill's slight scale never risks
+   clipping against the loop's own overflow:hidden track. */
+.skills-category .logoloop__track {
+  padding-block: .4rem;
+}
+
+/* Full-bleed: breaks the loop out of .skills-container's max-width so
+   pills run edge-to-edge of the real viewport, independent of however
+   constrained its ancestors are. Safe even where it turns out to be a
+   no-op (an already-unconstrained parent), since 100vw + this margin
+   resolves to the same box either way. */
+.skills-loop-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  overflow: hidden;
+}
+
+/* ── The pill itself: icon + name, consistent everywhere ─── */
+
+.skill-pill {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  height: 2.75rem;
+  padding-inline: 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid rgba(255, 255, 255, .09);
+  white-space: nowrap;
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.skill-pill-icon {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+  color: rgba(255, 255, 255, .82);
+  transition: color .2s ease;
+}
+
+.skill-pill-name {
+  font-family: var(--font-heading);
+  font-size: .85rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: rgba(255, 255, 255, .82);
+  transition: color .2s ease;
+}
+
+/* Hover: brighten + a purple border, nothing else — no glow, no shadow,
+   no floating motion. LogoLoop's own pauseOnHover stops that loop only. */
+.skill-pill:hover {
+  border-color: #5227FF;
+  background: rgba(255, 255, 255, .05);
+  transform: scale(1.035);
+}
+
+.skill-pill:hover .skill-pill-name {
+  color: #fff;
+}
+
+/* The only place color lives: the icon reveals its official brand hue on
+   hover (via --skill-icon-brand, set per-icon in TechIcon.js), falling
+   back to plain white for technologies with no brand color assigned so
+   they stay monochrome. fill:currentColor on the svg means every path
+   inside a multi-path icon follows this same `color` value, so nothing
+   is left half-colored. */
+.skill-pill:hover .skill-pill-icon {
+  color: var(--skill-icon-brand, #fff);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill-pill {
+    transition: none;
+  }
+}
+
+/* ── Tablet ≤900px ────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .skill-pill {
+    height: 2.5rem;
+    padding-inline: .9rem;
+    gap: .5rem;
+  }
+
+  .skill-pill-name {
+    font-size: .8rem;
+  }
+
+  .skill-pill-icon {
+    width: .95rem;
+    height: .95rem;
+  }
+}
+
+/* ── Mobile ≤640px: stays horizontal, loops stay swipeable ── */
+
+@media (max-width: 640px) {
+  .skills-categories {
+    gap: 2.25rem;
+  }
+
+  .skill-pill {
+    height: 2.25rem;
+    padding-inline: .75rem;
+    gap: .4rem;
+  }
+
+  .skill-pill-name {
+    font-size: .75rem;
+  }
+
+  .skill-pill-icon {
+    width: .85rem;
+    height: .85rem;
+  }
+
+  .skills-category-title {
+    font-size: 1rem;
+  }
+}

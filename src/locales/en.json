@@ -1,0 +1,777 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "experience": "Experience",
+    "projects": "Projects",
+    "skills": "Skills",
+    "contact": "Contact",
+    "connect": "Connect",
+    "menu": "Menu",
+    "close": "Close",
+    "language": "Language",
+    "switchToArabic": "Switch to Arabic",
+    "switchToEnglish": "Switch to English"
+  },
+  "hero": {
+    "terminal": {
+      "uptime": "Building production systems since 2021"
+    },
+    "lanyard": {
+      "name": "Fahad Al-Shwihani",
+      "roleLine1": "Full-Stack Developer",
+      "roleLine2": "IT Infrastructure Systems"
+    }
+  },
+  "profile": {
+    "eyebrow": "Profile",
+    "lede": "I build software that works long after launch day.",
+    "paragraphs": [
+      [
+        {
+          "t": "My focus is "
+        },
+        {
+          "t": "full-stack engineering",
+          "h": true
+        },
+        {
+          "t": " — backend architecture in Django and PostgreSQL, frontend systems in React, and the infrastructure that keeps them running "
+        },
+        {
+          "t": "in production",
+          "h": true
+        },
+        {
+          "t": "."
+        }
+      ],
+      [
+        {
+          "t": "Good software is judged after release, not before it. I build "
+        },
+        {
+          "t": "production-ready systems",
+          "h": true
+        },
+        {
+          "t": " — maintainable, clearly structured, and built around real constraints from the first commit."
+        }
+      ],
+      [
+        {
+          "t": "Most of my work sits at the intersection of "
+        },
+        {
+          "t": "system architecture, IT infrastructure",
+          "h": true
+        },
+        {
+          "t": ", and frontend engineering — solving problems that span the entire stack, not just one layer of it."
+        }
+      ]
+    ],
+    "role": {
+      "label": "Role",
+      "value": "Full-Stack Engineer"
+    },
+    "specialization": {
+      "label": "Specialization",
+      "items": [
+        "Backend Architecture",
+        "Frontend Engineering",
+        "IT Infrastructure"
+      ]
+    },
+    "techStack": {
+      "label": "Tech Stack",
+      "items": [
+        "React",
+        "Django",
+        "PostgreSQL",
+        "Docker",
+        "Linux"
+      ]
+    },
+    "location": {
+      "label": "Location",
+      "value": "Saudi Arabia"
+    },
+    "focus": {
+      "label": "Current Focus",
+      "items": [
+        "Production-grade web platforms",
+        "Scalable backend systems",
+        "Modern frontend architecture"
+      ]
+    }
+  },
+  "experience": {
+    "eyebrow": "Professional Journey",
+    "items": [
+      {
+        "date": "July 2025 — Present",
+        "logo": "/logos/azem.png",
+        "logoAlt": "Azem Multiple Sclerosis Association logo",
+        "company": "Azem Multiple Sclerosis Association",
+        "roles": [
+          "Computer Engineer",
+          "Full-Stack Developer",
+          "IT Administrator"
+        ],
+        "description": "At Azem, I develop and maintain production-ready full-stack web applications built with Django and React, designing scalable REST APIs and secure authentication systems alongside PostgreSQL and MySQL database structures. Day-to-day, that also means managing Linux VPS infrastructure — configuring Nginx, Gunicorn, domains, SSL certificates, and production deployments — and maintaining secure hosting environments with reliable backup strategies.",
+        "technologies": [
+          "Django",
+          "React",
+          "PostgreSQL",
+          "MySQL",
+          "Linux",
+          "Nginx",
+          "Gunicorn",
+          "Docker"
+        ]
+      },
+      {
+        "date": "January 2024 — July 2024",
+        "logo": "/logos/emara-hail.png",
+        "logoAlt": "Emara Hail logo",
+        "company": "Emara Hail",
+        "roles": [
+          "Computer Engineer Intern"
+        ],
+        "description": "As a Computer Engineer Intern, I developed a real-time data acquisition system, contributed to UI/UX implementation, and worked through a mix of hardware and software issues — documenting each solution along the way.",
+        "technologies": [
+          "Engineering",
+          "Embedded Systems",
+          "UI/UX",
+          "Documentation"
+        ]
+      },
+      {
+        "date": "October 2021 — October 2023",
+        "logo": "/logos/gloria-jeans.png",
+        "logoAlt": "Gloria Jean's logo",
+        "company": "Gloria Jean's",
+        "roles": [
+          "Data Entry Specialist"
+        ],
+        "description": "I maintained operational reporting across large datasets, working closely in Excel and Google Sheets to keep every figure accurate and every report dependable.",
+        "technologies": [
+          "Excel",
+          "Google Sheets",
+          "Reporting"
+        ]
+      }
+    ]
+  },
+  "projects": {
+    "eyebrow": "Selected Work",
+    "title": "Projects",
+    "subtitle": "A closer look at the systems I've built, from backend architecture to production deployments.",
+    "explorerLabel": "projects/",
+    "openHint": "Open projects",
+    "controlsTitle": "Controls",
+    "controlOpen": "Enter — Open project",
+    "controlClose": "Esc — Close project",
+    "closeModal": "Close",
+    "overviewLabel": "Overview",
+    "architectureLabel": "Architecture",
+    "architectureFrontend": "Frontend",
+    "architectureBackend": "Backend",
+    "architectureDatabase": "Database",
+    "architectureDeployment": "Deployment",
+    "highlightsLabel": "Highlights",
+    "challengesLabel": "Challenges",
+    "solutionsLabel": "Solutions",
+    "technologiesLabel": "Technologies",
+    "galleryLabel": "Gallery",
+    "linksLabel": "Links",
+    "clientLabel": "Client",
+    "yearLabel": "Year",
+    "roleLabel": "Role",
+    "statusLabel": "Status",
+    "repositoryLabel": "Repository",
+    "repoPrivate": "Private",
+    "repoPublic": "Public",
+    "openLive": "Open Live",
+    "openRepository": "Open Repository",
+    "screenshotAlt": "{{title}} — project screenshot",
+    "galleryAlt": "{{title}} — screenshot {{index}}",
+    "items": [
+      {
+        "slug": "aarc",
+        "title": "AARC",
+        "subtitle": "Four role-specific workspaces operating on one recruitment and rental-management backend.",
+        "client": "AARC Recruitment",
+        "year": "2025",
+        "role": "Full Stack Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "AARC is a production recruitment platform coordinating the full workflow across "
+          },
+          {
+            "t": "four independent dashboards",
+            "h": true
+          },
+          {
+            "t": ": employees, external offices, administration, and rental administration. A shared Django REST Framework backend centralizes authentication, records, workflow transitions, and permissions while each React dashboard exposes only the actions relevant to its role."
+          }
+        ],
+        "architecture": {
+          "frontend": "React dashboards with role-aware navigation, forms, operational queues, and shared API clients",
+          "backend": "Django REST Framework with authentication, permission policies, workflow endpoints, and administration services",
+          "database": "MySQL relational database for users, recruitment records, rental operations, and workflow state",
+          "deployment": "Linux VPS with Nginx as reverse proxy and Gunicorn serving the Django application"
+        },
+        "tags": [
+          "React",
+          "Django",
+          "Django REST Framework",
+          "MySQL",
+          "Nginx",
+          "Gunicorn",
+          "Linux"
+        ],
+        "highlights": [
+          "Four dashboards tailored to employees, external offices, administrators, and rental administrators",
+          "Central authentication with role-based authorization enforced by the API",
+          "Recruitment records move through controlled operational states instead of disconnected manual updates",
+          "Production stack operated on a self-managed Linux VPS"
+        ],
+        "challenges": [
+          "Allowing four dashboards to share one backend without leaking records or actions between roles",
+          "Keeping workflow transitions consistent when different teams update the same recruitment process",
+          "Operating the React and Django services reliably on a self-managed production server"
+        ],
+        "solutions": [
+          "Placed authorization in reusable DRF permission policies and scoped every query to the authenticated role",
+          "Modeled recruitment stages as validated backend transitions so dashboards cannot create invalid workflow states",
+          "Separated static delivery, reverse proxying, and application serving across Nginx and Gunicorn with repeatable server configuration"
+        ],
+        "liveLink": "https://aarc.com.sa",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "shahm-law",
+        "title": "Shahm Law",
+        "subtitle": "A law-firm website backed by a custom publishing, request, and communication system.",
+        "client": "Shahm Law Firm",
+        "year": "2024",
+        "role": "Full Stack Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "Shahm Law combines a public legal-services website with a "
+          },
+          {
+            "t": "purpose-built content management system",
+            "h": true
+          },
+          {
+            "t": ". The administration dashboard manages site content, team access, newsletter subscribers and campaigns, contact enquiries, service requests, and internal notifications from one controlled workspace."
+          }
+        ],
+        "architecture": {
+          "frontend": "Public service pages plus a protected administration dashboard for content, requests, and communications",
+          "backend": "Custom CMS and application services for publishing, role management, newsletters, notifications, and request processing",
+          "database": "Relational content and operations model linking pages, subscribers, enquiries, service requests, users, and notifications",
+          "deployment": "Production web deployment at shamlaw.sa with integrated email-delivery workflows"
+        },
+        "tags": [
+          "Custom CMS",
+          "Admin Dashboard",
+          "Role Management",
+          "Email Workflows",
+          "Notifications",
+          "Responsive Web"
+        ],
+        "highlights": [
+          "Editors publish structured website content without code changes",
+          "Newsletter subscriptions and outbound campaigns are managed inside the administration system",
+          "Contact enquiries and service requests enter separate operational queues",
+          "Role management limits publishing, communication, and request-handling capabilities"
+        ],
+        "challenges": [
+          "Combining editorial work and client-service operations without creating an unstructured dashboard",
+          "Sending newsletters while preserving subscriber state and preventing duplicate campaigns",
+          "Keeping public forms open while protecting the administrative workflow behind them"
+        ],
+        "solutions": [
+          "Separated content, subscribers, enquiries, and service requests into focused modules sharing one access model",
+          "Built campaign and recipient state into the newsletter workflow so sends can be tracked and guarded",
+          "Validated public submissions through dedicated endpoints and exposed them only to authorized roles"
+        ],
+        "liveLink": "https://shahmlaw.sa",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "kneeguide",
+        "title": "KneeGuide",
+        "subtitle": "A connected rehabilitation prototype that turns Arduino knee-angle readings into clinical exercise records.",
+        "client": "KneeGuide Research Project",
+        "year": "Not disclosed",
+        "role": "Full Stack & IoT Engineer",
+        "status": "Research",
+        "overview": [
+          {
+            "t": "KneeGuide connects a React healthcare interface to an Arduino measurement device over Bluetooth. During assigned exercises, the platform captures "
+          },
+          {
+            "t": "real-time knee-angle measurements",
+            "h": true
+          },
+          {
+            "t": ", presents them to the patient, and stores session results for doctors to review through reports, progress analytics, appointments, and exercise-management tools."
+          }
+        ],
+        "architecture": {
+          "frontend": "React doctor and patient dashboards with Bluetooth pairing, live angle visualization, assignments, reports, and progress views",
+          "backend": "Django services for accounts, clinical relationships, exercise plans, appointments, measurement sessions, and reporting",
+          "database": "Django-managed relational model for patients, doctors, assignments, appointments, sessions, and angle observations",
+          "deployment": "Research web prototype at knee.fyaa.io paired with an Arduino-based Bluetooth measurement device"
+        },
+        "tags": [
+          "React",
+          "Django",
+          "Bluetooth",
+          "Arduino",
+          "IoT",
+          "Real-time Data",
+          "Healthcare"
+        ],
+        "highlights": [
+          "Doctor workspace for assigning exercises and reviewing session-level reports",
+          "Patient workspace for appointments, assigned routines, Bluetooth pairing, and guided measurements",
+          "Live angle visualization converts hardware readings into feedback during movement",
+          "Progress tracking compares completed sessions instead of relying only on manual notes"
+        ],
+        "challenges": [
+          "Maintaining a usable Bluetooth session when packets arrive intermittently or the connection drops",
+          "Synchronizing measurements with the correct patient, exercise, repetition, and session",
+          "Presenting movement data clearly without overwhelming users with raw samples"
+        ],
+        "solutions": [
+          "Introduced an explicit pairing lifecycle with connection state, validation, and recoverable disconnect handling",
+          "Normalized angle observations before attaching them to the active exercise session",
+          "Separated live feedback from summarized reports while preserving detailed readings for analysis"
+        ],
+        "liveLink": "https://knee.fyaa.io",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "tripsplit",
+        "title": "TripSplit",
+        "subtitle": "A shared trip ledger for joining groups, recording expenses, and tracking the remaining budget.",
+        "client": "Independent Product",
+        "year": "Not disclosed",
+        "role": "Full Stack Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "TripSplit gives a travel group one shared financial record. A trip owner creates the trip and distributes an "
+          },
+          {
+            "t": "invite code",
+            "h": true
+          },
+          {
+            "t": "; members join the same workspace, record expenses, and see spending and remaining budget update from the group ledger rather than maintaining separate calculations."
+          }
+        ],
+        "architecture": {
+          "frontend": "Responsive trip workspace for creation, code-based joining, member management, expenses, and budget summaries",
+          "backend": "Application service enforcing trip membership, invite-code access, expense ownership, and budget calculations",
+          "database": "Relational ledger connecting trips, members, invite codes, budgets, and expense entries",
+          "deployment": "Production deployment at trip.fyaa.io"
+        },
+        "tags": [
+          "Shared Expenses",
+          "Invite Codes",
+          "Group Management",
+          "Budget Tracking",
+          "Responsive Web"
+        ],
+        "highlights": [
+          "Invite codes let travelers join the correct trip without manual account coordination",
+          "Every expense is attached to the shared trip and the member who recorded it",
+          "Remaining budget is derived from one ledger so every member sees the same total",
+          "Trip owners manage membership while participants continue recording costs"
+        ],
+        "challenges": [
+          "Preventing invite codes from granting access to unrelated trips",
+          "Keeping totals consistent when several members add or revise expenses",
+          "Representing membership and expense ownership without duplicating trip data per user"
+        ],
+        "solutions": [
+          "Resolved and validated codes server-side before creating a scoped membership",
+          "Calculated budget summaries from authoritative expense records instead of client totals",
+          "Modeled trips, memberships, and expenses separately so one ledger serves every participant"
+        ],
+        "liveLink": "https://trip.fyaa.io",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "dorina-pro",
+        "title": "Dorina Pro",
+        "subtitle": "A browser-based football tournament engine for league and knockout competitions.",
+        "client": "Independent Product",
+        "year": "Not disclosed",
+        "role": "Frontend Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "Dorina Pro manages football tournaments entirely in the browser. Organizers choose league or knockout mode, enter teams and results, and the application derives "
+          },
+          {
+            "t": "standings, qualifiers, winners, and the final top three",
+            "h": true
+          },
+          {
+            "t": " from tournament state persisted in LocalStorage."
+          }
+        ],
+        "architecture": {
+          "frontend": "Single-page tournament interface with separate league and knockout calculation flows",
+          "backend": "None; tournament rules and progression are executed in the browser",
+          "database": "LocalStorage persistence for teams, fixtures, results, standings, and tournament progress",
+          "deployment": "Static frontend deployed at dorina.fyaa.io"
+        },
+        "tags": [
+          "Frontend",
+          "LocalStorage",
+          "Tournament Logic",
+          "League Tables",
+          "Knockout Brackets"
+        ],
+        "highlights": [
+          "League tables recalculate points and ordering as match results change",
+          "Knockout rounds advance winners automatically through the bracket",
+          "Tournament state survives refreshes without accounts or a remote database",
+          "Completion logic announces the champion and final top-three positions"
+        ],
+        "challenges": [
+          "Supporting league and knockout rules without mixing incompatible progression models",
+          "Reconstructing a valid tournament after a browser refresh",
+          "Handling edited results without leaving standings or winners stale"
+        ],
+        "solutions": [
+          "Isolated each competition mode behind deterministic calculation functions",
+          "Serialized minimal tournament state and recomputed derived views when loading",
+          "Made standings and advancement derived data so edits trigger a consistent recalculation"
+        ],
+        "liveLink": "https://dorina.fyaa.io",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "student-results",
+        "title": "Student Results",
+        "subtitle": "A lightweight result lookup that reads synchronized student records directly from Google Sheets.",
+        "client": "Education Client",
+        "year": "Not disclosed",
+        "role": "Frontend Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "Student Results replaces a custom application server with "
+          },
+          {
+            "t": "Google Sheets as the maintained data source",
+            "h": true
+          },
+          {
+            "t": ". Staff continue updating familiar spreadsheets while students search the synchronized records through a focused frontend using their identifying information."
+          }
+        ],
+        "architecture": {
+          "frontend": "Search interface that validates student input, queries the published dataset, and presents the matching result",
+          "backend": "No custom backend; Google Sheets provides the managed record source",
+          "database": "Google Sheets rows containing synchronized student result records",
+          "deployment": "Static frontend deployed at alkeysaei.fyaa.io"
+        },
+        "tags": [
+          "Frontend",
+          "Google Sheets",
+          "Data Integration",
+          "Search",
+          "Static Deployment"
+        ],
+        "highlights": [
+          "Staff update results through their existing spreadsheet workflow",
+          "The frontend reads synchronized records without a separately maintained API server",
+          "Student-information search narrows access to the requested record",
+          "The small deployment surface keeps operational overhead low"
+        ],
+        "challenges": [
+          "Using a spreadsheet as a live source while keeping lookup behavior predictable",
+          "Normalizing cells with inconsistent spacing, casing, or number formatting",
+          "Avoiding unnecessary infrastructure for a narrowly scoped read-only workflow"
+        ],
+        "solutions": [
+          "Added normalization before comparing search fields with sheet values",
+          "Kept the flow read-only and treated the spreadsheet as the single maintained source",
+          "Used a static client architecture independent of a custom application server"
+        ],
+        "liveLink": "https://alkeysaei.fyaa.io",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "terhal",
+        "title": "Terhal",
+        "subtitle": "A bilingual, multi-page website for presenting a non-profit organization’s work and programs.",
+        "client": "Non-profit Organization",
+        "year": "2024",
+        "role": "Frontend Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "Terhal is a React website spanning more than ten Arabic and English pages. It organizes the organization’s identity, programs, and public information into a shared "
+          },
+          {
+            "t": "bilingual page system",
+            "h": true
+          },
+          {
+            "t": " that adapts navigation, reading direction, and responsive layouts across both languages."
+          }
+        ],
+        "architecture": {
+          "frontend": "React component system shared across more than ten Arabic and English pages",
+          "backend": "None; public information is delivered as a frontend-only website",
+          "database": "None; page content is bundled with the site",
+          "deployment": "Static deployment on Netlify at terhalv1.netlify.app"
+        },
+        "tags": [
+          "React",
+          "Arabic",
+          "English",
+          "RTL",
+          "Responsive Design",
+          "Netlify"
+        ],
+        "highlights": [
+          "More than ten pages share consistent navigation and reusable sections",
+          "Arabic layouts switch reading direction without maintaining a separate site",
+          "Both languages preserve the same information hierarchy",
+          "Responsive behavior covers dense internal pages and the landing experience"
+        ],
+        "challenges": [
+          "Keeping navigation and structure synchronized across two languages and many routes",
+          "Supporting RTL and LTR without duplicating every component",
+          "Maintaining readable hierarchy across mobile and desktop breakpoints"
+        ],
+        "solutions": [
+          "Centralized route and navigation definitions for both languages",
+          "Built shared React sections with direction-aware layout rules",
+          "Defined responsive behavior at component level for consistency across long-form pages"
+        ],
+        "liveLink": "https://terhalv1.netlify.app",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "oqol",
+        "title": "OQOL",
+        "subtitle": "A tailored WordPress implementation that gives the client direct control over routine content updates.",
+        "client": "OQOL",
+        "year": "Not disclosed",
+        "role": "WordPress Developer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "OQOL is a WordPress implementation customized around the client’s page and publishing requirements. WordPress acts as the operational content layer so the team can "
+          },
+          {
+            "t": "maintain pages without developer intervention",
+            "h": true
+          },
+          {
+            "t": " while the public presentation remains constrained to the approved structure."
+          }
+        ],
+        "architecture": {
+          "frontend": "Customized WordPress theme and page templates aligned with the client’s content structure",
+          "backend": "WordPress administration with configured editing controls and media management",
+          "database": "WordPress relational content store for pages, settings, and media references",
+          "deployment": "Production WordPress hosting at oqol.sa"
+        },
+        "tags": [
+          "WordPress",
+          "CMS",
+          "Theme Customization",
+          "Content Modeling",
+          "Production Hosting"
+        ],
+        "highlights": [
+          "Templates reflect required content types instead of exposing a blank page builder",
+          "Routine copy and media changes are handled through WordPress administration",
+          "Reusable content patterns keep repeated sections consistent",
+          "The implementation stays within familiar WordPress operations for handover"
+        ],
+        "challenges": [
+          "Adapting editing flexibility to a fixed client-approved presentation",
+          "Preventing routine content changes from breaking page structure",
+          "Keeping administration simple for editors who do not work with code"
+        ],
+        "solutions": [
+          "Mapped recurring content into constrained templates and reusable fields",
+          "Limited editing choices to the controls needed for each page type",
+          "Configured the CMS around the client’s publishing workflow"
+        ],
+        "liveLink": "https://oqol.sa",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "codeduo",
+        "title": "CodeDuo",
+        "subtitle": "A corporate services website that turns software capabilities into a clear enquiry path.",
+        "client": "CodeDuo",
+        "year": "Not disclosed",
+        "role": "Frontend Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "CodeDuo presents software-development services through a responsive corporate frontend. The information architecture moves from capability areas to service detail and contact actions using "
+          },
+          {
+            "t": "consistent branded components",
+            "h": true
+          },
+          {
+            "t": " rather than unrelated landing-page sections."
+          }
+        ],
+        "architecture": {
+          "frontend": "Responsive component-based website for service pages, company information, and enquiry paths",
+          "backend": "No application backend required for the public presentation layer",
+          "database": "None; corporate content is delivered with the frontend",
+          "deployment": "Production website at codeduo.sa"
+        },
+        "tags": [
+          "Corporate Website",
+          "Responsive Frontend",
+          "Component System",
+          "Brand Implementation",
+          "Service Architecture"
+        ],
+        "highlights": [
+          "Service categories are structured around specific software-delivery capabilities",
+          "Repeated patterns create continuity between overview and service detail",
+          "Contact actions remain accessible across desktop and mobile layouts",
+          "Typography, spacing, and color rules are reusable frontend primitives"
+        ],
+        "challenges": [
+          "Explaining several technical service lines without creating a dense catalogue",
+          "Maintaining one visual system across differently sized sections",
+          "Preserving clear enquiry paths on small screens"
+        ],
+        "solutions": [
+          "Grouped offerings by client problem and delivery outcome",
+          "Created shared section, typography, and spacing primitives",
+          "Placed responsive contact actions at deliberate decision points"
+        ],
+        "liveLink": "https://codeduo.sa",
+        "codeLink": "",
+        "isPrivate": true
+      },
+      {
+        "slug": "social",
+        "title": "Social",
+        "subtitle": "An open-source, bilingual link hub designed for self-hosting and custom identity.",
+        "client": "Open-source Project",
+        "year": "Not disclosed",
+        "role": "Frontend Engineer",
+        "status": "Production",
+        "overview": [
+          {
+            "t": "Social is a self-hostable alternative to hosted link-in-bio services. It packages profile details, destinations, bilingual content, and visual identity into a "
+          },
+          {
+            "t": "small deployable frontend",
+            "h": true
+          },
+          {
+            "t": " that can be branded and published without depending on a subscription platform."
+          }
+        ],
+        "architecture": {
+          "frontend": "Responsive bilingual link page with configurable profile, destinations, and branding",
+          "backend": "None required for the core project",
+          "database": "Configuration-based content; no database service required",
+          "deployment": "Static, self-hostable build with a live instance at social.fyaa.io"
+        },
+        "tags": [
+          "Open Source",
+          "Bilingual",
+          "Responsive Web",
+          "Self-hosting",
+          "Custom Branding"
+        ],
+        "highlights": [
+          "Arabic and English profiles are delivered from one lightweight codebase",
+          "Brand colors, identity, and destination links can be replaced without rebuilding the layout",
+          "No third-party link-platform account is required",
+          "Static output deploys to simple hosting with minimal operational cost"
+        ],
+        "challenges": [
+          "Keeping customization approachable without a full administration backend",
+          "Making the compact layout work naturally in RTL and LTR",
+          "Keeping the page fast when opened from mobile social applications"
+        ],
+        "solutions": [
+          "Separated profile content and brand settings from presentation components",
+          "Used direction-aware rules so one component tree supports both languages",
+          "Avoided server-side dependencies to keep deployment small"
+        ],
+        "liveLink": "https://social.fyaa.io",
+        "codeLink": "https://github.com/FahadAlshwihani?tab=repositories",
+        "isPrivate": false
+      }
+    ]
+  },
+  "skills": {
+    "eyebrow": "Technology Stack",
+    "title": "Skills",
+    "subtitle": "The technologies behind the systems in the Projects section — grouped by where they actually get used.",
+    "categories": {
+      "core": "Core Stack",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "infrastructure": "Infrastructure",
+      "itSystems": "IT & Systems",
+      "iot": "IoT"
+    }
+  },
+  "contact": {
+    "values": {
+      "name": "Fahad Al-Shwihani",
+      "role": "Full-Stack Engineer",
+      "location": "Saudi Arabia",
+      "status": "Available for opportunities",
+      "opportunities": [
+        "full-stack",
+        "backend",
+        "software-engineer",
+        "it-infrastructure"
+      ]
+    },
+    "actions": {
+      "resumeTitle": "Resume.pdf",
+      "resumeSubtitle": "Download Resume",
+      "whatsappTitle": "WhatsApp",
+      "whatsappSubtitle": "Open WhatsApp conversation"
+    },
+    "note": "Response time usually within 24 hours."
+  },
+  "footer": {
+    "copyright": "© {{year}} Fahad Al-Shwihani",
+    "signature": "Designed & Developed by Fahad Al-Shwihani"
+  }
+}
