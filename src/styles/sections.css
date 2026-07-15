@@ -29,30 +29,7 @@
 
 /* hero actions */
 .hero-actions{ display:flex; gap:12px; justify-content:center; margin-bottom:18px; }
-.hero-meta{ display:flex; gap:18px; justify-content:center; margin-top:10px; color:var(--muted); }
 .meta-item{ text-align:center; font-size:0.9rem; }
-
-/* --- Centering for Section Title and Description --- */
-.section-title {
-  text-align: center; /* Centers the "Projects" title */
-}
-
-.section-desc {
-  text-align: center; /* Centers the description text */
-}
-
-/* blog posts & cards */
-.posts-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap:18px;
-}
-.post-card{
-  padding:18px;
-  border-radius:12px;
-  background: var(--card);
-  border: 1px solid rgba(255,255,255,0.03);
-}
 
 /* contact info cards */
 .contact-info{ display:flex; flex-direction:column; gap:12px; }
@@ -69,9 +46,3 @@
   color:#8fffdc;
   font-weight:700;
 }
-
-/* small transitions */
-.page-section, .project-card, .post-card{
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-.page-section:hover{ transform: translateY(-2px); }

@@ -21,11 +21,25 @@ const LockIcon = () => (
 // clicked directory item's rect (origin) and its natural centered rect,
 // using gsap (already a project dependency) instead of hand-rolled rAF
 // double-buffering. Reduced motion skips straight to the settled state.
+//
+// Blocks that make up the case file's own internal reveal cascade, queried
+// fresh per-open since which sections a given project actually renders is
+// conditional (gallery/architecture/highlights/etc. may or may not exist).
+// `.project-case-section` covers every mid-body block uniformly (Overview,
+// Architecture, Highlights, Challenges, Solutions, Technologies, Gallery,
+// Links) in DOM order, so the last one is always the Links/buttons section
+// regardless of which optional sections a project has — which is exactly
+// the "buttons always last" behavior, without hardcoding section names.
+const CONTENT_SELECTOR = '.project-case-header, .project-case-info, .project-case-media, .project-case-section';
+
 const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t }) => {
   const backdropRef = useRef(null);
   const panelRef = useRef(null);
   const closeBtnRef = useRef(null);
   const closingRef = useRef(false);
+  const tlRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const gallerySignature = gallery.map((image) => `${image.filename}:${image.src}`).join('|');
 
@@ -33,36 +47,21 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
     setActiveImageIndex(0);
   }, [project.slug, gallerySignature]);
 
+  // Closing mirrors opening exactly because it IS the same timeline, played
+  // backward — the container-transform, the content stagger, and the
+  // buttons-last gap all reverse in lockstep with no separately hand-tuned
+  // close animation to keep in sync.
   const requestClose = useCallback(() => {
     if (closingRef.current) return;
     closingRef.current = true;
 
-    const panel = panelRef.current;
-    const backdrop = backdropRef.current;
-
-    if (reducedMotion || !panel || !originRect) {
-      onClose();
+    if (reducedMotion || !tlRef.current) {
+      onCloseRef.current();
       return;
     }
 
-    const finalRect = panel.getBoundingClientRect();
-    const dx = (originRect.left + originRect.width / 2) - (finalRect.left + finalRect.width / 2);
-    const dy = (originRect.top + originRect.height / 2) - (finalRect.top + finalRect.height / 2);
-    const sx = Math.max(originRect.width / finalRect.width, 0.05);
-    const sy = Math.max(originRect.height / finalRect.height, 0.05);
-
-    gsap.to(backdrop, { opacity: 0, duration: 0.22, ease: 'power2.in' });
-    gsap.to(panel, {
-      x: dx,
-      y: dy,
-      scaleX: sx,
-      scaleY: sy,
-      opacity: 0,
-      duration: 0.28,
-      ease: 'power3.in',
-      onComplete: onClose,
-    });
-  }, [onClose, originRect, reducedMotion]);
+    tlRef.current.reverse();
+  }, [reducedMotion]);
 
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -82,23 +81,50 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
     const sx = Math.max(originRect.width / finalRect.width, 0.05);
     const sy = Math.max(originRect.height / finalRect.height, 0.05);
 
+    const contentBlocks = Array.from(panel.querySelectorAll(CONTENT_SELECTOR));
+    const buttonsBlock = contentBlocks.length ? contentBlocks[contentBlocks.length - 1] : null;
+    const bodyBlocks = buttonsBlock ? contentBlocks.slice(0, -1) : contentBlocks;
+
     const ctx = gsap.context(() => {
       gsap.set(backdrop, { opacity: 0 });
       gsap.set(panel, { x: dx, y: dy, scaleX: sx, scaleY: sy, opacity: 0 });
-      gsap.to(backdrop, { opacity: 1, duration: 0.3, ease: 'power2.out' });
-      gsap.to(panel, {
-        x: 0,
-        y: 0,
-        scaleX: 1,
-        scaleY: 1,
-        opacity: 1,
-        duration: 0.34,
-        ease: 'power3.out',
+      if (bodyBlocks.length) gsap.set(bodyBlocks, { opacity: 0, y: 16 });
+      if (buttonsBlock) gsap.set(buttonsBlock, { opacity: 0, y: 12 });
+
+      const tl = gsap.timeline({
+        paused: true,
         onComplete: () => closeBtnRef.current?.focus(),
+        onReverseComplete: () => onCloseRef.current(),
       });
+
+      // Overlay fades in, the panel translates/scales up from the clicked
+      // paper while fading in (the existing container-transform), each
+      // slightly overlapping the one before it — "background settles" —
+      // then the content cascades in logical groups, each slightly
+      // overlapping the last, with buttons held back until everything
+      // else has visibly arrived.
+      tl.to(backdrop, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0);
+      tl.to(panel, { x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1, duration: 0.36, ease: 'power3.out' }, 0.05);
+
+      if (bodyBlocks.length) {
+        tl.to(
+          bodyBlocks,
+          { opacity: 1, y: 0, duration: 0.42, ease: 'power2.out', stagger: { each: 0.07, from: 'start' } },
+          0.26
+        );
+      }
+      if (buttonsBlock) {
+        tl.to(buttonsBlock, { opacity: 1, y: 0, duration: 0.36, ease: 'power2.out' }, '+=0.08');
+      }
+
+      tlRef.current = tl;
+      tl.play(0);
     });
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      tlRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

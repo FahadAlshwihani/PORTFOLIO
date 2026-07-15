@@ -24,15 +24,18 @@ const darkenColor = (hex, percent) => {
 // cards to cram more in. Exported so callers can reserve enough clearance
 // above the folder for however many rows a given item count will produce.
 export const ROW_CAPACITY = 9;
+// Sequencing (not a redesign of the existing fan/lid mechanics — just when
+// each phase is allowed to start): opening, the lid gets this much of a
+// head start before any paper begins moving, so the lid visibly leads and
+// the fan reads as "papers sliding out of an already-opening folder"
+// rather than everything moving at once. Closing, the same gap is given to
+// the papers instead, so they've visibly retreated before the lid swings
+// shut over them.
+const LID_LEAD_MS = 180;
+const PAPER_LEAD_MS = 140;
 const BASE_RADIUS = 165;
 const RADIUS_STEP = 130; // each row further from the folder gets a wider arc
 const MAX_SWEEP_DEG = 62; // half-angle of a 5-or-fewer row, from vertical
-const TARGET_ARC_STEP = 84; // desired spacing between adjacent paper centers,
-                             // held roughly constant regardless of row size
-                             // (this is the number tuned against real 5-item
-                             // legibility — rows with more items get a wider
-                             // sweep and a bit more radius instead of letting
-                             // this shrink and overlap illegibly).
 
 // True polar placement: papers sit on a circular arc of a given radius,
 // swept symmetrically around straight-up. Values are unitless — the CSS
@@ -134,6 +137,7 @@ const Folder = ({
   const folderStyle = {
     '--folder-color': color,
     '--folder-back-color': folderBackColor,
+    '--lid-delay': open ? '0ms' : `${PAPER_LEAD_MS}ms`,
   };
 
   const folderClassName = `folder ${open ? 'open' : ''}`.trim();
@@ -173,7 +177,10 @@ const Folder = ({
                   '--fan-y': fan.y,
                   '--fan-rot': fan.rot,
                   '--fan-z': fan.z,
-                  '--fan-delay': `${fan.delay}ms`,
+                  // The lead-in only matters on the way open — closing
+                  // already zeroes this out via the `:not(.open) .paper`
+                  // rule in Folder.css, which wins regardless of this value.
+                  '--fan-delay': `${LID_LEAD_MS + fan.delay}ms`,
                   '--paper-tint': fan.tint,
                   '--magnet-x': `${offset.x}px`,
                   '--magnet-y': `${offset.y}px`,

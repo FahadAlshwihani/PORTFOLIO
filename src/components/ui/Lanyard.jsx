@@ -24,14 +24,6 @@ const isFiniteVector = (value) => value
     && Number.isFinite(value.z)
     && (value.w === undefined || Number.isFinite(value.w));
 
-// 1x1 transparent pixel — lets useTexture be called unconditionally when a
-// front/back image isn't supplied.
-const createBlankTexture = () => {
-    const tex = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1, THREE.RGBAFormat);
-    tex.needsUpdate = true;
-    return tex;
-};
-
 // The card model's front face is UV-mapped to the LEFT half of the texture
 // atlas and the back face to the RIGHT half (measured from card.glb). Each
 // custom image is composited into its own half so the two faces render
@@ -135,6 +127,10 @@ export default function Lanyard({
         window.addEventListener("resize", updateScene);
 
         return () => window.removeEventListener("resize", updateScene);
+        // dir is derived from the rtl prop; this component isn't currently
+        // passed a live-changing rtl value anywhere, so recomputing only on
+        // resize (not on dir change) matches existing behavior exactly.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -478,7 +474,7 @@ function Band({
         composite.anisotropy = 16;
         composite.needsUpdate = true;
         return composite;
-    }, [frontImage, backImage, imageFit, frontTex, backTex, backCanvasTex, materials.base.map]); const [curve] = useState(
+    }, [backImage, frontTex, backTex, backCanvasTex, materials.base.map]); const [curve] = useState(
         () =>
             new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
     );

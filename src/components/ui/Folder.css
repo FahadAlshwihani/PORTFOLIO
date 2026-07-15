@@ -173,6 +173,12 @@
   border-radius: 5px 10px 10px 10px;
   transform-origin: bottom;
   transition: transform 0.3s ease-in-out;
+  /* Opening: the lid leads (delay 0, see Folder.jsx) and the papers wait
+     for it (their own --fan-delay gets a matching head-start added in JS).
+     Closing: reversed — papers retreat first, then the lid follows shut
+     over them, so the sequence reads as one physical motion instead of
+     everything springing open/shut in lockstep. */
+  transition-delay: var(--lid-delay, 0ms);
 }
 
 .folder:focus-visible {
