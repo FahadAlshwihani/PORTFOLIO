@@ -1,0 +1,99 @@
+/* ============================================================
+   HERO → ABOUT SILK DISSOLVE
+   A single Silk canvas, in a container taller than Hero's own 100svh
+   box, that visually bleeds into the top of About without Hero growing
+   or About moving.
+
+   Deliberately pure normal flow, NOT position:absolute/relative on any
+   ancestor: .hero-silk-region has an explicit height plus a fully
+   self-cancelling negative bottom margin, so it contributes zero net
+   height to the page (the next sibling, Hero, starts immediately after
+   it as if it weren't there) while still painting its own full height
+   starting from the top. This sidesteps a real, confirmed browser trap —
+   html/body/#root are explicitly height:100% (see global.css), and once
+   ANY ancestor becomes position:relative with a child that overflows
+   past that ancestor's own box, the document silently stops auto-growing
+   for content beyond one viewport height. Silk's own inset:0 sizing
+   still needs a positioned parent, but that relationship is fully
+   self-contained inside .hero-silk-region (which is never itself
+   overflowed by anything), so it never triggers the same issue. Later
+   normal-flow siblings (Hero, then About) simply paint over this one
+   where they overlap — no z-index needed anywhere in this file.
+
+   145svh total = Hero's own 100svh + a 45svh bleed. svh (not vh) is used
+   throughout so this stays aligned with Hero's own box on mobile, where
+   Hero itself switches to 100svh (see herosection.css) to avoid the
+   dynamic-toolbar viewport mismatch — using vh here instead would drift
+   out of sync with Hero's real rendered height on exactly those devices.
+   ============================================================ */
+
+.hero-silk-region {
+  position: relative;
+  width: 100%;
+  height: 145svh;
+  margin-bottom: -145svh;
+  pointer-events: none;
+  overflow: hidden;
+
+  /* Opacity envelope for the whole region: fully opaque through Hero's
+     own height, then a soft multi-stop curve (not a flat linear ramp)
+     down to fully transparent by the end of the bleed — this is the
+     "gradually lose opacity / lose contrast" half of the dissolve. */
+  mask-image: linear-gradient(
+    to bottom,
+    black 0,
+    black 100svh,
+    rgba(0, 0, 0, 0.62) 116svh,
+    rgba(0, 0, 0, 0.22) 132svh,
+    transparent 145svh
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0,
+    black 100svh,
+    rgba(0, 0, 0, 0.62) 116svh,
+    rgba(0, 0, 0, 0.22) 132svh,
+    transparent 145svh
+  );
+}
+
+/* Progressive blur, built from three stacked backdrop-filter bands
+   instead of one uniform filter (which can't vary spatially) or a
+   second rendered canvas (expensive, and explicitly what we're
+   avoiding). Each band blurs whatever's compositing behind it — the
+   single Silk canvas — a little more than the last, fading its own
+   edges in via its own mask so the three blend into one continuous
+   increasing-blur curve rather than visible bands. This is a
+   compositor-level effect: no WebGL re-render, no extra frame cost. */
+.hero-silk-blur-band {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+}
+
+.hero-silk-blur-band-1 {
+  top: 100svh;
+  height: 45svh;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 35%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 35%, black 100%);
+}
+
+.hero-silk-blur-band-2 {
+  top: 112svh;
+  height: 33svh;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 40%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40%, black 100%);
+}
+
+.hero-silk-blur-band-3 {
+  top: 124svh;
+  height: 21svh;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 45%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 45%, black 100%);
+}

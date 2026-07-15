@@ -11,7 +11,12 @@
     "close": "Close",
     "language": "Language",
     "switchToArabic": "Switch to Arabic",
-    "switchToEnglish": "Switch to English"
+    "switchToEnglish": "Switch to English",
+    "socials": {
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "whatsapp": "WhatsApp"
+    }
   },
   "hero": {
     "terminal": {
@@ -25,18 +30,18 @@
   },
   "profile": {
     "eyebrow": "Profile",
-    "lede": "I build software that works long after launch day.",
+    "lede": "I am a Computer Engineer who builds reliable software that continues to perform efficiently long after launch day.",
     "paragraphs": [
       [
         {
-          "t": "My focus is "
+          "t": "My core focus bridges the gap between Computer Engineering and "
         },
         {
-          "t": "full-stack engineering",
+          "t": "Full-Stack development",
           "h": true
         },
         {
-          "t": " — backend architecture in Django and PostgreSQL, frontend systems in React, and the infrastructure that keeps them running "
+          "t": ": I design and develop backend architecture using Django and PostgreSQL, build frontend systems with React, and manage the infrastructure that keeps these systems running "
         },
         {
           "t": "in production",
@@ -48,14 +53,14 @@
       ],
       [
         {
-          "t": "Good software is judged after release, not before it. I build "
+          "t": "The true quality of any software is proven after its release. Leveraging my engineering background, I focus on building "
         },
         {
           "t": "production-ready systems",
           "h": true
         },
         {
-          "t": " — maintainable, clearly structured, and built around real constraints from the first commit."
+          "t": "—maintainable, clearly structured, and engineered around real-world constraints from the very first commit."
         }
       ],
       [
@@ -67,17 +72,18 @@
           "h": true
         },
         {
-          "t": ", and frontend engineering — solving problems that span the entire stack, not just one layer of it."
+          "t": ", and frontend engineering—solving problems that span the entire stack from a comprehensive engineering perspective."
         }
       ]
     ],
     "role": {
       "label": "Role",
-      "value": "Full-Stack Engineer"
+      "value": "Computer Engineer / Full-Stack Engineer"
     },
     "specialization": {
       "label": "Specialization",
       "items": [
+        "Computer Engineering",
         "Backend Architecture",
         "Frontend Engineering",
         "IT Infrastructure"
@@ -112,14 +118,13 @@
       {
         "date": "July 2025 — Present",
         "logo": "/logos/azem.png",
-        "logoAlt": "Azem Multiple Sclerosis Association logo",
-        "company": "Azem Multiple Sclerosis Association",
+        "logoAlt": "Flint Consulting logo",
+        "company": "Flint Consulting",
         "roles": [
-          "Computer Engineer",
           "Full-Stack Developer",
           "IT Administrator"
         ],
-        "description": "At Azem, I develop and maintain production-ready full-stack web applications built with Django and React, designing scalable REST APIs and secure authentication systems alongside PostgreSQL and MySQL database structures. Day-to-day, that also means managing Linux VPS infrastructure — configuring Nginx, Gunicorn, domains, SSL certificates, and production deployments — and maintaining secure hosting environments with reliable backup strategies.",
+        "description": "At Flint Consulting, I develop and maintain production-ready full-stack web applications using Django and React. My role involves designing scalable REST APIs, implementing secure authentication systems, and architecting database structures with PostgreSQL and MySQL. I also manage the Linux VPS infrastructure—configuring Nginx, Gunicorn, domain mapping, and SSL certificates—while overseeing production deployments and maintaining secure hosting environments with robust backup strategies.",
         "technologies": [
           "Django",
           "React",
@@ -139,7 +144,7 @@
         "roles": [
           "Computer Engineer Intern"
         ],
-        "description": "As a Computer Engineer Intern, I developed a real-time data acquisition system, contributed to UI/UX implementation, and worked through a mix of hardware and software issues — documenting each solution along the way.",
+        "description": "During my internship as a Computer Engineer at Emara Hail, I developed a real-time data acquisition system and contributed to the design and implementation of UI/UX interfaces. I focused on troubleshooting complex issues at the intersection of hardware and software, while systematically documenting all engineering solutions and technical workflows.",
         "technologies": [
           "Engineering",
           "Embedded Systems",
@@ -155,7 +160,7 @@
         "roles": [
           "Data Entry Specialist"
         ],
-        "description": "I maintained operational reporting across large datasets, working closely in Excel and Google Sheets to keep every figure accurate and every report dependable.",
+        "description": "I managed operational reporting and handled large-scale datasets, ensuring high levels of data integrity. By leveraging advanced Excel and Google Sheets functions, I maintained accurate figures and dependable reports to support seamless business operations.",
         "technologies": [
           "Excel",
           "Google Sheets",
@@ -167,7 +172,7 @@
   "projects": {
     "eyebrow": "Selected Work",
     "title": "Projects",
-    "subtitle": "A closer look at the systems I've built, from backend architecture to production deployments.",
+    "subtitle": "A deep dive into the systems I've engineered from backend architecture to live production deployments.",
     "explorerLabel": "projects/",
     "openHint": "Open projects",
     "controlsTitle": "Controls",
@@ -208,21 +213,21 @@
         "status": "Production",
         "overview": [
           {
-            "t": "AARC is a production recruitment platform coordinating the full workflow across "
+            "t": "AARC is a production-grade recruitment platform coordinating the full operational workflow across "
           },
           {
             "t": "four independent dashboards",
             "h": true
           },
           {
-            "t": ": employees, external offices, administration, and rental administration. A shared Django REST Framework backend centralizes authentication, records, workflow transitions, and permissions while each React dashboard exposes only the actions relevant to its role."
+            "t": ": Employees, External Offices, Administration, and Rental Administration. A shared Django REST Framework backend centralizes authentication, records, and workflow transitions, while each React-based dashboard exposes only the specific actions and tools relevant to its role."
           }
         ],
         "architecture": {
-          "frontend": "React dashboards with role-aware navigation, forms, operational queues, and shared API clients",
-          "backend": "Django REST Framework with authentication, permission policies, workflow endpoints, and administration services",
-          "database": "MySQL relational database for users, recruitment records, rental operations, and workflow state",
-          "deployment": "Linux VPS with Nginx as reverse proxy and Gunicorn serving the Django application"
+          "frontend": "React dashboards featuring role-aware navigation, dynamic forms, and operational queues, connected via a unified API client",
+          "backend": "Django REST Framework handling core authentication, complex permission policies, workflow endpoints, and administrative services",
+          "database": "MySQL relational database optimized for user management, recruitment records, rental operations, and state tracking",
+          "deployment": "Linux VPS infrastructure utilizing Nginx as a reverse proxy and Gunicorn to serve the Django application"
         },
         "tags": [
           "React",
@@ -234,20 +239,20 @@
           "Linux"
         ],
         "highlights": [
-          "Four dashboards tailored to employees, external offices, administrators, and rental administrators",
-          "Central authentication with role-based authorization enforced by the API",
-          "Recruitment records move through controlled operational states instead of disconnected manual updates",
-          "Production stack operated on a self-managed Linux VPS"
+          "Four tailored dashboards for Employees, External Offices, Administrators, and Rental Managers",
+          "Centralized authentication with granular, role-based authorization enforced at the API level",
+          "Automated recruitment workflows that move through controlled operational states rather than disconnected manual updates",
+          "Full production stack hosted and operated on a self-managed Linux VPS"
         ],
         "challenges": [
-          "Allowing four dashboards to share one backend without leaking records or actions between roles",
-          "Keeping workflow transitions consistent when different teams update the same recruitment process",
-          "Operating the React and Django services reliably on a self-managed production server"
+          "Enabling four dashboards to share a single backend without leaking records or actions between roles",
+          "Maintaining workflow consistency when multiple teams interact with the same recruitment process",
+          "Ensuring high availability for React and Django services on a self-managed production server"
         ],
         "solutions": [
-          "Placed authorization in reusable DRF permission policies and scoped every query to the authenticated role",
-          "Modeled recruitment stages as validated backend transitions so dashboards cannot create invalid workflow states",
-          "Separated static delivery, reverse proxying, and application serving across Nginx and Gunicorn with repeatable server configuration"
+          "Implemented reusable DRF permission policies and scoped every database query to the authenticated user's role",
+          "Modeled recruitment stages as validated backend state transitions to prevent invalid workflow actions",
+          "Orchestrated static delivery, reverse proxying, and application serving through a robust Nginx and Gunicorn configuration"
         ],
         "liveLink": "https://aarc.com.sa",
         "codeLink": "",
@@ -258,26 +263,26 @@
         "title": "Shahm Law",
         "subtitle": "A law-firm website backed by a custom publishing, request, and communication system.",
         "client": "Shahm Law Firm",
-        "year": "2024",
+        "year": "2025",
         "role": "Full Stack Engineer",
         "status": "Production",
         "overview": [
           {
-            "t": "Shahm Law combines a public legal-services website with a "
+            "t": "Shahm Law combines a professional legal-services interface with a "
           },
           {
-            "t": "purpose-built content management system",
+            "t": "purpose-built Content Management System (CMS)",
             "h": true
           },
           {
-            "t": ". The administration dashboard manages site content, team access, newsletter subscribers and campaigns, contact enquiries, service requests, and internal notifications from one controlled workspace."
+            "t": ". The central administration dashboard manages site content, team access, newsletter subscribers, and email campaigns, alongside contact enquiries, service requests, and internal notifications within a single, organized workspace."
           }
         ],
         "architecture": {
-          "frontend": "Public service pages plus a protected administration dashboard for content, requests, and communications",
-          "backend": "Custom CMS and application services for publishing, role management, newsletters, notifications, and request processing",
-          "database": "Relational content and operations model linking pages, subscribers, enquiries, service requests, users, and notifications",
-          "deployment": "Production web deployment at shamlaw.sa with integrated email-delivery workflows"
+          "frontend": "Public-facing service pages and a secure administration dashboard for content management and communication tracking",
+          "backend": "Custom CMS and application services for structured publishing, role-based access control, newsletter management, and automated request processing",
+          "database": "A relational model linking pages, subscribers, enquiries, service requests, users, and notifications for seamless data flow",
+          "deployment": "Production deployment at shamlaw.sa with integrated automated email-delivery workflows"
         },
         "tags": [
           "Custom CMS",
@@ -288,19 +293,19 @@
           "Responsive Web"
         ],
         "highlights": [
-          "Editors publish structured website content without code changes",
-          "Newsletter subscriptions and outbound campaigns are managed inside the administration system",
-          "Contact enquiries and service requests enter separate operational queues",
-          "Role management limits publishing, communication, and request-handling capabilities"
+          "Structured content publishing allowing editors to update the site without code modifications",
+          "End-to-end management of newsletter subscriptions and outbound campaigns within the admin system",
+          "Streamlined operational queues that separate general enquiries from specific legal service requests",
+          "Granular role management limiting publishing and communication capabilities to authorized personnel"
         ],
         "challenges": [
-          "Combining editorial work and client-service operations without creating an unstructured dashboard",
-          "Sending newsletters while preserving subscriber state and preventing duplicate campaigns",
-          "Keeping public forms open while protecting the administrative workflow behind them"
+          "Combining editorial workflows and client-service operations without creating a cluttered dashboard",
+          "Managing large-scale newsletter delivery while preventing duplicate campaigns",
+          "Keeping public forms accessible while protecting sensitive administrative workflows"
         ],
         "solutions": [
-          "Separated content, subscribers, enquiries, and service requests into focused modules sharing one access model",
-          "Built campaign and recipient state into the newsletter workflow so sends can be tracked and guarded",
+          "Separated content, subscribers, and requests into focused modules sharing a unified access model",
+          "Built campaign and recipient state-tracking into the workflow to ensure reliable and verifiable delivery",
           "Validated public submissions through dedicated endpoints and exposed them only to authorized roles"
         ],
         "liveLink": "https://shahmlaw.sa",
@@ -311,27 +316,27 @@
         "slug": "kneeguide",
         "title": "KneeGuide",
         "subtitle": "A connected rehabilitation prototype that turns Arduino knee-angle readings into clinical exercise records.",
-        "client": "KneeGuide Research Project",
-        "year": "Not disclosed",
+        "client": "KneeGuide",
+        "year": "2025",
         "role": "Full Stack & IoT Engineer",
         "status": "Research",
         "overview": [
           {
-            "t": "KneeGuide connects a React healthcare interface to an Arduino measurement device over Bluetooth. During assigned exercises, the platform captures "
+            "t": "KneeGuide connects a specialized React healthcare interface to an Arduino-based measurement device via Bluetooth. During assigned exercises, the platform captures "
           },
           {
             "t": "real-time knee-angle measurements",
             "h": true
           },
           {
-            "t": ", presents them to the patient, and stores session results for doctors to review through reports, progress analytics, appointments, and exercise-management tools."
+            "t": ", providing immediate visual feedback to the patient while storing session results for doctors to analyze through detailed reports, progress tracking, and exercise management tools."
           }
         ],
         "architecture": {
-          "frontend": "React doctor and patient dashboards with Bluetooth pairing, live angle visualization, assignments, reports, and progress views",
-          "backend": "Django services for accounts, clinical relationships, exercise plans, appointments, measurement sessions, and reporting",
-          "database": "Django-managed relational model for patients, doctors, assignments, appointments, sessions, and angle observations",
-          "deployment": "Research web prototype at knee.fyaa.io paired with an Arduino-based Bluetooth measurement device"
+          "frontend": "React dashboards for both doctors and patients, featuring Bluetooth pairing, live angle visualization, and progress reporting",
+          "backend": "Django services managing user accounts, clinical relationships, exercise protocols, appointments, and measurement sessions",
+          "database": "A robust relational model managing patient/doctor data, assignments, sessions, and granular angle observations",
+          "deployment": "Research web prototype hosted at knee.fyaa.io, integrated with an Arduino Bluetooth measurement unit"
         },
         "tags": [
           "React",
@@ -343,20 +348,20 @@
           "Healthcare"
         ],
         "highlights": [
-          "Doctor workspace for assigning exercises and reviewing session-level reports",
-          "Patient workspace for appointments, assigned routines, Bluetooth pairing, and guided measurements",
-          "Live angle visualization converts hardware readings into feedback during movement",
-          "Progress tracking compares completed sessions instead of relying only on manual notes"
+          "Dedicated doctor workspace for prescribing exercises and reviewing session-level analytics",
+          "Patient workspace for managing appointments, routines, and guided device-assisted measurements",
+          "Real-time visualization that converts hardware sensor data into actionable feedback during movement",
+          "Digital progress tracking that compares completed sessions with numerical precision, replacing manual logs"
         ],
         "challenges": [
-          "Maintaining a usable Bluetooth session when packets arrive intermittently or the connection drops",
-          "Synchronizing measurements with the correct patient, exercise, repetition, and session",
-          "Presenting movement data clearly without overwhelming users with raw samples"
+          "Maintaining a stable Bluetooth connection and preventing data loss during signal drops",
+          "Synchronizing high-frequency real-time measurements with the correct patient and session context",
+          "Presenting complex movement data clearly without overwhelming the user with raw sensor samples"
         ],
         "solutions": [
-          "Introduced an explicit pairing lifecycle with connection state, validation, and recoverable disconnect handling",
-          "Normalized angle observations before attaching them to the active exercise session",
-          "Separated live feedback from summarized reports while preserving detailed readings for analysis"
+          "Engineered a robust pairing lifecycle with connection state validation and automated recovery handling",
+          "Normalized angle observations at the software level before linking them to active exercise sessions for data integrity",
+          "Separated live feedback visualization from summarized analytical reports while preserving detailed readings for further research"
         ],
         "liveLink": "https://knee.fyaa.io",
         "codeLink": "",
@@ -367,26 +372,26 @@
         "title": "TripSplit",
         "subtitle": "A shared trip ledger for joining groups, recording expenses, and tracking the remaining budget.",
         "client": "Independent Product",
-        "year": "Not disclosed",
+        "year": "2024",
         "role": "Full Stack Engineer",
         "status": "Production",
         "overview": [
           {
-            "t": "TripSplit gives a travel group one shared financial record. A trip owner creates the trip and distributes an "
+            "t": "TripSplit provides travel groups with a single, unified financial record. A trip owner creates the workspace and distributes a simple "
           },
           {
             "t": "invite code",
             "h": true
           },
           {
-            "t": "; members join the same workspace, record expenses, and see spending and remaining budget update from the group ledger rather than maintaining separate calculations."
+            "t": "; members join the same ledger to record expenses and view real-time updates on spending and the remaining budget, eliminating the need for separate or manual calculations."
           }
         ],
         "architecture": {
-          "frontend": "Responsive trip workspace for creation, code-based joining, member management, expenses, and budget summaries",
-          "backend": "Application service enforcing trip membership, invite-code access, expense ownership, and budget calculations",
-          "database": "Relational ledger connecting trips, members, invite codes, budgets, and expense entries",
-          "deployment": "Production deployment at trip.fyaa.io"
+          "frontend": "A responsive web interface for trip creation, code-based joining, member management, and real-time budget summaries",
+          "backend": "Application services that enforce trip membership, validate invite codes, manage expense ownership, and perform accurate budget calculations",
+          "database": "A relational ledger connecting trips, members, invite codes, and expense entries to ensure data synchronization across all users",
+          "deployment": "Production deployment hosted at trip.fyaa.io"
         },
         "tags": [
           "Shared Expenses",
@@ -396,24 +401,24 @@
           "Responsive Web"
         ],
         "highlights": [
-          "Invite codes let travelers join the correct trip without manual account coordination",
-          "Every expense is attached to the shared trip and the member who recorded it",
-          "Remaining budget is derived from one ledger so every member sees the same total",
-          "Trip owners manage membership while participants continue recording costs"
+          "Short invite codes allowing travelers to join the correct trip seamlessly without manual coordination",
+          "Every recorded expense is linked to the shared trip and the specific member who entered it for full transparency",
+          "Real-time remaining budget derived from a single authoritative ledger visible to all members",
+          "Membership management for trip owners while participants maintain the ability to record costs"
         ],
         "challenges": [
-          "Preventing invite codes from granting access to unrelated trips",
-          "Keeping totals consistent when several members add or revise expenses",
+          "Preventing invite codes from granting unauthorized access to unrelated trips",
+          "Keeping financial totals consistent when multiple members add or revise expenses simultaneously",
           "Representing membership and expense ownership without duplicating trip data per user"
         ],
         "solutions": [
-          "Resolved and validated codes server-side before creating a scoped membership",
-          "Calculated budget summaries from authoritative expense records instead of client totals",
-          "Modeled trips, memberships, and expenses separately so one ledger serves every participant"
+          "Implemented server-side validation and resolution of codes before establishing scoped membership",
+          "Derived budget summaries from authoritative database records rather than relying on client-side calculations",
+          "Modeled trips, memberships, and expenses as separate entities so a single ledger serves every participant efficiently"
         ],
         "liveLink": "https://trip.fyaa.io",
         "codeLink": "",
-        "isPrivate": true
+        "isPrivate": false
       },
       {
         "slug": "dorina-pro",
@@ -739,14 +744,14 @@
   "skills": {
     "eyebrow": "Technology Stack",
     "title": "Skills",
-    "subtitle": "The technologies behind the systems in the Projects section — grouped by where they actually get used.",
+    "subtitle": "The core technologies behind the systems in the Projects section categorized by their practical application in the development lifecycle.",
     "categories": {
-      "core": "Core Stack",
+      "core": "Core Tools",
       "frontend": "Frontend",
       "backend": "Backend",
       "infrastructure": "Infrastructure",
       "itSystems": "IT & Systems",
-      "iot": "IoT"
+      "iot": "Internet of Things (IoT)"
     }
   },
   "contact": {
@@ -766,7 +771,11 @@
       "resumeTitle": "Resume.pdf",
       "resumeSubtitle": "Download Resume",
       "whatsappTitle": "WhatsApp",
-      "whatsappSubtitle": "Open WhatsApp conversation"
+      "whatsappSubtitle": "Open WhatsApp conversation",
+      "linkedinTitle": "LinkedIn",
+      "linkedinSubtitle": "View LinkedIn profile",
+      "githubTitle": "GitHub",
+      "githubSubtitle": "View GitHub profile"
     },
     "note": "Response time usually within 24 hours."
   },

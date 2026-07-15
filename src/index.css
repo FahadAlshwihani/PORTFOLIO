@@ -108,7 +108,14 @@ html,
 body,
 #root {
 
-  height: 100%;
+  /* min-height, not height — see the matching rule/comment in
+     global.css for why: a plain height:100% here silently breaks the
+     document's ability to grow for content taller than one viewport
+     once any descendant is visually taller than its own box (e.g. the
+     Hero->About Silk transition layer's negative-margin overlap). This
+     was a duplicate of that same rule living in a second stylesheet,
+     which is exactly why the first fix alone didn't take effect. */
+  min-height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;

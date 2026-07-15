@@ -1,0 +1,103 @@
+.ending-scene {
+  position: relative;
+  isolation: isolate;
+}
+
+.ending-scene-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+
+  /* --skills-height (set inline from EndingScene.jsx via ResizeObserver)
+     is Skills' own real, content-dependent height. Every stop below is
+     expressed as "distance from the top of this (Skills+Contact+Footer)
+     wrapper" via calc(100% - D) — D=0 at the very top of Skills, growing
+     down through Skills, Contact, and Footer — so the dissolve always
+     anchors to Skills' actual midpoint regardless of viewport, language,
+     or how many tech-pill rows it wraps to.
+     This is a full-screen ending scene, not a faint hint: below D =
+     skillsHeight * 0.48 it's still clean/transparent, but by D =
+     skillsHeight * 0.58 — Skills' own 55-60% mark — it has already
+     jumped to a clearly-visible ~0.32 opacity (a short, smooth ramp,
+     not a hard edge), then keeps climbing through the rest of Skills,
+     Contact, and Footer up to full strength at the very bottom. */
+  --sh: var(--skills-height, 700px);
+  mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    rgba(0, 0, 0, 0.93) calc(100% - (var(--sh) + (100% - var(--sh)) * 0.7)),
+    rgba(0, 0, 0, 0.8) calc(100% - (var(--sh) + (100% - var(--sh)) * 0.35)),
+    rgba(0, 0, 0, 0.63) calc(100% - var(--sh)),
+    rgba(0, 0, 0, 0.55) calc(100% - var(--sh) * 0.85),
+    rgba(0, 0, 0, 0.45) calc(100% - var(--sh) * 0.7),
+    rgba(0, 0, 0, 0.32) calc(100% - var(--sh) * 0.58),
+    transparent calc(100% - var(--sh) * 0.48)
+  );
+  -webkit-mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    rgba(0, 0, 0, 0.93) calc(100% - (var(--sh) + (100% - var(--sh)) * 0.7)),
+    rgba(0, 0, 0, 0.8) calc(100% - (var(--sh) + (100% - var(--sh)) * 0.35)),
+    rgba(0, 0, 0, 0.63) calc(100% - var(--sh)),
+    rgba(0, 0, 0, 0.55) calc(100% - var(--sh) * 0.85),
+    rgba(0, 0, 0, 0.45) calc(100% - var(--sh) * 0.7),
+    rgba(0, 0, 0, 0.32) calc(100% - var(--sh) * 0.58),
+    transparent calc(100% - var(--sh) * 0.48)
+  );
+}
+
+.ending-scene-background canvas {
+  display: block;
+}
+
+/* A light softening right at the very top edge only — glyphs need to stay
+   sharp and readable everywhere the mask has already made them visible,
+   so this is deliberately mild (lighter than earlier drafts) and confined
+   close to Skills' own top. Fixed vh sizes, not scaled off
+   --skills-height (which can run past 1000px) — stacking heavy
+   backdrop-filter blur across that much height, on top of the existing
+   Silk/Lanyard WebGL load, was enough to crash the renderer in testing. */
+.ending-scene-blur {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.ending-scene-blur-1 {
+  height: 40vh;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+}
+
+.ending-scene-blur-2 {
+  height: 24vh;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
+}
+
+.ending-scene-blur-3 {
+  height: 13vh;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+}
+
+.ending-scene-foreground {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .ending-scene-background {
+    opacity: 0.88;
+  }
+}

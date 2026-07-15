@@ -5,7 +5,18 @@
    ============================================================ */
 
 .profile-section {
-  background: #000;
+  /* Transparent at the very top so the Hero->About Silk transition layer
+     (see HeroSilkTransition.jsx, a normal-flow sibling that overlaps
+     this section via a negative margin rather than absolute positioning
+     — see heroSilkTransition.css) shows through, already fading/blurring
+     itself by this point, reaching solid black by 42% down (inside the
+     requested 35-45% range). This also acts as a safety net: even if the
+     Silk layer's own viewport-relative fade lands slightly early or
+     late, this section-relative gradient guarantees true solid black
+     well before this section's own content area. No position/z-index
+     needed for stacking — as a later normal-flow sibling this already
+     paints over the overlapping part of the Silk layer by default. */
+  background: linear-gradient(to bottom, transparent 0%, #000 42%, #000 100%);
   opacity: 0;
   transform: translateY(28px);
   transition: opacity .9s ease, transform .9s ease;

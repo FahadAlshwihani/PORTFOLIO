@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { siWhatsapp } from "simple-icons";
+import { siWhatsapp, siGithub } from "simple-icons";
 import "../styles/ui/Terminal.css";
 import "../styles/contact.css";
 
@@ -59,6 +59,21 @@ const WHATSAPP_HEX = `#${siWhatsapp.hex}`;
 const WHATSAPP_NUMBER = "966542630112";
 const RESUME_HREF = "/resume.pdf";
 
+const GITHUB_PATH = siGithub.svg.match(/<path d="([^"]+)"/)?.[1] ?? "";
+// GitHub's real brand mark is near-black (#181717) — invisible against this
+// dark UI on hover, so white stands in for it here (same convention GitHub
+// itself uses for dark-mode marks), keeping the same hover-highlight
+// mechanic as WhatsApp/LinkedIn without the icon vanishing.
+const GITHUB_HEX = "#ffffff";
+const GITHUB_URL = "https://github.com/FahadAlshwihani";
+
+// simple-icons dropped the LinkedIn glyph (trademark takedown), so this
+// one is hand-inlined the same way PdfIcon is — no package provides it.
+const LINKEDIN_PATH =
+  "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z";
+const LINKEDIN_HEX = "#0A66C2";
+const LINKEDIN_URL = "https://linkedin.com/in/fahad-alshwihani";
+
 const PdfIcon = () => (
   <svg className="contact-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
@@ -82,6 +97,30 @@ const WhatsAppIcon = () => (
     style={{ "--contact-icon-brand": WHATSAPP_HEX }}
   >
     <path d={WHATSAPP_PATH} fill="currentColor" />
+  </svg>
+);
+
+const LinkedInIcon = () => (
+  <svg
+    className="contact-action-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+    style={{ "--contact-icon-brand": LINKEDIN_HEX }}
+  >
+    <path d={LINKEDIN_PATH} fill="currentColor" />
+  </svg>
+);
+
+const GitHubIcon = () => (
+  <svg
+    className="contact-action-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+    style={{ "--contact-icon-brand": GITHUB_HEX }}
+  >
+    <path d={GITHUB_PATH} fill="currentColor" />
   </svg>
 );
 
@@ -155,6 +194,8 @@ const Contact = () => {
             <div className="contact-output contact-listing">
               <p className="contact-file">Resume.pdf</p>
               <p className="contact-file">WhatsApp</p>
+              <p className="contact-file">LinkedIn</p>
+              <p className="contact-file">GitHub</p>
             </div>
 
             <div className="contact-actions">
@@ -176,6 +217,32 @@ const Contact = () => {
                 <span className="contact-action-text">
                   <span className="contact-action-title">{t("contact.actions.whatsappTitle")}</span>
                   <span className="contact-action-subtitle">{t("contact.actions.whatsappSubtitle")}</span>
+                </span>
+              </a>
+
+              <a
+                className="contact-action"
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <LinkedInIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.linkedinTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.linkedinSubtitle")}</span>
+                </span>
+              </a>
+
+              <a
+                className="contact-action"
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <GitHubIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.githubTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.githubSubtitle")}</span>
                 </span>
               </a>
             </div>

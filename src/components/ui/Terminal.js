@@ -56,6 +56,12 @@ const SSH_RATE = 22;
 const LINE_RATE = 150;
 const CMD_RATE = 55;
 const DELETE_RATE = 14;
+// Output types in at the same rate it erases (DELETE_RATE) rather than the
+// command's slower CMD_RATE — a command is paced like a human typing at the
+// prompt, but its output is the machine printing back, which is faster and
+// (crucially) has to stay symmetric with how it already erases: the same
+// engine, same speed, both directions.
+const OUTPUT_TYPE_RATE = DELETE_RATE;
 const PRE_OUTPUT_DELAY = 400;
 const PRE_BANNER_DELAY = 350;
 const OUTPUT_HOLD = 1400;
@@ -178,8 +184,11 @@ export default function Terminal() {
 
   // The live cycle below the connection header: exactly one command's
   // prompt + output on screen at a time. 'phase' walks through
-  // cmd-typing -> output-shown -> output-erasing -> cmd-erasing -> (next
-  // command) cmd-typing, forever.
+  // cmd-typing -> output-typing -> output-shown -> output-erasing ->
+  // cmd-erasing -> (next command) cmd-typing, forever. Every appearance and
+  // disappearance in this cycle is a character count driving a string
+  // slice — never opacity, never a transform — so typing in mirrors
+  // erasing out exactly, on both the command and its output.
   const [cycleIndex, setCycleIndex] = useState(0);
   const [phase, setPhase] = useState('cmd-typing');
   const current = cycle[cycleIndex % cycle.length];
@@ -195,10 +204,12 @@ export default function Terminal() {
 
   const cycleKey = `${cycleIndex}`;
   const typingActive = !reducedMotion && connected && phase === 'cmd-typing';
+  const outputTypingActive = !reducedMotion && connected && phase === 'output-typing';
   const outputErasingActive = !reducedMotion && connected && phase === 'output-erasing';
   const cmdErasingActive = !reducedMotion && connected && phase === 'cmd-erasing';
 
   const cmdTypedCount = useElapsedCount(current.cmd.length, CMD_RATE, cycleKey, typingActive);
+  const outputTypedCount = useElapsedCount(current.text.length, OUTPUT_TYPE_RATE, cycleKey, outputTypingActive);
   const outputEraseCount = useElapsedCount(current.text.length, DELETE_RATE, cycleKey, outputErasingActive);
   const cmdEraseCount = useElapsedCount(current.cmd.length, DELETE_RATE, cycleKey, cmdErasingActive);
 
@@ -210,7 +221,9 @@ export default function Terminal() {
     if (reducedMotion || !connected) return undefined;
     let timer;
     if (phase === 'cmd-typing' && cmdTypedCount >= current.cmd.length) {
-      timer = setTimeout(() => setPhase('output-shown'), current.kind === 'banner' ? PRE_BANNER_DELAY : PRE_OUTPUT_DELAY);
+      timer = setTimeout(() => setPhase('output-typing'), current.kind === 'banner' ? PRE_BANNER_DELAY : PRE_OUTPUT_DELAY);
+    } else if (phase === 'output-typing' && outputTypedCount >= current.text.length) {
+      setPhase('output-shown');
     } else if (phase === 'output-shown') {
       timer = setTimeout(() => setPhase('output-erasing'), current.kind === 'banner' ? BANNER_HOLD : OUTPUT_HOLD);
     } else if (phase === 'output-erasing' && outputEraseCount >= current.text.length) {
@@ -222,36 +235,52 @@ export default function Terminal() {
       }, NEXT_COMMAND_DELAY);
     }
     return () => clearTimeout(timer);
-  }, [reducedMotion, connected, phase, current, cmdTypedCount, outputEraseCount, cmdEraseCount]);
+  }, [reducedMotion, connected, phase, current, cmdTypedCount, outputTypedCount, outputEraseCount, cmdEraseCount]);
 
   const sshRevealed = reducedMotion ? SSH_CMD.length : sshRevealedCount;
   const linesRevealedFinal = reducedMotion ? CONNECTION_LINES.length : linesRevealed;
   const sshCursorOn = !reducedMotion && !connected && sshRevealed < SSH_CMD.length;
   const sshSegments = sliceSegments(commandSegments(SSH_CMD), sshRevealed);
 
+  // The command + its output are one terminal block: once typed, the
+  // command stays fully visible through output-typing/output-shown/
+  // output-erasing, and only shrinks during its own cmd-erasing phase.
+  // cmdTypedCount can't be trusted for that "stays visible" state on its
+  // own — useElapsedCount resets an inactive counter to 0 (correct for
+  // "hasn't started yet", wrong for "already finished typing") — so
+  // every phase after cmd-typing besides cmd-erasing is pinned to the
+  // command's full length explicitly instead of reading that counter.
   const cmdRevealed = reducedMotion
     ? WHOAMI_CMD.length
-    : phase === 'cmd-erasing'
-      ? current.cmd.length - cmdEraseCount
-      : cmdTypedCount;
+    : phase === 'cmd-typing'
+      ? cmdTypedCount
+      : phase === 'cmd-erasing'
+        ? current.cmd.length - cmdEraseCount
+        : current.cmd.length;
   const cmdSegments = sliceSegments(commandSegments(current.cmd), cmdRevealed);
 
   const outputRevealed = reducedMotion
     ? NAME_BANNER.length
-    : phase === 'output-shown'
-      ? current.text.length
-      : phase === 'output-erasing'
-        ? current.text.length - outputEraseCount
-        : phase === 'cmd-erasing'
-          ? 0
-          : 0;
+    : phase === 'output-typing'
+      ? outputTypedCount
+      : phase === 'output-shown'
+        ? current.text.length
+        : phase === 'output-erasing'
+          ? current.text.length - outputEraseCount
+          : phase === 'cmd-erasing'
+            ? 0
+            : 0;
   const outputVisible = (reducedMotion || connected) && outputRevealed > 0;
 
   // The cursor sits at whichever edge is currently being edited: after the
-  // command while typing, after the output (or the shrinking command, once
-  // the output is gone) while erasing.
-  const cursorOn = !reducedMotion && connected && (phase === 'cmd-typing' || phase === 'output-erasing' || phase === 'cmd-erasing');
-  const cursorAfterOutput = phase === 'output-erasing';
+  // command while typing/erasing the command, after the output while
+  // typing/erasing the output. Off entirely during the 'output-shown' hold,
+  // same as before.
+  const cursorOn =
+    !reducedMotion &&
+    connected &&
+    (phase === 'cmd-typing' || phase === 'output-typing' || phase === 'output-erasing' || phase === 'cmd-erasing');
+  const cursorAfterOutput = phase === 'output-typing' || phase === 'output-erasing';
   const cursorAfterCommand = !cursorAfterOutput;
 
   return (

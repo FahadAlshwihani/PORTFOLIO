@@ -247,7 +247,11 @@ function Band({
         ang = new THREE.Vector3(),
         rot = new THREE.Vector3(),
         dir = new THREE.Vector3();
-    const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 4, linearDamping: 4 };
+    // angularDamping lowered from 4 — a spin now bleeds off more slowly, so
+    // momentum from a drag-release or the idle torque below can actually
+    // carry the card through a full rotation instead of dying out after a
+    // quarter-turn. linearDamping (the swing/sway feel) is untouched.
+    const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 3, linearDamping: 4 };
     const { nodes, materials } = useGLTF(cardGLB);
     const texture = useTexture(lanyardImage || lanyardTexture);
     // useTexture must be called unconditionally; use a blank pixel when an image
@@ -327,16 +331,42 @@ function Band({
             ctx.stroke();
             ctx.restore();
 
-            // Name — the largest, primary text on the back face.
+            // Name — the largest, primary text on the back face. Portrait
+            // stays the dominant element; name is the clear secondary focus
+            // (noticeably larger than before); role is comfortably readable
+            // without competing with either. Both use most of the card's
+            // printable width now instead of sitting in a narrow column —
+            // SAFE_MARGIN is the only hard edge constraint; fitFontSize below
+            // measures the actual rendered text and only ever shrinks a size
+            // down from its target, so this stays correct even if the
+            // translated name/role text changes length later.
             const name = t('hero.lanyard.name');
             const roleLine1 = t('hero.lanyard.roleLine1');
             const roleLine2 = t('hero.lanyard.roleLine2');
             const centerX = w / 2;
-            const nameY = frameY + frameH + 96;
+            const SAFE_MARGIN = 72;
+            const printableWidth = w - SAFE_MARGIN * 2;
+
+            const nameFont = size => (isArabic ? `700 ${size}px "Thmanyah Display", serif` : `bold ${size}px Georgia, serif`);
+            const roleFont = size => (isArabic ? `500 ${size}px "Thmanyah Sans", sans-serif` : `400 ${size}px Inter, Arial, sans-serif`);
+            const fitFontSize = (text, baseSize, fontBuilder) => {
+                ctx.font = fontBuilder(baseSize);
+                const measured = ctx.measureText(text).width;
+                return measured > printableWidth ? baseSize * (printableWidth / measured) : baseSize;
+            };
+
+            const nameSize = fitFontSize(name, isArabic ? 84 : 96, nameFont);
+            const roleBaseSize = isArabic ? 44 : 40;
+            const roleSize = Math.min(
+                fitFontSize(roleLine1, roleBaseSize, roleFont),
+                fitFontSize(roleLine2, roleBaseSize, roleFont)
+            );
+
+            const nameY = frameY + frameH + 120;
 
             ctx.textAlign = 'center';
             ctx.fillStyle = '#111111';
-            ctx.font = isArabic ? '700 60px "Thmanyah Display", serif' : 'bold 68px Georgia, serif';
+            ctx.font = nameFont(nameSize);
             ctx.fillText(name, centerX, nameY);
 
             // Role — visibly smaller and lighter, never competing with the name.
@@ -345,11 +375,11 @@ function Band({
             // reads fine for the English Inter lines (same lesson as the hero
             // terminal's banner/prompt sizing).
             ctx.fillStyle = '#666666';
-            ctx.font = isArabic ? '500 32px "Thmanyah Sans", sans-serif' : '400 30px Inter, Arial, sans-serif';
-            const roleGap1 = isArabic ? 62 : 46;
-            const roleGap2 = isArabic ? 116 : 86;
+            ctx.font = roleFont(roleSize);
+            const roleGap1 = isArabic ? 74 : 62;
+            const roleLineHeight = roleSize * (isArabic ? 1.5 : 1.35);
             ctx.fillText(roleLine1, centerX, nameY + roleGap1);
-            ctx.fillText(roleLine2, centerX, nameY + roleGap2);
+            ctx.fillText(roleLine2, centerX, nameY + roleGap1 + roleLineHeight);
 
             const tex = new THREE.CanvasTexture(c);
             tex.colorSpace = THREE.SRGBColorSpace;
@@ -551,9 +581,17 @@ function Band({
             ang.copy(card.current.angvel());
             rot.copy(card.current.rotation());
 
+            // This is the badge's "face forward" restoring torque — the higher
+            // this coefficient, the harder it pulls the card back toward
+            // front-facing every frame, which is what was starving out full
+            // rotations and back-side visibility. Weakened (not removed) so a
+            // drag-release or idle-torque spin can actually carry the card
+            // past 90°/180° before it gets reined back in, while it still
+            // settles front-facing at rest — same as a real badge naturally
+            // hangs, just with a lot more freedom to swing through on the way.
             card.current.setAngvel({
                 x: ang.x,
-                y: ang.y - rot.y * 0.25,
+                y: ang.y - rot.y * 0.1,
                 z: ang.z
             });
 
@@ -574,11 +612,17 @@ function Band({
 
                     card.current.wakeUp();
 
+                    // Modestly stronger than before (paired with the weaker
+                    // face-forward restoring torque above) — enough for real
+                    // rotational momentum to build up over time and
+                    // occasionally carry into a full spin, without reading as
+                    // continuous or jittery; still a slow, gentle sine/cosine
+                    // drift, just with more energy behind it.
                     card.current.applyTorqueImpulse(
                         {
-                            x: Math.sin(t * 0.85) * (isMobile ? 0.0018 : 0.0024),
-                            y: Math.cos(t * 0.65) * (isMobile ? 0.0012 : 0.0016),
-                            z: Math.sin(t * 0.95) * (isMobile ? 0.0014 : 0.0019),
+                            x: Math.sin(t * 0.85) * (isMobile ? 0.0024 : 0.0032),
+                            y: Math.cos(t * 0.65) * (isMobile ? 0.0016 : 0.0022),
+                            z: Math.sin(t * 0.95) * (isMobile ? 0.0019 : 0.0025),
                         },
                         true
                     );

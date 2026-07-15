@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
-import Footer from "./components/Footer";
 import Homepage from "./pages/Homepage";
 
 export default function App() {
@@ -33,7 +32,6 @@ export default function App() {
         <Route path="/" element={<Homepage />} />
         <Route path="*" element={<Homepage />} />
       </Routes>
-      <Footer />
     </>
   );
 }

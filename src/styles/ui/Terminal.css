@@ -7,6 +7,13 @@
   unicode-bidi: isolate;
   min-width: 0;
   max-width: 100%;
+  /* Explicit width (rather than the default shrink-to-fit a flex item
+     with align-items:flex-start would get) is what lets this act as a
+     real container-query root below — a size container's own width
+     can't depend on its descendants' content, or the banner's cqw-based
+     font-size would be circular. */
+  width: 100%;
+  container-type: inline-size;
 }
 
 .hero-terminal-line {
@@ -106,10 +113,17 @@
 }
 
 /* whoami's banner — site-identity purple gradient sweeping across the
-   letters, not the plain white the rest of the terminal uses. Sized on its
-   own clamp() (in herosection.css, alongside its former .hero-glass-name
-   breakpoints) since a 29-char-wide monospace block needs a much smaller
-   scale than the huge display-font name it replaces. */
+   letters, not the plain white the rest of the terminal uses. Font-size
+   is a container-query length (see .hero-ascii-banner in herosection.css)
+   tied directly to .hero-terminal-stage's own real rendered width, so a
+   29-char-wide monospace block is mathematically guaranteed to fit its
+   available space at any viewport — no overflow property of any kind,
+   because there's never anything to clip or scroll in the first place.
+   (Previously used overflow-x:auto as a safety net — but per the CSS
+   overflow spec, setting only one axis forces the other's used value to
+   "auto" too, so that safety net was itself silently producing the
+   reported vertical scrollbar whenever sub-pixel line-height rounding
+   left the <pre> a fraction of a pixel taller than its box.) */
 .hero-ascii-banner {
   margin: 0;
   font-family: inherit;
@@ -117,7 +131,6 @@
   line-height: 1.15;
   white-space: pre;
   max-width: 100%;
-  overflow-x: auto;
   background: linear-gradient(90deg, #b19eef, #8d6cff, #5227ff);
   background-clip: text;
   -webkit-background-clip: text;

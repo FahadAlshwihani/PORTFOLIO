@@ -1,18 +1,14 @@
-import Silk from './ui/Silk';
 import Lanyard from './ui/Lanyard';
 import Terminal from './ui/Terminal';
 import '../styles/herosection.css';
 
+// Silk itself now renders in HeroSilkTransition (see Homepage.jsx) — a
+// sibling positioned behind both Hero and About, so its canvas can bleed
+// past this section's own overflow:hidden (which stays in place for the
+// Lanyard) into the top of About. Hero's own box/height is unchanged.
 export default function HeroSection() {
   return (
     <div className="hero-section">
-      <Silk
-        speed={9}
-        scale={1.2}
-        color="#3d1a6e"
-        noiseIntensity={1.2}
-        rotation={0.5}
-      />
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           <filter id="glass-distort" x="-20%" y="-20%" width="140%" height="140%">

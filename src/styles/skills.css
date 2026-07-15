@@ -9,7 +9,12 @@
    ============================================================ */
 
 .skills-section {
-  background: #000;
+  /* Solid through the upper ~40% (matching EndingScene's canvas mask,
+     still invisible there), then fades out fast — by ~55-60% the canvas
+     is already clearly showing through, and by ~78% this section's own
+     background gets out of the way entirely so the animated environment
+     can carry the rest of the page uninterrupted. */
+  background: linear-gradient(to bottom, #000 0%, #000 40%, transparent 78%);
   padding-block: clamp(6rem, 10vw, 9rem);
   /* Belt-and-suspenders alongside the global html/body overflow-x:hidden —
      the full-bleed loops below intentionally extend to the viewport edges

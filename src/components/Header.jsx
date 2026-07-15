@@ -8,16 +8,16 @@ import { useActiveSection } from "../hooks/useActiveSection";
 // reference so useActiveSection's effect doesn't re-run every render.
 const SECTION_IDS = ["home", "about", "experience", "projects", "skills", "contact"];
 
-const socialItems = [
-  { label: "GitHub", link: "https://github.com/FahadAlshwihani" },
-  { label: "LinkedIn", link: "https://linkedin.com/in/fahad-alshwihani" },
-  { label: "WhatsApp", link: "https://wa.me/966509739309" },
-];
-
 export default function Header({ isFixed }) {
   const { t, i18n } = useTranslation();
   const activeId = useActiveSection(SECTION_IDS);
   const isRtl = i18n.language === "ar";
+
+  const socialItems = [
+    { label: t("navigation.socials.github"), link: "https://github.com/FahadAlshwihani" },
+    { label: t("navigation.socials.linkedin"), link: "https://linkedin.com/in/fahad-alshwihani" },
+    { label: t("navigation.socials.whatsapp"), link: "https://wa.me/966509739309" },
+  ];
 
   const menuItems = SECTION_IDS.map((id) => ({
     id,

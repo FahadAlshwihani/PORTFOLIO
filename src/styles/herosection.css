@@ -93,8 +93,17 @@
 
 }
 
+/* Sized off .hero-terminal-stage's own real container width (cqw, set
+   up in Terminal.css), not the viewport — so it tracks the terminal's
+   actual available space at every breakpoint continuously, instead of
+   jumping between separately-guessed values that could (and did)
+   mismatch the real rendered width. 4.4cqw keeps the widest banner
+   line comfortably inside 100cqw with margin to spare (verified against
+   actual rendered width, not just the theoretical monospace ratio);
+   the rem bounds keep it from reading too small on narrow phones or
+   growing past the site's established scale on ultra-wide screens. */
 .hero-ascii-banner {
-  font-size: clamp(1.4rem, 0.6rem + 2.2vw, 2.4rem);
+  font-size: clamp(0.72rem, 4.4cqw, 2.4rem);
 }
 
 .hero-terminal-stage {
@@ -107,10 +116,6 @@
 /* ── Tablet  601px – 900px ───────────────────────────────── */
 
 @media (min-width: 601px) and (max-width: 900px) {
-  .hero-ascii-banner {
-    font-size: clamp(1.1rem, 3.6vw, 1.7rem);
-  }
-
   .hero-terminal-stage {
     font-size: var(--hero-sub-size-tablet);
   }
@@ -136,10 +141,6 @@
     padding-bottom: 6.2rem;
 
     gap: .9rem;
-  }
-
-  .hero-ascii-banner {
-    font-size: clamp(1.2rem, 2vw, 1.8rem);
   }
 
   .hero-terminal-stage {
@@ -212,10 +213,6 @@
     gap: 0.8rem;
     text-align: start;
     pointer-events: none;
-  }
-
-  .hero-ascii-banner {
-    font-size: clamp(0.75rem, 3.8vw, 1.1rem);
   }
 
   .hero-terminal-stage {
