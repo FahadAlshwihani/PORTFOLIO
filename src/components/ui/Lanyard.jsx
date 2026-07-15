@@ -15,6 +15,15 @@ import '../../styles/ui/Lanyard.css';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 
+// MeshLine smoothing is visual-only and must never extrapolate after a
+// throttled Safari frame. Normal 60/120 Hz frames pass through unchanged.
+const MAX_ROPE_VISUAL_DELTA = 1 / 60;
+const isFiniteVector = (value) => value
+    && Number.isFinite(value.x)
+    && Number.isFinite(value.y)
+    && Number.isFinite(value.z)
+    && (value.w === undefined || Number.isFinite(value.w));
+
 // 1x1 transparent pixel — lets useTexture be called unconditionally when a
 // front/back image isn't supplied.
 const createBlankTexture = () => {
@@ -564,36 +573,60 @@ function Band({
             [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
             card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
         }
-        if (fixed.current) {
-            [j1, j2].forEach(ref => {
-                if (!ref.current.lerped) ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
-                const clampedDistance = Math.max(0.1, Math.min(1, ref.current.lerped.distanceTo(ref.current.translation())));
-                ref.current.lerped.lerp(
-                    ref.current.translation(),
-                    delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
-                );
-            });
-            curve.points[0].copy(j3.current.translation());
-            curve.points[1].copy(j2.current.lerped);
-            curve.points[2].copy(j1.current.lerped);
-            curve.points[3].copy(fixed.current.translation());
-            band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
-            ang.copy(card.current.angvel());
-            rot.copy(card.current.rotation());
+        if (fixed.current && j1.current && j2.current && j3.current && card.current && band.current) {
+            const safeDelta = Number.isFinite(delta)
+                ? THREE.MathUtils.clamp(delta, 0, MAX_ROPE_VISUAL_DELTA)
+                : 0;
+            const fixedPosition = fixed.current.translation();
+            const j1Position = j1.current.translation();
+            const j2Position = j2.current.translation();
+            const j3Position = j3.current.translation();
+            const ropePositionsAreValid = [fixedPosition, j1Position, j2Position, j3Position]
+                .every(isFiniteVector);
 
-            // This is the badge's "face forward" restoring torque — the higher
-            // this coefficient, the harder it pulls the card back toward
-            // front-facing every frame, which is what was starving out full
-            // rotations and back-side visibility. Weakened (not removed) so a
-            // drag-release or idle-torque spin can actually carry the card
-            // past 90°/180° before it gets reined back in, while it still
-            // settles front-facing at rest — same as a real badge naturally
-            // hangs, just with a lot more freedom to swing through on the way.
-            card.current.setAngvel({
-                x: ang.x,
-                y: ang.y - rot.y * 0.1,
-                z: ang.z
-            });
+            if (ropePositionsAreValid) {
+                [[j1, j1Position], [j2, j2Position]].forEach(([ref, position]) => {
+                    if (!ref.current.lerped || !isFiniteVector(ref.current.lerped)) {
+                        ref.current.lerped = new THREE.Vector3().copy(position);
+                    }
+
+                    const clampedDistance = THREE.MathUtils.clamp(
+                        ref.current.lerped.distanceTo(position),
+                        0.1,
+                        1
+                    );
+                    const interpolationSpeed = minSpeed + clampedDistance * (maxSpeed - minSpeed);
+                    const interpolationAlpha = THREE.MathUtils.clamp(safeDelta * interpolationSpeed, 0, 1);
+                    ref.current.lerped.lerp(position, interpolationAlpha);
+                });
+
+                curve.points[0].copy(j3Position);
+                curve.points[1].copy(j2.current.lerped);
+                curve.points[2].copy(j1.current.lerped);
+                curve.points[3].copy(fixedPosition);
+                band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
+            }
+
+            const cardAngularVelocity = card.current.angvel();
+            const cardRotation = card.current.rotation();
+            if (isFiniteVector(cardAngularVelocity) && isFiniteVector(cardRotation)) {
+                ang.copy(cardAngularVelocity);
+                rot.copy(cardRotation);
+
+                // This is the badge's "face forward" restoring torque — the higher
+                // this coefficient, the harder it pulls the card back toward
+                // front-facing every frame, which is what was starving out full
+                // rotations and back-side visibility. Weakened (not removed) so a
+                // drag-release or idle-torque spin can actually carry the card
+                // past 90°/180° before it gets reined back in, while it still
+                // settles front-facing at rest — same as a real badge naturally
+                // hangs, just with a lot more freedom to swing through on the way.
+                card.current.setAngvel({
+                    x: ang.x,
+                    y: ang.y - rot.y * 0.1,
+                    z: ang.z
+                });
+            }
 
             /* Idle physics motion - keeps the card alive after initial drop */
             if (!dragged && card.current) {

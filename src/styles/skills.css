@@ -16,9 +16,9 @@
      can carry the rest of the page uninterrupted. */
   background: linear-gradient(to bottom, #000 0%, #000 40%, transparent 78%);
   padding-block: clamp(6rem, 10vw, 9rem);
-  /* Belt-and-suspenders alongside the global html/body overflow-x:hidden —
-     the full-bleed loops below intentionally extend to the viewport edges
-     and must never be able to introduce a horizontal scrollbar. */
+  /* The full-bleed loops below intentionally extend to this section's
+     edges; clipping remains local to the animation rather than masking
+     document-root width errors. */
   overflow-x: hidden;
 }
 

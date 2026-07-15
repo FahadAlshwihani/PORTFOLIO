@@ -7,17 +7,7 @@
 }
 
 *{box-sizing:border-box}
-/* min-height, not height: these three still always fill at least one
-   viewport (nothing elsewhere in the app depends on them having a
-   *definite* height — sections that need one set it themselves, e.g.
-   .hero-section{height:100vh}), but height:100% here is a real, confirmed
-   trap: combined with any descendant that's visually taller than its own
-   box (an overflowing position:absolute child, or a large negative
-   margin — see heroSilkTransition.css), it silently stops the document
-   from auto-growing to fit content beyond one viewport height, breaking
-   scroll entirely past that point. */
-html,body,#root{min-height:100%;overflow-x:hidden;max-width:100%}
-html{scroll-behavior:smooth;scrollbar-gutter:stable both-edges}
+html{scroll-behavior:smooth}
 body{
   margin:0;
   min-height:100%;
