@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Reveal from '../components/ui/Reveal';
 import FlintLogo from '../components/assets/images/Flint.png';
 import EmaraLogo from '../components/assets/images/Emara.png';
 import GloriaLogo from '../components/assets/images/GloriaJeans.png';
@@ -19,35 +19,7 @@ const LOGOS = [FlintLogo, EmaraLogo, GloriaLogo];
 
 const Experience = () => {
   const { t } = useTranslation();
-  const [visibleIndices, setVisibleIndices] = useState(() => new Set());
-  const chapterRefs = useRef([]);
-
   const items = t('experience.items', { returnObjects: true });
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.dataset.index);
-            setVisibleIndices((prev) => {
-              const next = new Set(prev);
-              next.add(index);
-              return next;
-            });
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
-
-    chapterRefs.current.forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [items.length]);
 
   return (
     <section className="experience-section">
@@ -63,15 +35,11 @@ const Experience = () => {
             const logo = LOGOS[i];
 
             return (
-              <article
-                className={[
-                  'experience-chapter',
-                  isAlt && 'experience-chapter--alt',
-                  visibleIndices.has(i) && 'is-visible',
-                ].filter(Boolean).join(' ')}
+              <Reveal
+                as="article"
+                className={['experience-chapter', isAlt && 'experience-chapter--alt'].filter(Boolean).join(' ')}
                 key={i}
-                ref={(el) => (chapterRefs.current[i] = el)}
-                data-index={i}
+                threshold={0.2}
               >
                 <div className="experience-line-segment" />
 
@@ -113,7 +81,7 @@ const Experience = () => {
                     </div>
                   </div>
                 </div>
-              </article>
+              </Reveal>
             );
           })}
         </div>

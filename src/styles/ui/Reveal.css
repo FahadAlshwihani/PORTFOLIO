@@ -1,0 +1,67 @@
+/* Default reveal: opacity + a small upward translate + a very subtle blur —
+   the same fade/translate character the site's existing per-page reveals
+   already used, with blur added as the one new touch (this codebase's
+   reveals never used blur before; it's kept deliberately light so it reads
+   as texture, not an effect). Presets below only vary the offset/duration,
+   never the properties being animated, so everything stays visually
+   consistent as "one system". */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease,
+    filter 0.7s ease;
+  will-change: opacity, transform, filter;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Presets: same properties, slightly different weight/pace per content
+   type — a section should feel heavier and slower than a paragraph line. */
+.reveal--section {
+  transform: translateY(28px);
+  transition-duration: 0.9s;
+}
+
+.reveal--title {
+  transform: translateY(20px);
+  transition-duration: 0.7s;
+}
+
+.reveal--subtitle {
+  transform: translateY(16px);
+  transition-duration: 0.65s;
+}
+
+.reveal--paragraph {
+  transform: translateY(16px);
+  transition-duration: 0.6s;
+}
+
+.reveal--card {
+  transform: translateY(20px);
+  transition-duration: 0.65s;
+}
+
+.reveal--section.is-visible,
+.reveal--title.is-visible,
+.reveal--subtitle.is-visible,
+.reveal--paragraph.is-visible,
+.reveal--card.is-visible {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

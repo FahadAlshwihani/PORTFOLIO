@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siWhatsapp, siGithub } from "simple-icons";
+import Reveal from "../components/ui/Reveal";
 import "../styles/ui/Terminal.css";
 import "../styles/contact.css";
 
@@ -126,29 +126,11 @@ const GitHubIcon = () => (
 
 const Contact = () => {
   const { t } = useTranslation();
-  const sectionRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const opportunities = t("contact.values.opportunities", { returnObjects: true });
 
   return (
-    <section className={`contact-section${isVisible ? " is-visible" : ""}`} ref={sectionRef}>
+    <Reveal as="section" className="contact-section">
       <div className="contact-terminal" dir="ltr">
         <div className="contact-terminal-header">
           <div className="contact-terminal-dots" aria-hidden="true">
@@ -263,7 +245,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 };
 

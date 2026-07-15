@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Folder, { ROW_CAPACITY } from '../components/ui/Folder';
 import { getProjectImages } from '../utils/projectImages';
 import ProjectModal from './ProjectModal';
+import Reveal from '../components/ui/Reveal';
 import '../styles/Projects.css';
 
 const useReducedMotion = () => {
@@ -84,11 +85,11 @@ const Projects = () => {
   return (
     <section className="projects-section">
       <div className="projects-inner">
-        <p className="projects-eyebrow">{t('projects.eyebrow')}</p>
-        <h2 className="projects-title">{t('projects.title')}</h2>
-        <p className="projects-subtitle">{t('projects.subtitle')}</p>
+        <Reveal as="p" preset="subtitle" className="projects-eyebrow">{t('projects.eyebrow')}</Reveal>
+        <Reveal as="h2" preset="title" className="projects-title" delay={0.08}>{t('projects.title')}</Reveal>
+        <Reveal as="p" preset="paragraph" className="projects-subtitle" delay={0.16}>{t('projects.subtitle')}</Reveal>
 
-        <div className="projects-workspace" style={{ '--row-count': rowCount }}>
+        <Reveal as="div" preset="card" className="projects-workspace" delay={0.1} style={{ '--row-count': rowCount }}>
           <div className="projects-folder-stage">
             <span className="projects-folder-icon-wrap">
               <Folder color="#5227FF" size={1.6} open={folderOpen} onToggle={handleFolderToggle} items={paperElements} />
@@ -102,7 +103,7 @@ const Projects = () => {
           </div>
 
           <p className="projects-folder-label" dir="ltr">{t('projects.explorerLabel')}</p>
-        </div>
+        </Reveal>
 
         {folderOpen && (
           <div className="projects-controls-hint" aria-hidden="true">

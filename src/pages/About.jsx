@@ -1,27 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Reveal from '../components/ui/Reveal';
 import '../styles/profile.css';
 
 const Profile = () => {
   const { t } = useTranslation();
-  const sectionRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const paragraphs = t('profile.paragraphs', { returnObjects: true });
   const specializationItems = t('profile.specialization.items', { returnObjects: true });
@@ -29,7 +11,7 @@ const Profile = () => {
   const focusItems = t('profile.focus.items', { returnObjects: true });
 
   return (
-    <section className={`profile-section${isVisible ? ' is-visible' : ''}`} ref={sectionRef}>
+    <Reveal as="section" className="profile-section">
       <div className="profile-inner">
         <div className="profile-editorial">
           <p className="profile-eyebrow">{t('profile.eyebrow')}</p>
@@ -84,7 +66,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 };
 

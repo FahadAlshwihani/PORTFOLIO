@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LogoLoop } from "../components/ui/LogoLoop";
 import TechIcon from "../components/ui/TechIcon";
+import Reveal from "../components/ui/Reveal";
 import { SKILL_CATEGORIES } from "../data/skillsData";
 import "../styles/skills.css";
 
@@ -33,13 +34,13 @@ const Skills = () => {
   return (
     <section className="skills-section">
       <div className="skills-header skills-container">
-        <p className="skills-eyebrow">{t("skills.eyebrow")}</p>
-        <h2 className="skills-title">{t("skills.title")}</h2>
-        <p className="skills-subtitle">{t("skills.subtitle")}</p>
+        <Reveal as="p" preset="subtitle" className="skills-eyebrow">{t("skills.eyebrow")}</Reveal>
+        <Reveal as="h2" preset="title" className="skills-title" delay={0.08}>{t("skills.title")}</Reveal>
+        <Reveal as="p" preset="paragraph" className="skills-subtitle" delay={0.16}>{t("skills.subtitle")}</Reveal>
       </div>
 
       <div className="skills-categories">
-        {SKILL_CATEGORIES.map((category) => {
+        {SKILL_CATEGORIES.map((category, i) => {
           const items = category.items.map((item) => ({
             key: `${category.id}-${item.icon}-${item.name}`,
             node: (
@@ -51,7 +52,7 @@ const Skills = () => {
           }));
 
           return (
-            <div className="skills-category" key={category.id}>
+            <Reveal as="div" preset="card" className="skills-category" key={category.id} delay={i * 0.1}>
               <h3 className="skills-category-title skills-container">{t(category.titleKey)}</h3>
 
               {/* Full-bleed: the loop itself spans the true viewport edges,
@@ -69,7 +70,7 @@ const Skills = () => {
                   renderItem={(item) => item.node}
                 />
               </div>
-            </div>
+            </Reveal>
           );
         })}
       </div>
