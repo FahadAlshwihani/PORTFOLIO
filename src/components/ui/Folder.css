@@ -191,10 +191,15 @@
   /* !important: the hover/focus and sibling-dim rules above declare their
      own full `transition` shorthand at higher specificity than a plain
      `.paper`, which would otherwise silently win over this override and
-     keep animating on hover even with reduced motion requested. */
+     keep animating on hover even with reduced motion requested.
+     transition-delay is reset alongside transition-duration — otherwise
+     --lid-delay/--fan-delay would still make the (now near-instant)
+     transition wait before it starts, so reduced motion would still show
+     a perceptible pause instead of an immediate change. */
   .folder,
   .folder__front,
   .paper {
     transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
   }
 }

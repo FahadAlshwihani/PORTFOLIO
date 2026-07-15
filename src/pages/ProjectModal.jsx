@@ -38,6 +38,9 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
   const closeBtnRef = useRef(null);
   const closingRef = useRef(false);
   const tlRef = useRef(null);
+  const buildTimelineRef = useRef(null);
+  const lastRectRef = useRef(null);
+  const ctxRef = useRef(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -60,6 +63,36 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
       return;
     }
 
+    // The panel's on-screen rect can drift from what was measured at open
+    // time (window resize, orientation change — scroll lock doesn't prevent
+    // either), which would otherwise make the close animation collapse
+    // toward a stale origin. Re-measure and only rebuild the container-
+    // transform tween (same durations/eases, fresh coordinates) when the
+    // rect has actually changed, so the common case (no resize) is unaffected.
+    const panel = panelRef.current;
+    if (panel && buildTimelineRef.current && ctxRef.current) {
+      const fresh = panel.getBoundingClientRect();
+      const last = lastRectRef.current;
+      const stale =
+        !last ||
+        Math.abs(fresh.left - last.left) > 0.5 ||
+        Math.abs(fresh.top - last.top) > 0.5 ||
+        Math.abs(fresh.width - last.width) > 0.5 ||
+        Math.abs(fresh.height - last.height) > 0.5;
+
+      if (stale) {
+        const wasProgress = tlRef.current.progress();
+        tlRef.current.kill();
+        let rebuilt = null;
+        ctxRef.current.add(() => {
+          rebuilt = buildTimelineRef.current(fresh);
+        });
+        rebuilt.progress(wasProgress);
+        tlRef.current = rebuilt;
+        lastRectRef.current = fresh;
+      }
+    }
+
     tlRef.current.reverse();
   }, [reducedMotion]);
 
@@ -75,17 +108,21 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
       return undefined;
     }
 
-    const finalRect = panel.getBoundingClientRect();
-    const dx = (originRect.left + originRect.width / 2) - (finalRect.left + finalRect.width / 2);
-    const dy = (originRect.top + originRect.height / 2) - (finalRect.top + finalRect.height / 2);
-    const sx = Math.max(originRect.width / finalRect.width, 0.05);
-    const sy = Math.max(originRect.height / finalRect.height, 0.05);
-
     const contentBlocks = Array.from(panel.querySelectorAll(CONTENT_SELECTOR));
     const buttonsBlock = contentBlocks.length ? contentBlocks[contentBlocks.length - 1] : null;
     const bodyBlocks = buttonsBlock ? contentBlocks.slice(0, -1) : contentBlocks;
 
-    const ctx = gsap.context(() => {
+    // Builds the container-transform + content-cascade timeline from a given
+    // final rect. Extracted so requestClose can rebuild it with a freshly
+    // measured rect if the panel's position/size drifted since open (see
+    // the staleness check there) — same durations/eases every time, only
+    // the FLIP coordinates differ.
+    const buildTimeline = (finalRect) => {
+      const dx = (originRect.left + originRect.width / 2) - (finalRect.left + finalRect.width / 2);
+      const dy = (originRect.top + originRect.height / 2) - (finalRect.top + finalRect.height / 2);
+      const sx = Math.max(originRect.width / finalRect.width, 0.05);
+      const sy = Math.max(originRect.height / finalRect.height, 0.05);
+
       gsap.set(backdrop, { opacity: 0 });
       gsap.set(panel, { x: dx, y: dy, scaleX: sx, scaleY: sy, opacity: 0 });
       if (bodyBlocks.length) gsap.set(bodyBlocks, { opacity: 0, y: 16 });
@@ -117,13 +154,24 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
         tl.to(buttonsBlock, { opacity: 1, y: 0, duration: 0.36, ease: 'power2.out' }, '+=0.08');
       }
 
+      return tl;
+    };
+
+    const ctx = gsap.context(() => {
+      const finalRect = panel.getBoundingClientRect();
+      const tl = buildTimeline(finalRect);
       tlRef.current = tl;
+      buildTimelineRef.current = buildTimeline;
+      lastRectRef.current = finalRect;
       tl.play(0);
     });
+    ctxRef.current = ctx;
 
     return () => {
       ctx.revert();
       tlRef.current = null;
+      buildTimelineRef.current = null;
+      ctxRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
