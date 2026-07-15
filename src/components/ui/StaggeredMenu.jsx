@@ -472,13 +472,18 @@ export const StaggeredMenu = ({
   // Focus the first nav item on open (after the aria-hidden removal
   // from this same render has committed); return focus to the toggle
   // button on a genuine open->close transition (not on initial mount).
+  // preventScroll is essential here: at the moment this runs, the panel
+  // is still mid-slide-in (transformed off-screen by GSAP), so a normal
+  // .focus() call makes the browser try to scroll the page to reveal an
+  // element it thinks is off-viewport — fighting the GSAP tween and
+  // making the whole entrance look broken/jumpy.
   useEffect(() => {
     if (open) {
       prevOpenRef.current = true;
-      panelRef.current?.querySelector('.sm-panel-item')?.focus();
+      panelRef.current?.querySelector('.sm-panel-item')?.focus({ preventScroll: true });
     } else if (prevOpenRef.current) {
       prevOpenRef.current = false;
-      toggleBtnRef.current?.focus();
+      toggleBtnRef.current?.focus({ preventScroll: true });
     }
   }, [open]);
 
