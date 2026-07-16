@@ -2,16 +2,92 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+
+    <!-- Primary metadata -->
+    <title>Fahad Al-Shwihani | Full-Stack Developer & IT Infrastructure Engineer</title>
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="Portfolio of Fahad Al-Shwihani, a Full-Stack Developer and IT Infrastructure Engineer from Saudi Arabia building production-grade systems with React, Django, PostgreSQL, and Docker."
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>React App</title>
+    <meta name="author" content="Fahad Al-Shwihani" />
+    <meta
+      name="keywords"
+      content="full-stack developer, django, react, postgresql, docker, linux, backend, frontend, software engineer, portfolio, saudi arabia, it infrastructure"
+    />
+    <meta name="language" content="en" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://fyaa.io/" />
+
+    <!-- Icons — favicon.ico as the universal fallback, sized PNGs for
+         browsers that support them, apple-touch-icon for iOS home-screen
+         bookmarks. Android/PWA icons live in site.webmanifest, not
+         repeated here. -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest" />
+
+    <!-- Platform / app metadata -->
+    <meta name="application-name" content="Fahad Al-Shwihani" />
+    <meta name="apple-mobile-web-app-title" content="Fahad Al-Shwihani" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Fahad Al-Shwihani | Full-Stack Developer" />
+    <meta
+      property="og:description"
+      content="Explore the portfolio of Fahad Al-Shwihani — a Full-Stack Developer and IT Infrastructure Engineer building reliable, production-ready systems with React, Django, PostgreSQL, and Docker."
+    />
+    <meta property="og:image" content="https://fyaa.io/OG.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://fyaa.io/" />
+    <meta property="og:site_name" content="Fahad Portfolio" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Fahad Al-Shwihani | Full-Stack Developer" />
+    <meta
+      name="twitter:description"
+      content="Explore the portfolio of Fahad Al-Shwihani — a Full-Stack Developer and IT Infrastructure Engineer building reliable, production-ready systems with React, Django, PostgreSQL, and Docker."
+    />
+    <meta name="twitter:image" content="https://fyaa.io/OG.png" />
+
+    <!-- Hero's Lanyard card (front image + canvas-drawn back face) fetches
+         this the moment it mounts, above the fold, on first paint — worth
+         starting the fetch in parallel with JS bundle download rather than
+         waiting for React to mount and useTexture/Image() to request it. -->
+    <link rel="preload" as="image" href="%PUBLIC_URL%/ME.jpeg" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Fahad Al-Shwihani",
+        "jobTitle": ["Full-Stack Developer", "IT Infrastructure Engineer"],
+        "nationality": {
+          "@type": "Country",
+          "name": "Saudi Arabia"
+        },
+        "url": "https://fyaa.io",
+        "image": "https://fyaa.io/ME.jpeg",
+        "sameAs": [
+          "https://www.linkedin.com/in/fahad-alshwihani/",
+          "https://github.com/FahadAlshwihani"
+        ]
+      }
+    </script>
   </head>
 
   <body>

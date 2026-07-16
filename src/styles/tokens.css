@@ -1,0 +1,105 @@
+:root {
+  --bg: #000000;
+  --glass: rgba(255,255,255,0.04);
+  --accent: #00ffd5;
+  --muted: #99a0a6;
+  --card: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(48, 48, 48, 0.34));
+}
+
+:root {
+
+  /* Fonts ------------------------------------------------ */
+
+  /* English */
+  --font-display-en: "Thmanyah Display", serif;
+  --font-heading-en: "Thmanyah Sans", sans-serif;
+  --font-content-en: "Thmanyah Sans", sans-serif;
+  --font-editorial-en: "Thmanyah Serif", serif;
+
+  /* Arabic */
+  --font-display-ar: "Thmanyah Display", serif;
+  --font-heading-ar: "Thmanyah Sans", sans-serif;
+  --font-content-ar: "Thmanyah Sans", sans-serif;
+  --font-editorial-ar: "Thmanyah Serif", serif;
+
+  --font-display: var(--font-display-en);
+  --font-heading: var(--font-heading-en);
+  --font-content: var(--font-content-en);
+  --font-editorial: var(--font-editorial-en);
+
+  --font-mono: "JetBrains Mono", monospace;
+
+
+  /* ===========================================================
+   FONT WEIGHTS
+=========================================================== */
+
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+
+
+  /* ===========================================================
+   HERO DESKTOP
+=========================================================== */
+
+  --hero-hi-size:
+    clamp(1.4rem, 1vw + .9rem, 2.4rem);
+
+  --hero-name-size:
+    clamp(4.7rem, 2.3rem + 6.2vw, 10rem);
+
+  --hero-sub-size:
+    clamp(1.1rem, .85vw + .65rem, 1.6rem);
+
+
+  /* ===========================================================
+   HERO TABLET
+=========================================================== */
+
+  --hero-hi-size-tablet:
+    clamp(1.35rem, 3vw, 2rem);
+
+  --hero-name-size-tablet:
+    clamp(3.5rem, 8.6vw, 5.5rem);
+
+  --hero-sub-size-tablet:
+    clamp(1rem, 2.1vw, 1.3rem);
+
+
+  /* ===========================================================
+   HERO MOBILE
+=========================================================== */
+
+  --hero-hi-size-mobile:
+    clamp(1.2rem, 5vw, 1.8rem);
+
+  --hero-name-size-mobile:
+    clamp(2.5rem, 11vw, 4.5rem);
+
+  --hero-sub-size-mobile:
+    clamp(.82rem, 3.7vw, 1.08rem);
+
+
+  /* ===========================================================
+   LINE HEIGHTS
+=========================================================== */
+
+  --lh-tight: .82;
+  --lh-heading: .95;
+  --lh-body: 1.6;
+
+
+  /* ===========================================================
+   LETTER SPACING
+=========================================================== */
+
+  --ls-tight: -0.055em;
+  --ls-normal: 0;
+  --ls-wide: .08em;
+  --ls-ultra: .22em;
+
+}

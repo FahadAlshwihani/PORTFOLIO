@@ -1,0 +1,80 @@
+/* Root document reset + cross-cutting base rules. Consolidates what used
+   to be src/index.css plus the reset portion of src/styles/global.css;
+   component-specific rules (e.g. Footer) are co-located with their own
+   components instead of living here — see rule 6/7 of the structural
+   reorg: only truly global CSS belongs in src/styles. */
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  text-rendering: optimizeLegibility;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
+}
+
+html,
+body,
+#root {
+
+  /* Neutral document reset. Width is intentionally left to normal block
+     layout so the root follows the browser's real viewport geometry. */
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+
+}
+
+html,
+body {
+
+  transition:
+    background .3s ease,
+    color .3s ease;
+
+}
+
+body{
+  background: var(--bg);
+  color:#e9eef7;
+  font-family: var(--font-content);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+code {
+
+  font-family: source-code-pro,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Courier New",
+    monospace;
+
+}
+
+body.ltr {
+
+  direction: ltr;
+
+  --font-display: var(--font-display-en);
+  --font-heading: var(--font-heading-en);
+  --font-content: var(--font-content-en);
+  --font-editorial: var(--font-editorial-en);
+
+}
+
+body.rtl {
+
+  direction: rtl;
+
+  --font-display: var(--font-display-ar);
+  --font-heading: var(--font-heading-ar);
+  --font-content: var(--font-content-ar);
+  --font-editorial: var(--font-editorial-ar);
+
+}
