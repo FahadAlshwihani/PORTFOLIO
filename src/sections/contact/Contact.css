@@ -11,13 +11,18 @@
 .contact-section {
   /* EndingScene's shared FaultyTerminal canvas already carries the whole
      Skills→Footer transition now, so this section itself stays fully
-     transparent and just lets it through. The terminal's own reveal is no
-     longer a section-level fade — it's driven character-by-character from
-     scroll progress (see Contact.jsx) — so the section itself is simply
-     always present. */
+     transparent and just lets it through. */
   background: transparent;
   padding-block: clamp(6rem, 11vw, 10rem);
   overflow-x: hidden;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.contact-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ── The window ───────────────────────────────────────────── */
@@ -248,6 +253,14 @@
   color: rgba(255, 255, 255, .4);
   padding-inline-start: 2.2ch;
   margin: 0 0 1.3em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-section {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ── Tablet ≤900px ────────────────────────────────────────── */

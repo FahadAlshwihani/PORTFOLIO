@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siWhatsapp, siGithub } from "simple-icons";
-import useScrollTypeProgress from "../../hooks/useScrollTypeProgress";
+import Reveal from "../../components/ui/Reveal/Reveal";
 import resumeFile from "../../assets/Resume/Fahad_Alshwihani_Full-stack.pdf";
 import "../hero/Terminal.css";
 import "./Contact.css";
@@ -14,10 +13,7 @@ const WINDOW_TITLE = "fahad@portfolio:~$";
 
 // The prompt is repeated before every command, colored token-by-token
 // like a real shell (user/$ in the site's purple, host in white, the
-// connective punctuation muted) — never a bare ">". The prompt itself is
-// shell chrome, not something the user "typed", so unlike the command and
-// output text below it, it's never part of the typed/deleted transcript —
-// it simply appears the instant a block starts.
+// connective punctuation muted) — never a bare ">".
 const PROMPT_PARTS = [
   { t: "fahad", cls: "prompt-user" },
   { t: "@", cls: "prompt-at" },
@@ -36,6 +32,13 @@ const Prompt = () => (
   </span>
 );
 
+const PromptLine = ({ command }) => (
+  <div className="contact-line">
+    <Prompt />
+    <span className="contact-command">{command}</span>
+  </div>
+);
+
 // Real shell commands, never translated — only their printed output
 // (pulled from i18next below) changes with language.
 const COMMANDS = {
@@ -51,7 +54,6 @@ const COMMANDS = {
 // Terminal output, not UI copy — stays English in both languages, same
 // reasoning as the commands themselves.
 const EXIT_MESSAGES = ["Session terminated.", "Connection closed."];
-const FILES = ["Resume.pdf", "WhatsApp", "LinkedIn", "GitHub"];
 
 const WHATSAPP_PATH = siWhatsapp.svg.match(/<path d="([^"]+)"/)?.[1] ?? "";
 const WHATSAPP_HEX = `#${siWhatsapp.hex}`;
@@ -124,340 +126,13 @@ const GitHubIcon = () => (
   </svg>
 );
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
-}
-
-// Hands out slices of a fixed character budget in strict document order —
-// the single mechanism behind both typing (budget growing with scroll)
-// and deleting (budget shrinking with scroll): once the budget runs out
-// mid-piece, every later piece in the same block is blocked and renders
-// nothing, so pieces can only ever be complete, partially revealed at the
-// very end of the visible run, or entirely absent — never revealed out of
-// order.
-function createSequencer(budget) {
-  let remaining = budget;
-  let blocked = remaining <= 0;
-  return {
-    take(text) {
-      if (blocked) return { visible: "", cursor: false };
-      if (text.length <= remaining) {
-        remaining -= text.length;
-        const cursor = remaining === 0;
-        if (cursor) blocked = true;
-        return { visible: text, cursor };
-      }
-      const visible = text.slice(0, remaining);
-      remaining = 0;
-      blocked = true;
-      return { visible, cursor: true };
-    },
-    // For the one non-text piece in the transcript (the action cards) —
-    // an atomic unit can't be partially "typed", so it only ever reveals
-    // once its whole weight is available, exactly like a very wide
-    // character that either exists or doesn't.
-    takeAtomic(weight) {
-      if (blocked || weight > remaining) {
-        blocked = true;
-        return false;
-      }
-      remaining -= weight;
-      if (remaining === 0) blocked = true;
-      return true;
-    },
-  };
-}
-
-const Cursor = () => <span className="term-cursor" />;
-
 const Contact = () => {
   const { t } = useTranslation();
-  const sectionRef = useRef(null);
-  const reducedMotion = useReducedMotion();
 
   const opportunities = t("contact.values.opportunities", { returnObjects: true });
 
-  // One complete, ordered transcript is the single source of truth — the
-  // number of visible characters (driven straight from scroll progress,
-  // see useScrollTypeProgress) is the only thing that changes on scroll.
-  // Rebuilt only when the active language changes, not on every scroll
-  // tick — slicing a handful of short strings per render is cheap, but
-  // there's no reason to recompute the translated base strings/weights
-  // that don't change between scroll frames.
-  const { blocks, total } = useMemo(() => {
-    const nameValue = t("contact.values.name");
-    const roleValue = t("contact.values.role");
-    const locationValue = t("contact.values.location");
-    const statusText = `● ${t("contact.values.status")}`;
-    const noteText = t("contact.note");
-    const actionEntries = [
-      { title: t("contact.actions.resumeTitle"), subtitle: t("contact.actions.resumeSubtitle") },
-      { title: t("contact.actions.whatsappTitle"), subtitle: t("contact.actions.whatsappSubtitle") },
-      { title: t("contact.actions.linkedinTitle"), subtitle: t("contact.actions.linkedinSubtitle") },
-      { title: t("contact.actions.githubTitle"), subtitle: t("contact.actions.githubSubtitle") },
-    ];
-    const actionsWeight = actionEntries.reduce((sum, a) => sum + a.title.length + a.subtitle.length, 0);
-
-    const CommandLine = ({ cmdVisible, showCursor }) => (
-      <div className="contact-line">
-        <Prompt />
-        <span className="contact-command">{cmdVisible}</span>
-        {showCursor && <Cursor />}
-      </div>
-    );
-
-    const list = [
-      {
-        id: "whoami",
-        weight: COMMANDS.whoami.length + nameValue.length,
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.whoami);
-          const out = seq.take(nameValue);
-          return (
-            <div className="contact-block" key="whoami">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              {out.visible.length > 0 && (
-                <p className="contact-output">
-                  {out.visible}
-                  {isFrontier && out.cursor && <Cursor />}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        id: "role",
-        weight: COMMANDS.role.length + roleValue.length,
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.role);
-          const out = seq.take(roleValue);
-          return (
-            <div className="contact-block" key="role">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              {out.visible.length > 0 && (
-                <p className="contact-output">
-                  {out.visible}
-                  {isFrontier && out.cursor && <Cursor />}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        id: "location",
-        weight: COMMANDS.location.length + locationValue.length,
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.location);
-          const out = seq.take(locationValue);
-          return (
-            <div className="contact-block" key="location">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              {out.visible.length > 0 && (
-                <p className="contact-output">
-                  {out.visible}
-                  {isFrontier && out.cursor && <Cursor />}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        id: "status",
-        weight: COMMANDS.status.length + statusText.length,
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.status);
-          const out = seq.take(statusText);
-          return (
-            <div className="contact-block" key="status">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              {out.visible.length > 0 && (
-                <p className="contact-output contact-output--status">
-                  {out.visible}
-                  {isFrontier && out.cursor && <Cursor />}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        id: "opportunities",
-        weight: COMMANDS.opportunities.length + opportunities.reduce((sum, name) => sum + name.length + 1, 0),
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.opportunities);
-          const lines = opportunities.map((name) => seq.take(`${name}/`));
-          return (
-            <div className="contact-block" key="opportunities">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              <div className="contact-output contact-listing">
-                {lines.map(
-                  (line, i) =>
-                    line.visible.length > 0 && (
-                      <p className="contact-dir" key={i}>
-                        {line.visible}
-                        {isFrontier && line.cursor && <Cursor />}
-                      </p>
-                    )
-                )}
-              </div>
-            </div>
-          );
-        },
-      },
-      {
-        id: "contact-files",
-        weight:
-          COMMANDS.contact.length +
-          FILES.reduce((sum, f) => sum + f.length, 0) +
-          actionsWeight +
-          noteText.length,
-        render(chars, isFrontier) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.contact);
-          const fileLines = FILES.map((f) => seq.take(f));
-          const actionsVisible = seq.takeAtomic(actionsWeight);
-          const note = seq.take(noteText);
-          return (
-            <div className="contact-block" key="contact-files">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor} />
-              <div className="contact-output contact-listing">
-                {fileLines.map(
-                  (line, i) =>
-                    line.visible.length > 0 && (
-                      <p className="contact-file" key={i}>
-                        {line.visible}
-                        {isFrontier && line.cursor && <Cursor />}
-                      </p>
-                    )
-                )}
-              </div>
-
-              {actionsVisible && (
-                <div className="contact-actions">
-                  <a className="contact-action" href={RESUME_HREF} download={RESUME_FILENAME}>
-                    <PdfIcon />
-                    <span className="contact-action-text">
-                      <span className="contact-action-title">{actionEntries[0].title}</span>
-                      <span className="contact-action-subtitle">{actionEntries[0].subtitle}</span>
-                    </span>
-                  </a>
-
-                  <a
-                    className="contact-action"
-                    href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    <WhatsAppIcon />
-                    <span className="contact-action-text">
-                      <span className="contact-action-title">{actionEntries[1].title}</span>
-                      <span className="contact-action-subtitle">{actionEntries[1].subtitle}</span>
-                    </span>
-                  </a>
-
-                  <a className="contact-action" href={LINKEDIN_URL} target="_blank" rel="noreferrer noopener">
-                    <LinkedInIcon />
-                    <span className="contact-action-text">
-                      <span className="contact-action-title">{actionEntries[2].title}</span>
-                      <span className="contact-action-subtitle">{actionEntries[2].subtitle}</span>
-                    </span>
-                  </a>
-
-                  <a className="contact-action" href={GITHUB_URL} target="_blank" rel="noreferrer noopener">
-                    <GitHubIcon />
-                    <span className="contact-action-text">
-                      <span className="contact-action-title">{actionEntries[3].title}</span>
-                      <span className="contact-action-subtitle">{actionEntries[3].subtitle}</span>
-                    </span>
-                  </a>
-                </div>
-              )}
-
-              {note.visible.length > 0 && (
-                <p className="contact-note">
-                  {note.visible}
-                  {isFrontier && note.cursor && <Cursor />}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        id: "exit",
-        weight: COMMANDS.exit.length + EXIT_MESSAGES.reduce((sum, m) => sum + m.length, 0),
-        render(chars, isFrontier, weight) {
-          const seq = createSequencer(chars);
-          const cmd = seq.take(COMMANDS.exit);
-          const lines = EXIT_MESSAGES.map((m) => seq.take(m));
-          const complete = chars >= weight;
-          return (
-            <div className="contact-block" key="exit">
-              <CommandLine cmdVisible={cmd.visible} showCursor={isFrontier && cmd.cursor && !complete} />
-              <div className="contact-output contact-listing">
-                {lines.map(
-                  (line, i) =>
-                    line.visible.length > 0 && (
-                      <p key={i}>
-                        {line.visible}
-                        {isFrontier && line.cursor && !complete && <Cursor />}
-                      </p>
-                    )
-                )}
-              </div>
-              {complete && (
-                <div className="contact-line contact-final-line">
-                  <Cursor />
-                </div>
-              )}
-            </div>
-          );
-        },
-      },
-    ];
-
-    return { blocks: list, total: list.reduce((sum, b) => sum + b.weight, 0) };
-  }, [t, opportunities]);
-
-  const visibleChars = useScrollTypeProgress(sectionRef, total, { disabled: reducedMotion });
-
-  // The block whose range currently contains the scroll boundary — the
-  // only block allowed to show the blinking cursor. Every earlier block
-  // is fully typed already (no cursor); every later one hasn't started.
-  let offset = 0;
-  let frontierIndex = -1;
-  blocks.forEach((block, i) => {
-    if (visibleChars > offset) frontierIndex = i;
-    offset += block.weight;
-  });
-
-  offset = 0;
-  const rendered = blocks.map((block, i) => {
-    const charsInBlock = Math.min(Math.max(visibleChars - offset, 0), block.weight);
-    offset += block.weight;
-    if (charsInBlock <= 0) return null;
-    return block.render(charsInBlock, i === frontierIndex, block.weight);
-  });
-
   return (
-    <section className="contact-section" ref={sectionRef}>
+    <Reveal as="section" className="contact-section">
       <div className="contact-terminal" dir="ltr">
         <div className="contact-terminal-header">
           <div className="contact-terminal-dots" aria-hidden="true">
@@ -468,9 +143,111 @@ const Contact = () => {
           <span className="contact-terminal-title">{WINDOW_TITLE}</span>
         </div>
 
-        <div className="contact-terminal-body">{rendered}</div>
+        <div className="contact-terminal-body">
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.whoami} />
+            <p className="contact-output">{t("contact.values.name")}</p>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.role} />
+            <p className="contact-output">{t("contact.values.role")}</p>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.location} />
+            <p className="contact-output">{t("contact.values.location")}</p>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.status} />
+            <p className="contact-output contact-output--status">● {t("contact.values.status")}</p>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.opportunities} />
+            <div className="contact-output contact-listing">
+              {opportunities.map((name, i) => (
+                <p className="contact-dir" key={i}>{name}/</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.contact} />
+            <div className="contact-output contact-listing">
+              <p className="contact-file">Resume.pdf</p>
+              <p className="contact-file">WhatsApp</p>
+              <p className="contact-file">LinkedIn</p>
+              <p className="contact-file">GitHub</p>
+            </div>
+
+            <div className="contact-actions">
+              <a className="contact-action" href={RESUME_HREF} download={RESUME_FILENAME}>
+                <PdfIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.resumeTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.resumeSubtitle")}</span>
+                </span>
+              </a>
+
+              <a
+                className="contact-action"
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <WhatsAppIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.whatsappTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.whatsappSubtitle")}</span>
+                </span>
+              </a>
+
+              <a
+                className="contact-action"
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <LinkedInIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.linkedinTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.linkedinSubtitle")}</span>
+                </span>
+              </a>
+
+              <a
+                className="contact-action"
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <GitHubIcon />
+                <span className="contact-action-text">
+                  <span className="contact-action-title">{t("contact.actions.githubTitle")}</span>
+                  <span className="contact-action-subtitle">{t("contact.actions.githubSubtitle")}</span>
+                </span>
+              </a>
+            </div>
+
+            <p className="contact-note">{t("contact.note")}</p>
+          </div>
+
+          <div className="contact-block">
+            <PromptLine command={COMMANDS.exit} />
+            <div className="contact-output contact-listing">
+              {EXIT_MESSAGES.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+            <div className="contact-line contact-final-line">
+              <span className="term-cursor" />
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </Reveal>
   );
 };
 
