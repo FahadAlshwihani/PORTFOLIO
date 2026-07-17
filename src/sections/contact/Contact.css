@@ -18,6 +18,30 @@
   opacity: 0;
   transform: translateY(28px);
   transition: opacity .9s ease, transform .9s ease;
+  /* Internal terminal design system. Breakpoints only override these
+     tokens; components do not invent independent responsive values. */
+  --terminal-padding-x: 2.5rem;
+  --terminal-padding-y: 2.5rem;
+  --terminal-gap: 1.5rem;
+  --terminal-card-gap: 1rem;
+  --terminal-font-size: 1rem;
+  --terminal-command-size: 1rem;
+  --terminal-heading-size: .95rem;
+  --terminal-description-size: .76rem;
+  --terminal-note-size: .78rem;
+  --terminal-icon-size: 1.4rem;
+  --terminal-line-height: 1.65;
+  --terminal-command-line-height: 1.7;
+  --terminal-card-radius: .75rem;
+  --terminal-button-padding-y: .9rem;
+  --terminal-button-padding-x: 1.1rem;
+  --terminal-button-gap: .8rem;
+  --terminal-header-padding-y: .9rem;
+  --terminal-header-padding-x: 1.25rem;
+  --terminal-header-gap: 1rem;
+  --terminal-chrome-size: .72rem;
+  --terminal-chrome-gap: .5rem;
+  --terminal-output-indent: 2.2ch;
 }
 
 .contact-section.is-visible {
@@ -31,13 +55,34 @@
    (reused, not redeclared) — no separate visual language. ───────────── */
 
 .contact-intro {
+  position: relative;
+  /* Exact same width as .contact-terminal below, restored to its original
+     desktop-validated formula — see the comment there for why this isn't
+     touched anymore. */
   width: min(850px, calc(100% - 3rem));
   margin-inline: auto;
   margin-bottom: 1.5rem;
   font-family: var(--font-mono);
+  font-size: var(--terminal-font-size);
   direction: ltr;
   text-align: left;
   unicode-bidi: isolate;
+}
+
+/* Ghost + overlay, same principle as .contact-terminal-body: the ghost
+   (both final lines, `visibility: hidden`) is the only thing in normal
+   flow, so it alone gives `.contact-intro` its height from the first
+   frame. The live layer (the actual typing) is `position: absolute`,
+   fully out of flow — its growing text/cursor can never resize this
+   wrapper or shift the terminal below it. */
+.contact-intro-ghost {
+  visibility: hidden;
+}
+
+.contact-intro-live {
+  position: absolute;
+  inset: 0;
+  contain: layout style;
 }
 
 .contact-intro-status {
@@ -45,18 +90,6 @@
   margin: .5em 0 0;
   padding-inline-start: 2.2ch;
   line-height: 1.6;
-}
-
-@media (max-width: 900px) {
-  .contact-intro {
-    width: min(700px, calc(100% - 2.5rem));
-  }
-}
-
-@media (max-width: 560px) {
-  .contact-intro-status {
-    padding-inline-start: 0;
-  }
 }
 
 /* ── The window ───────────────────────────────────────────── */
@@ -67,6 +100,10 @@
    and inner highlight to sell the glass. Terminal identity (borders/
    typography/spacing/commands) otherwise untouched. */
 .contact-terminal {
+  /* Restored to the original, desktop-validated width — do not change
+     this again. Responsive refinement now happens entirely inside the
+     terminal (typography/spacing/padding below), not by resizing the
+     box itself. */
   width: min(850px, calc(100% - 3rem));
   margin-inline: auto;
   background: rgba(8, 8, 8, 0.47);
@@ -93,8 +130,8 @@
 .contact-terminal-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: .9rem 1.25rem;
+  gap: var(--terminal-header-gap);
+  padding: var(--terminal-header-padding-y) var(--terminal-header-padding-x);
   border-bottom: 1px solid rgba(255, 255, 255, .08);
   /* Window chrome is physical UI, not language content — stays LTR
      the same way the Hero terminal stage does. */
@@ -103,7 +140,7 @@
 
 .contact-terminal-dots {
   display: flex;
-  gap: .5rem;
+  gap: var(--terminal-chrome-gap);
   flex: 0 0 auto;
 }
 
@@ -111,13 +148,13 @@
    glyph fades in on hover — same subtle reveal macOS itself uses,
    purely decorative (no actual close/minimize/maximize behavior). */
 .contact-terminal-dots span {
-  width: .72rem;
-  height: .72rem;
+  width: var(--terminal-chrome-size);
+  height: var(--terminal-chrome-size);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: .5rem;
+  font-size: calc(var(--terminal-chrome-size) * .7);
   line-height: 1;
   color: transparent;
   transition: color .15s ease;
@@ -134,7 +171,7 @@
 
 .contact-terminal-title {
   font-family: var(--font-mono);
-  font-size: .78rem;
+  font-size: var(--terminal-note-size);
   color: rgba(255, 255, 255, .38);
   letter-spacing: .01em;
   white-space: nowrap;
@@ -145,17 +182,52 @@
 /* ── The body: already-printed output, no typing animation ──── */
 
 .contact-terminal-body {
-  padding: clamp(1.6rem, 4.5vw, 2.75rem);
+  padding-block: var(--terminal-padding-y);
   font-family: var(--font-mono);
+  /* Command typography is the inherited scale for the transcript. */
+  font-size: var(--terminal-command-size);
   direction: ltr;
   text-align: left;
   unicode-bidi: isolate;
 }
 
+/* One centered composition canvas for every command, output, action and
+   closing note. The shell can stay wide while the working area remains
+   calm, readable and optically detached from the terminal walls. */
+.contact-terminal-content {
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 42rem);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5.5%, 2.25rem);
+}
+
+/* The typed reveal is an invisible-duplicate-plus-overlay: the ghost below
+   (full, final transcript, `visibility: hidden`) sits in normal flow and is
+   the only thing that gives this container its height, reserved from the
+   very first frame the terminal exists. The live layer (the actual command-
+   by-command typing) is `position: absolute` — out of flow entirely — so
+   its progressively-changing content can never resize `.contact-terminal-
+   body` itself. Only opacity/typed text change after that; the box never
+   does. */
+.contact-terminal-body-ghost {
+  visibility: hidden;
+}
+
+.contact-terminal-body-live {
+  position: absolute;
+  inset: 0;
+  /* Explicit containment: guarantees to the renderer that whatever this
+     layer does internally (typing, line-by-line reveal) can't leak out and
+     force layout/paint work on anything outside it — the WebGL canvases
+     included. */
+  contain: layout style;
+}
+
 /* One command's prompt + command word + its output, breathing room
    between each — "leave a small empty line between each command." */
 .contact-block {
-  margin-bottom: 1.5em;
+  margin-bottom: var(--terminal-gap);
 }
 
 .contact-block:last-child {
@@ -167,7 +239,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: .6ch;
-  line-height: 1.7;
+  line-height: var(--terminal-command-line-height);
 }
 
 /* The prompt is always the full "fahad@portfolio:~$", never a bare ">",
@@ -198,8 +270,8 @@
 .contact-output {
   color: rgba(255, 255, 255, .74);
   margin: 0;
-  padding-inline-start: 2.2ch;
-  line-height: 1.6;
+  padding-inline-start: 0;
+  line-height: var(--terminal-line-height);
 }
 
 .contact-output--status {
@@ -234,18 +306,20 @@
 .contact-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin: 1.3em 0 1.6em;
-  padding-inline-start: 2.2ch;
+  gap: var(--terminal-card-gap);
+  margin: var(--terminal-gap) 0;
+  padding-inline-start: 0;
+  width: 100%;
 }
 
 .contact-action {
   flex: 1 1 220px;
   display: flex;
   align-items: center;
-  gap: .9rem;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
+  gap: var(--terminal-button-gap);
+  min-height: 2.75rem;
+  padding: var(--terminal-button-padding-y) var(--terminal-button-padding-x);
+  border-radius: var(--terminal-card-radius);
   border: 1px solid rgba(255, 255, 255, .12);
   background: rgba(255, 255, 255, .03);
   text-decoration: none;
@@ -260,8 +334,8 @@
 
 .contact-action-icon {
   flex: 0 0 auto;
-  width: 1.4rem;
-  height: 1.4rem;
+  width: var(--terminal-icon-size);
+  height: var(--terminal-icon-size);
   color: rgba(255, 255, 255, .85);
   transition: color .2s ease;
 }
@@ -277,27 +351,29 @@
 .contact-action-text {
   display: flex;
   flex-direction: column;
-  gap: .18rem;
+  gap: calc(var(--terminal-card-gap) * .18);
   font-family: var(--font-mono);
 }
 
 .contact-action-title {
-  font-size: .95rem;
+  font-size: var(--terminal-heading-size);
+  line-height: 1.35;
   font-weight: 500;
   color: #ffffff;
 }
 
 .contact-action-subtitle {
-  font-size: .76rem;
+  font-size: var(--terminal-description-size);
+  line-height: 1.45;
   color: rgba(255, 255, 255, .48);
 }
 
 .contact-note {
   font-family: var(--font-mono);
-  font-size: .78rem;
+  font-size: var(--terminal-note-size);
   color: rgba(255, 255, 255, .4);
-  padding-inline-start: 2.2ch;
-  margin: 0 0 1.3em;
+  padding-inline-start: 0;
+  margin: 0 0 var(--terminal-gap);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -309,33 +385,151 @@
   }
 }
 
-/* ── Tablet ≤900px ────────────────────────────────────────── */
+/* ── Tablet ≤900px ────────────────────────────────────────────
+   The terminal's own width is untouched here (see its rule above) — this
+   is purely about what's inside it. Three things happen: the typography/
+   spacing scale ratchets down a notch (fonts, button padding, icon size,
+   gaps, header padding — everything wired to --contact-scale shrinks
+   together, in proportion); the horizontal padding gets a floor that's
+   MORE generous than the plain viewport-scaled formula would give on its
+   own (max() only raises it, never lowers what the formula already
+   provides), which is what actually keeps cards/buttons off the
+   terminal's borders as it narrows; and the desktop-only "output
+   indented further than the prompt" convention (padding-inline-start:
+   2.2ch, no matching inline-end) softens, since that fixed left-only
+   indent starts reading as a lopsided margin once everything else has
+   gotten smaller. Full symmetry (0 indent) is reserved for phones. */
 
-@media (max-width: 900px) {
-  .contact-terminal {
-    width: min(700px, calc(100% - 2.5rem));
+@media (min-width: 992px) and (max-width: 1200px) {
+  .contact-section {
+    --terminal-padding-x: 2.35rem;
+    --terminal-padding-y: 2.35rem;
+    --terminal-gap: 1.4rem;
+    --terminal-card-gap: .94rem;
+    --terminal-font-size: .96rem;
+    --terminal-command-size: .96rem;
+    --terminal-heading-size: .91rem;
+    --terminal-description-size: .73rem;
+    --terminal-note-size: .75rem;
+    --terminal-icon-size: 1.32rem;
+    --terminal-button-padding-y: .84rem;
+    --terminal-button-padding-x: 1.03rem;
+    --terminal-button-gap: .75rem;
+    --terminal-header-padding-y: .85rem;
+    --terminal-header-padding-x: 1.18rem;
+    --terminal-header-gap: .94rem;
+    --terminal-chrome-size: .68rem;
+    --terminal-chrome-gap: .47rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .contact-section {
+    --terminal-padding-x: 2rem;
+    --terminal-padding-y: 2rem;
+    --terminal-gap: 1.25rem;
+    --terminal-card-gap: .8rem;
+    --terminal-font-size: .9rem;
+    --terminal-command-size: .9rem;
+    --terminal-heading-size: .86rem;
+    --terminal-description-size: .7rem;
+    --terminal-note-size: .72rem;
+    --terminal-icon-size: 1.22rem;
+    --terminal-button-padding-y: .76rem;
+    --terminal-button-padding-x: .92rem;
+    --terminal-button-gap: .68rem;
+    --terminal-header-padding-y: .78rem;
+    --terminal-header-padding-x: 1.05rem;
+    --terminal-header-gap: .82rem;
+    --terminal-chrome-size: .63rem;
+    --terminal-chrome-gap: .42rem;
+    --terminal-output-indent: 1.25ch;
   }
 }
 
 /* ── Mobile ≤560px ────────────────────────────────────────── */
 
-@media (max-width: 560px) {
-  .contact-terminal-body {
-    padding: 1.4rem 1.15rem;
+@media (max-width: 767px) {
+  .contact-section {
+    --terminal-padding-y: 1.5rem;
+    --terminal-gap: 1rem;
+    --terminal-card-gap: .62rem;
+    --terminal-font-size: .8rem;
+    --terminal-command-size: .8rem;
+    --terminal-heading-size: .78rem;
+    --terminal-description-size: .65rem;
+    --terminal-note-size: .66rem;
+    --terminal-icon-size: 1.02rem;
+    --terminal-button-padding-y: .62rem;
+    --terminal-button-padding-x: .72rem;
+    --terminal-button-gap: .58rem;
+    --terminal-header-padding-y: .7rem;
+    --terminal-header-padding-x: .9rem;
+    --terminal-header-gap: .72rem;
+    --terminal-chrome-size: .58rem;
+    --terminal-chrome-gap: .38rem;
+    --terminal-output-indent: 0ch;
   }
 
-  .contact-output,
-  .contact-listing,
-  .contact-actions,
-  .contact-note {
-    padding-inline-start: 0;
+  .contact-terminal-content {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: clamp(1rem, 5.5vw, 1.375rem);
+  }
+
+  .contact-terminal-body-live {
+    inset-inline: clamp(1rem, 5.5vw, 1.375rem);
   }
 
   .contact-actions {
     flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
   }
 
   .contact-action {
-    flex-basis: auto;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.5rem;
+    box-sizing: border-box;
   }
+
+  .contact-action-text,
+  .contact-line,
+  .contact-output,
+  .contact-listing,
+  .contact-note {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .contact-command,
+  .contact-output,
+  .contact-action-title,
+  .contact-action-subtitle,
+  .contact-note {
+    overflow-wrap: anywhere;
+  }
+
+  html[lang='ar'] .contact-output,
+  html[lang='ar'] .contact-action-title,
+  html[lang='ar'] .contact-action-subtitle,
+  html[lang='ar'] .contact-note {
+    word-break: break-word;
+  }
+}
+
+html[lang='ar'] .contact-output,
+html[lang='ar'] .contact-action-title,
+html[lang='ar'] .contact-action-subtitle,
+html[lang='ar'] .contact-note {
+  line-height: 1.65;
+}
+
+html[lang='ar'] .contact-action-text {
+  gap: calc(var(--terminal-card-gap) * .26);
 }

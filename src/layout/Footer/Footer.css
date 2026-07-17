@@ -5,7 +5,6 @@
 .site-footer{
   padding:2.75rem 1.5rem;
   background: transparent;
-  border-top: 1px solid rgba(82, 39, 255, 0.12);
   font-family: var(--font-content);
 }
 .footer-inner{

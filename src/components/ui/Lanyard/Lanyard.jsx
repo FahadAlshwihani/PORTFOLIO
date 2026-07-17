@@ -142,7 +142,9 @@ export default function Lanyard({
     }, []);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -151,7 +153,11 @@ export default function Lanyard({
     const effectivePhysicsHz = Math.min(physicsHz, isMobile ? 30 : 60);
 
     return (
-        <div className="lanyard-wrapper" ref={wrapperRef}>
+        <div
+            className="lanyard-wrapper"
+            ref={wrapperRef}
+            style={{ touchAction: 'pan-y' }}
+        >
             <Canvas
                 camera={{ position: position, fov: fov }}
                 dpr={[Math.min(1, effectiveDpr), effectiveDpr]}
@@ -165,12 +171,12 @@ export default function Lanyard({
                 style={{
                     position: 'absolute',
                     inset: 0,
-                    pointerEvents: isMobile ? 'none' : 'auto',
+                    pointerEvents: 'auto',
                     touchAction: isMobile ? 'pan-y' : 'auto'
                 }}
                 onCreated={({ gl }) => {
                     gl.setClearColor(0x000000, transparent ? 0 : 1);
-                    gl.domElement.style.pointerEvents = isMobile ? 'none' : 'auto';
+                    gl.domElement.style.pointerEvents = 'auto';
                     gl.domElement.style.touchAction = isMobile ? 'pan-y' : 'auto';
                 }}
             >
@@ -261,10 +267,6 @@ function Band({
         card = useRef(),
         anchorGroup = useRef();
 
-    const scrollImpulse = useRef(0);
-    const anchorShakeX = useRef(0);
-    const anchorShakeY = useRef(0);
-    const anchorShakeZ = useRef(0);
     const vec = new THREE.Vector3(),
         ang = new THREE.Vector3(),
         rot = new THREE.Vector3(),
@@ -548,34 +550,6 @@ function Band({
         }
     }, [hovered, dragged]);
 
-    useEffect(() => {
-        if (!isMobile) return;
-
-        let lastY = window.scrollY;
-        let lastTime = performance.now();
-
-        const handleScroll = () => {
-            const now = performance.now();
-            const currentY = window.scrollY;
-
-            const dy = currentY - lastY;
-            const dt = Math.max(now - lastTime, 16);
-
-            const velocity = dy / dt;
-
-            scrollImpulse.current += THREE.MathUtils.clamp(velocity * 0.8, -1.4, 1.4);
-
-            lastY = currentY;
-            lastTime = now;
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, [isMobile]);
-
     useFrame((state, delta) => {
         if (dragged) {
             idleStartedAt.current = state.clock.elapsedTime;
@@ -679,52 +653,9 @@ function Band({
         // project card to screen coords and move hit zone + enable canvas events on hover
         const canvas = state.gl.domElement;
 
-        if (isMobile) {
-            canvas.style.pointerEvents = 'none';
-            canvas.style.touchAction = 'pan-y';
-        } else {
-            canvas.style.pointerEvents = dragged ? 'all' : 'auto';
-            canvas.style.touchAction = dragged ? 'none' : 'auto';
-        }
+        canvas.style.pointerEvents = 'auto';
+        canvas.style.touchAction = dragged ? 'none' : (isMobile ? 'pan-y' : 'auto');
 
-        // Mobile anchor "scroll shake": must run in the physics frame loop,
-        // not the component render body. `scrollImpulse` is fed by a plain
-        // `window` scroll listener and only ever decayed/applied here, so
-        // this has to execute every frame regardless of whether React
-        // re-renders Band — React re-renders are not frame-synced and, on
-        // mobile (where drag/hover are disabled and this is the only thing
-        // that ever changed Band's own state), can go tens of seconds
-        // between renders while scroll events keep accumulating unboundedly
-        // in the meantime. Frame-rate-normalized decay (Math.pow instead of
-        // a flat per-call multiply) keeps the same feel as the original
-        // "0.9 per call" tuning now that "per call" genuinely means
-        // "per frame" at whatever the real frame rate is.
-        if (isMobile && anchorGroup.current) {
-            const safeShakeDelta = Number.isFinite(delta) ? THREE.MathUtils.clamp(delta, 0, 1 / 15) : 0;
-            const impulse = scrollImpulse.current;
-
-            scrollImpulse.current *= Math.pow(0.9, safeShakeDelta * 60);
-
-            anchorShakeX.current += impulse * 0.035;
-            anchorShakeY.current += Math.abs(impulse) * 0.018;
-            anchorShakeZ.current += impulse * 0.015;
-
-            anchorShakeX.current *= Math.pow(0.88, safeShakeDelta * 60);
-            anchorShakeY.current *= Math.pow(0.9, safeShakeDelta * 60);
-            anchorShakeZ.current *= Math.pow(0.9, safeShakeDelta * 60);
-
-            anchorGroup.current.position.x = anchorOffsetX + anchorShakeX.current;
-            anchorGroup.current.position.y = anchorY + anchorShakeY.current;
-            anchorGroup.current.position.z = anchorShakeZ.current;
-
-            if (fixed.current) {
-                fixed.current.setNextKinematicTranslation({
-                    x: anchorOffsetX + anchorShakeX.current,
-                    y: anchorY + anchorShakeY.current,
-                    z: anchorShakeZ.current
-                });
-            }
-        }
     });
 
     curve.curveType = 'chordal';
@@ -753,19 +684,29 @@ function Band({
                     <group
                         scale={cardScale}
                         position={[0, cardY, -0.05]}
-                        onPointerOver={() => {
-                            if (!isMobile) hover(true);
+                        onPointerOver={e => {
+                            if (e.pointerType === 'mouse') hover(true);
                         }}
-                        onPointerOut={() => {
-                            if (!isMobile) hover(false);
+                        onPointerOut={e => {
+                            if (e.pointerType === 'mouse') hover(false);
                         }}
                         onPointerUp={e => {
-                            if (isMobile) return;
-                            e.target.releasePointerCapture(e.pointerId);
+                            if (e.pointerType !== 'mouse') return;
+                            if (e.target.hasPointerCapture?.(e.pointerId)) {
+                                e.target.releasePointerCapture(e.pointerId);
+                            }
+                            drag(false);
+                        }}
+                        onPointerCancel={e => {
+                            if (e.pointerType !== 'mouse') return;
+                            if (e.target.hasPointerCapture?.(e.pointerId)) {
+                                e.target.releasePointerCapture(e.pointerId);
+                            }
                             drag(false);
                         }}
                         onPointerDown={e => {
-                            if (isMobile) return;
+                            if (e.pointerType !== 'mouse') return;
+
                             e.target.setPointerCapture(e.pointerId);
                             drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())));
                         }}

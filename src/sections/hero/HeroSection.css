@@ -181,20 +181,24 @@
     height: 100%;
     transform: none;
     overflow: visible;
-    pointer-events: none;
+    pointer-events: auto;
+    touch-action: pan-y;
   }
 
   .hero-lanyard canvas {
     width: 100% !important;
     height: 100% !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
     touch-action: pan-y !important;
   }
 
-  .hero-lanyard,
+  .hero-lanyard {
+    pointer-events: none !important;
+  }
+
   .hero-lanyard .lanyard-wrapper,
   .hero-lanyard canvas {
-    pointer-events: none !important;
+    pointer-events: auto !important;
     touch-action: pan-y !important;
   }
 
@@ -222,5 +226,13 @@
 
   .hero-text-shield {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .hero-lanyard .lanyard-wrapper,
+  .hero-lanyard canvas {
+    pointer-events: auto;
+    touch-action: pan-y;
   }
 }

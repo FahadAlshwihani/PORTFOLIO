@@ -25,6 +25,7 @@ export default function Reveal({
   delay = 0,
   threshold,
   style: styleProp,
+  onVisibleChange,
   children,
   ...rest
 }) {
@@ -32,10 +33,21 @@ export default function Reveal({
   const [visible, setVisible] = useState(false);
   const observerThreshold = threshold ?? (preset ? PRESET_THRESHOLDS[preset] : 0.2);
 
+  // Lets a caller observe the same visibility transitions this component
+  // already detects, instead of attaching a second IntersectionObserver of
+  // their own (which would inevitably watch different geometry and drift
+  // out of sync with this one). Kept in a ref so passing a new inline
+  // function each render doesn't re-create the observer below.
+  const onVisibleChangeRef = useRef(onVisibleChange);
+  onVisibleChangeRef.current = onVisibleChange;
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+    const observer = new IntersectionObserver(([entry]) => {
+      setVisible(entry.isIntersecting);
+      onVisibleChangeRef.current?.(entry.isIntersecting);
+    }, {
       threshold: observerThreshold,
     });
     observer.observe(el);

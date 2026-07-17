@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, createElement, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useState, createElement, useMemo, useCallback, memo } from 'react';
 import { gsap } from 'gsap';
 import './TextType.css';
 
-const TextType = ({
+const TextType = memo(({
   text,
   as: Component = 'div',
   typingSpeed = 50,
@@ -22,6 +22,8 @@ const TextType = ({
   onSentenceComplete,
   startOnVisible = false,
   reverseMode = false,
+  active = true,
+  resetKey,
   ...props
 }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -31,6 +33,18 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible);
   const cursorRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Lets a parent replay this exact instance from scratch — through state,
+  // never by remounting it — by changing `resetKey` (e.g. a section
+  // re-entering the viewport after leaving it).
+  useEffect(() => {
+    if (resetKey === undefined) return;
+    setDisplayedText('');
+    setCurrentCharIndex(0);
+    setIsDeleting(false);
+    setCurrentTextIndex(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey]);
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
@@ -77,7 +91,7 @@ const TextType = ({
   }, [showCursor, cursorBlinkDuration]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !active) return;
 
     let timeout;
     const currentText = textArray[currentTextIndex];
@@ -146,6 +160,7 @@ const TextType = ({
     loop,
     initialDelay,
     isVisible,
+    active,
     reverseMode,
     variableSpeed,
     onSentenceComplete
@@ -174,6 +189,6 @@ const TextType = ({
       </span>
     )
   );
-};
+});
 
 export default TextType;
