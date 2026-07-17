@@ -315,53 +315,28 @@
       {
         "slug": "kneeguide",
         "title": "KneeGuide",
-        "subtitle": "A connected rehabilitation prototype that turns Arduino knee-angle readings into clinical exercise records.",
+        "subtitle": "A clinical rehabilitation platform for tracking patient exercise progress and recovery over time.",
         "client": "KneeGuide",
         "year": "2025",
         "role": "Full Stack & IoT Engineer",
         "status": "Research",
+        "badge": "Patent Pending",
         "overview": [
           {
-            "t": "KneeGuide connects a specialized React healthcare interface to an Arduino-based measurement device via Bluetooth. During assigned exercises, the platform captures "
+            "t": "KneeGuide is an active rehabilitation-technology research project I helped build, born out of hackathon collaboration with further competitions planned. It is currently "
           },
           {
-            "t": "real-time knee-angle measurements",
+            "t": "pursuing intellectual property protection",
             "h": true
           },
           {
-            "t": ", providing immediate visual feedback to the patient while storing session results for doctors to analyze through detailed reports, progress tracking, and exercise management tools."
+            "t": ", so its technical architecture and implementation are intentionally not detailed here — this listing reflects the project's real progress and my contribution to it, not a full technical writeup."
           }
         ],
-        "architecture": {
-          "frontend": "React dashboards for both doctors and patients, featuring Bluetooth pairing, live angle visualization, and progress reporting",
-          "backend": "Django services managing user accounts, clinical relationships, exercise protocols, appointments, and measurement sessions",
-          "database": "A robust relational model managing patient/doctor data, assignments, sessions, and granular angle observations",
-          "deployment": "Research web prototype hosted at knee.fyaa.io, integrated with an Arduino Bluetooth measurement unit"
-        },
         "tags": [
-          "React",
-          "Django",
-          "Bluetooth",
-          "Arduino",
-          "IoT",
-          "Real-time Data",
-          "Healthcare"
-        ],
-        "highlights": [
-          "Dedicated doctor workspace for prescribing exercises and reviewing session-level analytics",
-          "Patient workspace for managing appointments, routines, and guided device-assisted measurements",
-          "Real-time visualization that converts hardware sensor data into actionable feedback during movement",
-          "Digital progress tracking that compares completed sessions with numerical precision, replacing manual logs"
-        ],
-        "challenges": [
-          "Maintaining a stable Bluetooth connection and preventing data loss during signal drops",
-          "Synchronizing high-frequency real-time measurements with the correct patient and session context",
-          "Presenting complex movement data clearly without overwhelming the user with raw sensor samples"
-        ],
-        "solutions": [
-          "Engineered a robust pairing lifecycle with connection state validation and automated recovery handling",
-          "Normalized angle observations at the software level before linking them to active exercise sessions for data integrity",
-          "Separated live feedback visualization from summarized analytical reports while preserving detailed readings for further research"
+          "Healthcare",
+          "Rehabilitation Tech",
+          "Research & Development"
         ],
         "liveLink": "https://knee.fyaa.io",
         "codeLink": "",

@@ -269,6 +269,7 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
             <header className="project-case-header">
               <h3 id="project-modal-title" className="project-case-title">{project.title}</h3>
               {project.subtitle && <p className="project-case-subtitle">{project.subtitle}</p>}
+              {project.badge && <span className="project-case-badge">{project.badge}</span>}
             </header>
 
             {infoRows.length > 0 && (

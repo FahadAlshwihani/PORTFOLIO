@@ -25,6 +25,40 @@
   transform: translateY(0);
 }
 
+/* ── Intro: a small typed command above the terminal, framing it as a
+   continuation of the same SSH session Hero opened. Same width/breakpoints
+   as the terminal below it, same mono typography and prompt/output colors
+   (reused, not redeclared) — no separate visual language. ───────────── */
+
+.contact-intro {
+  width: min(850px, calc(100% - 3rem));
+  margin-inline: auto;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.contact-intro-status {
+  color: rgba(255, 255, 255, .74);
+  margin: .5em 0 0;
+  padding-inline-start: 2.2ch;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .contact-intro {
+    width: min(700px, calc(100% - 2.5rem));
+  }
+}
+
+@media (max-width: 560px) {
+  .contact-intro-status {
+    padding-inline-start: 0;
+  }
+}
+
 /* ── The window ───────────────────────────────────────────── */
 
 /* Glass over the animated background, not a solid card: dark translucent
@@ -43,6 +77,17 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+  /* Its own fade-in, played once the intro line above finishes typing —
+     separate from (and nested inside) the section's own scroll-triggered
+     Reveal fade. */
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+
+.contact-terminal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .contact-terminal-header {
@@ -256,7 +301,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .contact-section {
+  .contact-section,
+  .contact-terminal {
     transition: none;
     opacity: 1;
     transform: none;

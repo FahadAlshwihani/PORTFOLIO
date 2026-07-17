@@ -393,6 +393,24 @@
   margin: 0;
 }
 
+/* Small, subtle status pill for projects that need one (e.g. patent-pending
+   research work) — reuses the same accent already used for focus/hover
+   states across this file, not a new color. */
+.project-case-badge {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #b9a8ff;
+  background: rgba(82, 39, 255, .12);
+  border: 1px solid rgba(82, 39, 255, .3);
+  border-radius: 999px;
+  padding: .35rem .8rem;
+  margin-top: .75rem;
+}
+
 /* ── Info panel: compact, scannable metadata ─────────────── */
 
 .project-case-info {
