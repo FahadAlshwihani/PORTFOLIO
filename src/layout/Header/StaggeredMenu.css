@@ -51,11 +51,11 @@
   line-height: 1;
   overflow: visible;
   opacity: 1;
-  transition: opacity 0.25s ease;
+  transition: var(--header-control-hover-transition);
 }
 
 .sm-toggle:hover {
-  opacity: 0.75;
+  color: var(--header-control-hover-color) !important;
 }
 
 .sm-toggle:focus-visible {

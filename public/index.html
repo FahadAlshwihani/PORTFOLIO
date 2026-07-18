@@ -6,18 +6,22 @@
 
     <!-- Primary metadata -->
     <title>Fahad Al-Shwihani | Full-Stack Developer & IT Infrastructure Engineer</title>
+    <!-- Tightened from ~181 to ~155 characters — the previous version ran
+         past Google's typical SERP snippet cutoff and risked being
+         truncated mid-sentence; this keeps the same name/role/location/
+         stack coverage but fits fully on one or two lines of results. -->
     <meta
       name="description"
-      content="Portfolio of Fahad Al-Shwihani, a Full-Stack Developer and IT Infrastructure Engineer from Saudi Arabia building production-grade systems with React, Django, PostgreSQL, and Docker."
+      content="Fahad Al-Shwihani — Full-Stack Developer & IT Infrastructure Engineer from Saudi Arabia, building production-grade systems with React, Django & PostgreSQL."
     />
     <meta name="author" content="Fahad Al-Shwihani" />
     <meta
       name="keywords"
-      content="full-stack developer, django, react, postgresql, docker, linux, backend, frontend, software engineer, portfolio, saudi arabia, it infrastructure"
+      content="Fahad Al-Shwihani, full-stack developer, react developer, django developer, it infrastructure engineer, computer engineer, saudi software engineer, postgresql, docker, linux, backend, frontend, software engineer, portfolio, saudi arabia"
     />
     <meta name="language" content="en" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="https://fyaa.io/" />
 
     <!-- Icons — favicon.ico as the universal fallback, sized PNGs for
@@ -50,9 +54,16 @@
     <meta property="og:image" content="https://fyaa.io/OG.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Fahad Al-Shwihani — Full-Stack Developer & IT Infrastructure Engineer" />
     <meta property="og:url" content="https://fyaa.io/" />
     <meta property="og:site_name" content="Fahad Portfolio" />
     <meta property="og:locale" content="en_US" />
+    <!-- The site itself is bilingual (client-side toggle, same URL) rather
+         than served at separate localized URLs, so there's no second og:url
+         to alternate to — this just tells platforms the Arabic reading of
+         the same page exists, without claiming a URL structure the site
+         doesn't have. -->
+    <meta property="og:locale:alternate" content="ar_SA" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -62,6 +73,7 @@
       content="Explore the portfolio of Fahad Al-Shwihani — a Full-Stack Developer and IT Infrastructure Engineer building reliable, production-ready systems with React, Django, PostgreSQL, and Docker."
     />
     <meta name="twitter:image" content="https://fyaa.io/OG.png" />
+    <meta name="twitter:image:alt" content="Fahad Al-Shwihani — Full-Stack Developer & IT Infrastructure Engineer" />
 
     <!-- Hero's Lanyard card (front image + canvas-drawn back face) fetches
          this the moment it mounts, above the fold, on first paint — worth
@@ -69,17 +81,43 @@
          waiting for React to mount and useTexture/Image() to request it. -->
     <link rel="preload" as="image" href="%PUBLIC_URL%/ME.jpeg" />
 
-    <!-- Structured data -->
+    <!-- Structured data. Every field here mirrors content already published
+         elsewhere on the page (profile section, experience timeline, tech
+         stack list) — nothing invented, since inaccurate structured data
+         is against Google's own guidelines and can trigger a manual
+         action, not just fail to help. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Person",
         "name": "Fahad Al-Shwihani",
-        "jobTitle": ["Full-Stack Developer", "IT Infrastructure Engineer"],
+        "alternateName": "Fahad Alshwihani",
+        "description": "Full-Stack Developer and IT Infrastructure Engineer with a Computer Engineering background, building production-grade web systems with React and Django.",
+        "jobTitle": ["Full-Stack Developer", "IT Infrastructure Engineer", "Computer Engineer"],
         "nationality": {
           "@type": "Country",
           "name": "Saudi Arabia"
         },
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "SA"
+        },
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Flint Consulting"
+        },
+        "knowsAbout": [
+          "React",
+          "Django",
+          "PostgreSQL",
+          "Docker",
+          "Linux",
+          "IT Infrastructure",
+          "Backend Architecture",
+          "Frontend Engineering",
+          "Full-Stack Development",
+          "Computer Engineering"
+        ],
         "url": "https://fyaa.io",
         "image": "https://fyaa.io/ME.jpeg",
         "sameAs": [

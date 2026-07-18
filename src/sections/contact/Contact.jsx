@@ -546,6 +546,13 @@ const Contact = () => {
   // unmounts: the DOM stays exactly as stable as any other section's.
   return (
     <Reveal as="section" className="contact-section" onVisibleChange={setVisible}>
+      {/* Static, always in the DOM — deliberately outside the sequencing/
+          typing state below, so it can't be affected by (or accidentally
+          affect) the replay logic. Visually hidden because this section's
+          real content is the terminal itself, not a traditional heading;
+          see .visually-hidden's comment. Reuses the nav's existing
+          "Contact" translation rather than adding a new one. */}
+      <h2 className="visually-hidden">{t("navigation.contact")}</h2>
       <ContactSequence t={t} opportunities={opportunities} reducedMotion={reducedMotion} visible={visible} />
     </Reveal>
   );

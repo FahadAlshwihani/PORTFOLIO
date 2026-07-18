@@ -14,7 +14,12 @@ const Profile = () => {
     <Reveal as="section" className="profile-section">
       <div className="profile-inner">
         <div className="profile-editorial">
-          <p className="profile-eyebrow">{t('profile.eyebrow')}</p>
+          {/* .profile-eyebrow is a pure class selector (no tag qualifier),
+              so promoting this from <p> to <h2> is a semantic-only change —
+              identical CSS applies either way. Was the only main section
+              with no heading at all; this is what gives the page a proper
+              H1 > H2 structure instead of jumping straight to paragraphs. */}
+          <h2 className="profile-eyebrow">{t('profile.eyebrow')}</h2>
           <p className="profile-lede">{t('profile.lede')}</p>
           {paragraphs.map((segments, i) => (
             <p className="profile-paragraph" key={i}>

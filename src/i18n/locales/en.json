@@ -18,6 +18,9 @@
       "whatsapp": "WhatsApp"
     }
   },
+  "seo": {
+    "h1": "Fahad Al-Shwihani — Full-Stack Developer, React & Django Engineer, and IT Infrastructure Engineer"
+  },
   "hero": {
     "terminal": {
       "uptime": "Building production systems since 2024"

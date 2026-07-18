@@ -24,7 +24,11 @@ const Experience = () => {
   return (
     <section className="experience-section">
       <div className="experience-inner">
-        <p className="experience-eyebrow">{t('experience.eyebrow')}</p>
+        {/* Same reasoning as About.jsx's eyebrow: pure class selector, so
+            <p> -> <h2> is semantic-only, and it's what makes the existing
+            .experience-company <h3> elements below correctly nested
+            instead of skipping straight from H1 to H3. */}
+        <h2 className="experience-eyebrow">{t('experience.eyebrow')}</h2>
 
         <div className="experience-timeline">
           {items.map((item, i) => {

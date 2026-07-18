@@ -7,6 +7,11 @@
    direction.
    ============================================================ */
 
+:root {
+  --header-control-hover-color: #5227FF;
+  --header-control-hover-transition: color .2s ease;
+}
+
 .lang-switch {
   appearance: none;
   background: none;
@@ -35,13 +40,13 @@
   letter-spacing: .02em;
   line-height: 1;
   color: #fff;
-  transition: color .2s ease;
+  transition: var(--header-control-hover-transition);
 }
 
 /* Just a color shift — no glow, no shadow, no scale/lift. */
 .lang-switch:hover .lang-switch-value,
 .lang-switch:focus-visible .lang-switch-value {
-  color: #5227FF;
+  color: var(--header-control-hover-color);
 }
 
 .lang-switch:focus-visible {

@@ -7,6 +7,25 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 
+/* Standard accessible-hiding pattern (WebAIM/Bootstrap/Tailwind "sr-only"):
+   content stays in the accessibility tree and is crawlable, but occupies
+   no visual space and is clipped to nothing — unlike display:none, which
+   would also pull it out of the accessibility tree. Used for real
+   document-structure elements (e.g. a page's one semantic <h1>) that this
+   site's visual design doesn't have a natural place for without altering
+   the UI. */
+.visually-hidden{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
 body{
   text-rendering: optimizeLegibility;
   font-feature-settings:
