@@ -101,6 +101,8 @@ const Folder = ({
   open: controlledOpen,
   onToggle,
   interactive = true,
+  interactiveRef = null,
+  contentRef = null,
 }) => {
   const papers = items;
 
@@ -138,6 +140,13 @@ const Folder = ({
     '--folder-color': color,
     '--folder-back-color': folderBackColor,
     '--lid-delay': open ? '0ms' : `${PAPER_LEAD_MS}ms`,
+    // Exposes the `size` prop to anything rendered inside .folder (e.g. a
+    // coach-mark outline) so a fixed pixel spacing value can counter-scale
+    // itself via calc(Npx / var(--folder-size)) and land on the same
+    // visual size regardless of how large this particular Folder instance
+    // is drawn — the outline belongs to this element, so it should scale
+    // with it exactly, not need updating if `size` ever changes.
+    '--folder-size': size,
   };
 
   const folderClassName = `folder ${open ? 'open' : ''}`.trim();
@@ -161,8 +170,8 @@ const Folder = ({
 
   return (
     <div style={scaleStyle} className={className}>
-      <div className={folderClassName} style={folderStyle} {...interactiveProps}>
-        <div className="folder__back" inert={!open}>
+      <div ref={interactiveRef} className={folderClassName} style={folderStyle} {...interactiveProps}>
+        <div ref={contentRef} className="folder__back" inert={!open}>
           {papers.map((item, i) => {
             const fan = computeFan(i, papers.length);
             const offset = paperOffsets[i] || { x: 0, y: 0 };

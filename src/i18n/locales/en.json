@@ -178,6 +178,10 @@
     "subtitle": "A deep dive into the systems I've engineered from backend architecture to live production deployments.",
     "explorerLabel": "projects/",
     "openHint": "Open projects",
+    "onboarding": {
+      "folder": "Click the folder to explore my projects.",
+      "project": "Click any project to view its details."
+    },
     "controlsTitle": "Controls",
     "controlOpen": "Enter — Open project",
     "controlClose": "Esc — Close project",

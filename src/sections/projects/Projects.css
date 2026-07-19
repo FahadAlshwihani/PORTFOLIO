@@ -100,6 +100,232 @@
   margin: 0;
 }
 
+/* ── Onboarding coach marks — attached to the real element, not a
+   floating overlay ───────────────────────────────────────────────
+   .projects-coach is portaled (see Projects.jsx's CoachMark) directly
+   inside the actual target — .folder for Step 1, .folder__back for
+   Step 2 — so it is physically part of the same transformed box. There
+   is no JS anywhere computing a screen position: when the folder lifts
+   on hover or the whole thing fades in/out, this moves and scales with
+   it exactly, natively, because it's the same element's own descendant,
+   not a second copy being kept in sync by a listener. */
+
+.projects-coach {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Step 1: the outline sits a fixed distance outside .folder's own box.
+   .folder can be drawn at any `size` (see Folder.jsx's --folder-size), so
+   the pixel gap is divided by it — the highlight always reads as "~10px
+   outside the folder" regardless of how large this particular Folder
+   instance is, rather than needing updating if `size` ever changes. */
+.projects-coach--folder {
+  --coach-outset-inline: calc(10px / var(--folder-size, 1));
+  --coach-outset-block-start: calc(10px / var(--folder-size, 1));
+  --coach-outset-block-end: calc(10px / var(--folder-size, 1));
+}
+
+/* Step 2: --coach-top/-side/-bottom (set inline from Projects.jsx) are the
+   real measured reach of the open papers beyond .folder__back's own box —
+   a tight fit around the actual list, not the whole section. A small
+   constant ~10px is added on top, the same "selection highlight" breathing
+   room Step 1 uses (and, like Step 1, divided by --folder-size so it reads
+   as a constant ~10px on screen regardless of the folder's own scale). */
+.projects-coach--list {
+  --coach-outset-inline: calc(var(--coach-side, 0) * 1% + 10px / var(--folder-size, 1));
+  --coach-outset-block-start: calc(var(--coach-top, 0) * 1% + 10px / var(--folder-size, 1));
+  --coach-outset-block-end: calc(var(--coach-bottom, 0) * 1% + 10px / var(--folder-size, 1));
+}
+
+.projects-coach-outline,
+.projects-coach-arrow,
+.projects-coach-tooltip {
+  position: absolute;
+  opacity: 0;
+  animation: projects-coach-in .32s ease-out forwards;
+}
+
+.projects-coach-outline {
+  inset: calc(var(--coach-outset-block-start) * -1) calc(var(--coach-outset-inline) * -1)
+    calc(var(--coach-outset-block-end) * -1);
+  box-sizing: border-box;
+  border: 1.5px dashed rgba(143, 123, 255, .78);
+  border-radius: 14px;
+  animation: projects-coach-in .32s ease-out forwards, projects-coach-outline-pulse 2s ease-in-out .32s infinite;
+}
+
+.projects-coach--list .projects-coach-outline {
+  border-radius: 28px;
+}
+
+/* Arrow + tooltip hang off the outline's own outer edge (100% + the same
+   outset the outline itself uses to get there) — never off a separately
+   tracked position, so they can't drift from it. Logical properties (not
+   left/right) so RTL mirrors automatically: the whole thing flips to the
+   folder's other side with no JS branch deciding "which side has room". */
+.projects-coach-arrow {
+  inset-inline-start: calc(100% + var(--coach-outset-inline));
+  top: 50%;
+  transform: translateY(-50%);
+  margin-inline-start: .4rem;
+  color: #8f7bff;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  line-height: 1;
+  animation: projects-coach-in .32s ease-out forwards, projects-coach-arrow-float-inline 2.2s ease-in-out .32s infinite;
+}
+
+.projects-coach-arrow::before {
+  content: '\2190'; /* ← : points back at the folder, to its inline-start side */
+}
+
+.projects-coach-tooltip {
+  inset-inline-start: calc(100% + var(--coach-outset-inline));
+  top: 50%;
+  transform: translateY(-50%);
+  margin-inline-start: 1.9rem;
+  width: max-content;
+  max-width: min(16rem, calc(100vw - 2rem));
+  padding: .65rem .8rem;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 9px;
+  background: rgba(12, 10, 20, .82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .88);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  line-height: 1.45;
+  text-align: start;
+  white-space: normal;
+}
+
+/* Step 1 only — Step 2's arrow always points straight up (see
+   .projects-coach--list below) regardless of direction, so it's excluded
+   here rather than flipped. */
+.projects-coach[dir='rtl']:not(.projects-coach--list) .projects-coach-arrow::before {
+  content: '\2192'; /* → : folder is now to the inline-start side's mirror, i.e. the visual right */
+}
+
+/* Step 2 always sits centered underneath the whole highlighted list — a
+   Finder-style "this is what's selected" caption, not a side callout — at
+   every viewport width, not just the narrow breakpoint Step 1 falls back
+   to. Centered with a physical `left`/`translateX`, not `inset-inline-
+   start`: centering is symmetric regardless of direction, and pairing a
+   logical inset (which flips to `right` under RTL) with a transform that
+   always shifts left would only center it in LTR and push it off-center
+   the other way in RTL. */
+.projects-coach--list .projects-coach-arrow,
+.projects-coach--list .projects-coach-tooltip {
+  inset-inline-start: unset;
+  left: 50%;
+  top: calc(100% + var(--coach-outset-block-end));
+  transform: translateX(-50%);
+}
+
+.projects-coach--list .projects-coach-arrow {
+  margin-inline-start: 0;
+  margin-block-start: .35rem;
+  animation-name: projects-coach-in, projects-coach-arrow-float-block;
+}
+
+.projects-coach--list .projects-coach-arrow::before {
+  content: '\2191'; /* ↑ : points up at the list it's captioning */
+}
+
+.projects-coach--list .projects-coach-tooltip {
+  margin-inline-start: 0;
+  margin-block-start: 1.6rem;
+  text-align: center;
+}
+
+.projects-coach-outline.is-leaving,
+.projects-coach-arrow.is-leaving,
+.projects-coach-tooltip.is-leaving {
+  animation: projects-coach-out .24s ease-in forwards;
+}
+
+@keyframes projects-coach-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes projects-coach-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Low-intensity on purpose — this is a quiet, ambient "notice me", not an
+   attention-grabbing flash. */
+@keyframes projects-coach-outline-pulse {
+  0%, 100% { border-color: rgba(143, 123, 255, .5); }
+  50% { border-color: rgba(143, 123, 255, .78); }
+}
+
+/* Floats along the same axis it points, 2-3px, easing both ways — a
+   gesture repeating gently, not a bounce. */
+@keyframes projects-coach-arrow-float-inline {
+  0%, 100% { margin-inline-start: .4rem; }
+  50% { margin-inline-start: calc(.4rem + 3px); }
+}
+
+@keyframes projects-coach-arrow-float-block {
+  0%, 100% { margin-block-start: .35rem; }
+  50% { margin-block-start: calc(.35rem + 3px); }
+}
+
+/* Narrow viewports: side placement runs out of room, so the arrow/tooltip
+   move below the outline instead — a plain breakpoint, not a runtime
+   "does this fit" check. */
+@media (max-width: 640px) {
+  /* `left` (physical), not `inset-inline-start`: this centers the element,
+     and centering is symmetric regardless of direction. Pairing a logical
+     inset with `translateX(-50%)` centers correctly in LTR (left edge
+     anchor, shift left) but not RTL (the same rule becomes a right-edge
+     anchor, so shifting further left pushes it off-center instead of
+     centering it) — the exact bug this replaces. */
+  .projects-coach-arrow,
+  .projects-coach-tooltip {
+    inset-inline-start: unset;
+    left: 50%;
+    top: calc(100% + var(--coach-outset-block-end));
+    transform: translateX(-50%);
+  }
+
+  .projects-coach-arrow {
+    margin-inline-start: 0;
+    margin-block-start: .35rem;
+    animation-name: projects-coach-in, projects-coach-arrow-float-block;
+  }
+
+  .projects-coach-arrow::before,
+  .projects-coach[dir='rtl'] .projects-coach-arrow::before {
+    content: '\2191'; /* ↑ : points up at the folder from below */
+  }
+
+  .projects-coach-tooltip {
+    margin-inline-start: 0;
+    margin-block-start: 1.6rem;
+    width: min(15rem, 76vw);
+    font-size: .68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects-coach-outline,
+  .projects-coach-arrow,
+  .projects-coach-tooltip,
+  .projects-coach-outline.is-leaving,
+  .projects-coach-arrow.is-leaving,
+  .projects-coach-tooltip.is-leaving {
+    animation-duration: .001ms;
+    animation-iteration-count: 1;
+  }
+}
+
 /* ── Onboarding hint: disappears for good after the first open ── */
 
 .projects-open-hint {
