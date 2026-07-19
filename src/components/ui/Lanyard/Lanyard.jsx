@@ -302,6 +302,7 @@ function Band({
         j1 = useRef(),
         j2 = useRef(),
         j3 = useRef(),
+        j4 = useRef(),
         card = useRef(),
         anchorGroup = useRef();
 
@@ -553,9 +554,18 @@ function Band({
         composite.anisotropy = 16;
         composite.needsUpdate = true;
         return composite;
-    }, [backImage, frontTex, backTex, backCanvasTex, materials.base.map]); const [curve] = useState(
+    }, [backImage, frontTex, backTex, backCanvasTex, materials.base.map]);
+    // One more control point than before (5, not 4) — real fabric distributes
+    // its bend across many points along its length rather than a few long,
+    // stiff-feeling segments; this is the cheapest version of that (still a
+    // single Catmull-Rom spline, still the same render cost) that gives the
+    // curve room to show a gentler, more organic bend instead of a rigid
+    // 3-segment kink.
+    const [curve] = useState(
         () =>
-            new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
+            new THREE.CatmullRomCurve3([
+                new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()
+            ])
     );
     const [dragged, drag] = useState(false);
     const [hovered, hover] = useState(false);
@@ -565,12 +575,18 @@ function Band({
         0.5 * ropeScale,
         1.0 * ropeScale,
         1.5 * ropeScale,
-        2.0 * ropeScale
+        2.0 * ropeScale,
+        2.5 * ropeScale
     ];
 
-    const ropeLength = isMobile
+    // Split across one more segment now (see the extra curve point above),
+    // so each individual rope joint is shorter — scaled down proportionally
+    // (×0.75 = the old 3-segment total ÷ the new 4-segment count) so the
+    // rope's own total slack/length is unchanged, only how finely it's
+    // divided along that same length.
+    const ropeLength = (isMobile
         ? ropeScale * 0.72
-        : ropeScale;
+        : ropeScale) * 0.75;
 
     const cardJointOffset = isMobile
         ? 2.1 * ropeScale
@@ -598,7 +614,13 @@ function Band({
         [[0, 0, 0], [0, 0, 0], ropeLength]
     );
 
-    useSphericalJoint(j3, card, [
+    useRopeJoint(
+        j3,
+        j4,
+        [[0, 0, 0], [0, 0, 0], ropeLength]
+    );
+
+    useSphericalJoint(j4, card, [
         [0, 0, 0],
         [0, cardJointOffset, 0],
     ]);
@@ -617,10 +639,10 @@ function Band({
             vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
             dir.copy(vec).sub(state.camera.position).normalize();
             vec.add(dir.multiplyScalar(state.camera.position.length()));
-            [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
+            [card, j1, j2, j3, j4, fixed].forEach(ref => ref.current?.wakeUp());
             card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
         }
-        if (fixed.current && j1.current && j2.current && j3.current && card.current && band.current) {
+        if (fixed.current && j1.current && j2.current && j3.current && j4.current && card.current && band.current) {
             const safeDelta = Number.isFinite(delta)
                 ? THREE.MathUtils.clamp(delta, 0, MAX_ROPE_VISUAL_DELTA)
                 : 0;
@@ -628,11 +650,26 @@ function Band({
             const j1Position = j1.current.translation();
             const j2Position = j2.current.translation();
             const j3Position = j3.current.translation();
-            const ropePositionsAreValid = [fixedPosition, j1Position, j2Position, j3Position]
+            const j4Position = j4.current.translation();
+            const ropePositionsAreValid = [fixedPosition, j1Position, j2Position, j3Position, j4Position]
                 .every(isFiniteVector);
 
             if (ropePositionsAreValid) {
-                [[j1, j1Position], [j2, j2Position]].forEach(([ref, position]) => {
+                // A real strap isn't equally slack everywhere along its length —
+                // it's more restrained near where it's mounted and has more give
+                // toward its free end. j1 (nearest the fixed anchor) settles
+                // fastest/stiffest, j3 (nearest the card, but not the joint
+                // itself) settles slowest/softest; j2 sits at the original
+                // baseline speed in between. j4 — the segment that actually
+                // hinges onto the card — deliberately has NO smoothing at all
+                // here, same as before: it must track the card's live rotation
+                // with zero added lag, or the rope would visibly detach from
+                // the card's own motion.
+                [
+                    [j1, j1Position, 1.25],
+                    [j2, j2Position, 1],
+                    [j3, j3Position, 0.78],
+                ].forEach(([ref, position, speedMultiplier]) => {
                     if (!ref.current.lerped || !isFiniteVector(ref.current.lerped)) {
                         ref.current.lerped = new THREE.Vector3().copy(position);
                     }
@@ -642,15 +679,16 @@ function Band({
                         0.1,
                         1
                     );
-                    const interpolationSpeed = minSpeed + clampedDistance * (maxSpeed - minSpeed);
+                    const interpolationSpeed = (minSpeed + clampedDistance * (maxSpeed - minSpeed)) * speedMultiplier;
                     const interpolationAlpha = THREE.MathUtils.clamp(safeDelta * interpolationSpeed, 0, 1);
                     ref.current.lerped.lerp(position, interpolationAlpha);
                 });
 
-                curve.points[0].copy(j3Position);
-                curve.points[1].copy(j2.current.lerped);
-                curve.points[2].copy(j1.current.lerped);
-                curve.points[3].copy(fixedPosition);
+                curve.points[0].copy(j4Position);
+                curve.points[1].copy(j3.current.lerped);
+                curve.points[2].copy(j2.current.lerped);
+                curve.points[3].copy(j1.current.lerped);
+                curve.points[4].copy(fixedPosition);
                 band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
             }
 
@@ -739,7 +777,10 @@ function Band({
                 <RigidBody position={[ropeSegments[2], 0, 0]} ref={j3} {...segmentProps}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[ropeSegments[3], 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
+                <RigidBody position={[ropeSegments[3], 0, 0]} ref={j4} {...segmentProps}>
+                    <BallCollider args={[0.1]} />
+                </RigidBody>
+                <RigidBody position={[ropeSegments[4], 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
                     <CuboidCollider args={[0.8, 1.125, 0.01]} />
                     <group
                         scale={cardScale}
