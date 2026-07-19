@@ -23,7 +23,20 @@
   },
   "hero": {
     "terminal": {
-      "uptime": "Building production systems since 2024"
+      "uptime": "Building production systems since 2024",
+      "connection": {
+        "connecting": "Connecting...",
+        "authenticating": "Authenticating...",
+        "authSuccess": "Authentication successful",
+        "establishing": "Establishing secure connection...",
+        "connected": "Connected."
+      },
+      "featuredProjects": {
+        "aarc": "AARC",
+        "shahm": "Shahm",
+        "tripsplit": "TripSplit",
+        "kneeguide": "KneeGuide"
+      }
     },
     "lanyard": {
       "name": "Fahad Al-Shwihani",

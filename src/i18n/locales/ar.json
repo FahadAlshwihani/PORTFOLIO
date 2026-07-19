@@ -23,7 +23,20 @@
   },
   "hero": {
     "terminal": {
-      "uptime": "أبني أنظمة إنتاجية منذ 2024"
+      "uptime": "أبني أنظمة إنتاجية منذ 2024",
+      "connection": {
+        "connecting": "جارٍ الاتصال...",
+        "authenticating": "جارٍ التحقق من الهوية...",
+        "authSuccess": "تم التحقق من الهوية بنجاح",
+        "establishing": "جارٍ إنشاء اتصال آمن...",
+        "connected": "تم الاتصال."
+      },
+      "featuredProjects": {
+        "aarc": "آرك",
+        "shahm": "شهم",
+        "tripsplit": "قطتنا",
+        "kneeguide": "مساعد الركبة"
+      }
     },
     "lanyard": {
       "name": "فـهـــد الشويـحـــاني",

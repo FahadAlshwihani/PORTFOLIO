@@ -11,16 +11,19 @@ const PROMPT_TEXT = 'fahad@portfolio:~$';
 const SSH_CMD = 'ssh fahad@portfolio.dev';
 const WHOAMI_CMD = 'whoami';
 
-// Real SSH connection chrome — protocol/tool messages, not user-facing
-// copy. Like the prompt and the commands themselves, these stay in
-// English regardless of site language. Plays once, then stays on screen
-// permanently as the session header — it never disappears or replays.
-const CONNECTION_LINES = [
-  { t: 'Connecting...', c: 'text' },
-  { t: 'Authenticating...', c: 'text' },
-  { t: '✔ Authentication successful', c: 'check' },
-  { t: 'Establishing secure connection...', c: 'text' },
-  { t: '✔ Connected.', c: 'check' },
+// Connection status chrome — unlike the prompt and the commands, these are
+// user-facing status messages (what's happening right now), not shell
+// syntax, so they come from i18next (hero.terminal.*) and translate like
+// any other output. Plays once, then stays on screen permanently as the
+// session header — it never disappears or replays. Built from `t` inside
+// the component (see connectionLines below), not as a module constant, so
+// it re-renders in the new language immediately on switch.
+const CONNECTION_LINE_KEYS = [
+  { key: 'connecting', c: 'text' },
+  { key: 'authenticating', c: 'text' },
+  { key: 'authSuccess', c: 'check', prefix: '✔ ' },
+  { key: 'establishing', c: 'text' },
+  { key: 'connected', c: 'check', prefix: '✔ ' },
 ];
 
 // 5x7 block-letter glyphs for the whoami banner. ASCII banner art is
@@ -50,7 +53,10 @@ function buildBanner(word) {
 
 const NAME_BANNER = buildBanner('FAHAD');
 
-const FEATURED_PROJECTS = ['AARC', 'Shahm', 'TripSplit', 'KneeGuide'];
+// Display names come from i18next (hero.terminal.featuredProjects.*) so
+// they localize like any other project title — this is just the stable
+// order/key list, not the displayed text itself.
+const FEATURED_PROJECT_KEYS = ['aarc', 'shahm', 'tripsplit', 'kneeguide'];
 
 // ms per character/line at each stage of the sequence.
 const SSH_RATE = 22;
@@ -159,12 +165,25 @@ export default function Terminal() {
   // `active` param below.
   const inView = useInViewport(rootRef, { rootMargin: '200px 0px' });
 
+  // Connection header text — recomputed from `t` so a language switch
+  // updates it immediately, exactly like every other translated string
+  // below (see CONNECTION_LINE_KEYS above for why this isn't a module
+  // constant anymore).
+  const connectionLines = useMemo(
+    () => CONNECTION_LINE_KEYS.map(({ key, c, prefix }) => ({
+      t: `${prefix ?? ''}${t(`hero.terminal.connection.${key}`)}`,
+      c,
+    })),
+    [t]
+  );
+
   // The looping cycle: whoami's banner, then three short status lines,
   // then a directory listing, forever.
   const cycle = useMemo(() => {
     const role = t('contact.values.role');
     const location = t('contact.values.location');
     const uptime = t('hero.terminal.uptime');
+    const featuredProjects = FEATURED_PROJECT_KEYS.map((key) => t(`hero.terminal.featuredProjects.${key}`));
     return [
       { id: 'whoami', cmd: WHOAMI_CMD, kind: 'banner', text: NAME_BANNER },
       { id: 'role', cmd: 'echo $ROLE', kind: 'segments', text: role, segments: [{ t: role, c: 'text' }] },
@@ -174,8 +193,8 @@ export default function Terminal() {
         id: 'ls',
         cmd: 'ls featured_projects',
         kind: 'segments',
-        text: FEATURED_PROJECTS.join(' '),
-        segments: FEATURED_PROJECTS.map((name, i) => ({ t: name + (i < FEATURED_PROJECTS.length - 1 ? ' ' : ''), c: 'file' })),
+        text: featuredProjects.join(' '),
+        segments: featuredProjects.map((name, i) => ({ t: name + (i < featuredProjects.length - 1 ? ' ' : ''), c: 'file' })),
       },
     ];
   }, [t]);
@@ -184,12 +203,12 @@ export default function Terminal() {
   // values forever afterward — the block is never hidden or reset.
   const sshRevealedCount = useElapsedCount(SSH_CMD.length, SSH_RATE, 'ssh', !reducedMotion && inView);
   const linesRevealed = useElapsedCount(
-    CONNECTION_LINES.length,
+    connectionLines.length,
     LINE_RATE,
     'lines',
     !reducedMotion && inView && sshRevealedCount >= SSH_CMD.length
   );
-  const connected = linesRevealed >= CONNECTION_LINES.length;
+  const connected = linesRevealed >= connectionLines.length;
 
   // The live cycle below the connection header: exactly one command's
   // prompt + output on screen at a time. 'phase' walks through
@@ -247,7 +266,7 @@ export default function Terminal() {
   }, [reducedMotion, inView, connected, phase, current, cmdTypedCount, outputTypedCount, outputEraseCount, cmdEraseCount]);
 
   const sshRevealed = reducedMotion ? SSH_CMD.length : sshRevealedCount;
-  const linesRevealedFinal = reducedMotion ? CONNECTION_LINES.length : linesRevealed;
+  const linesRevealedFinal = reducedMotion ? connectionLines.length : linesRevealed;
   const sshCursorOn = !reducedMotion && !connected && sshRevealed < SSH_CMD.length;
   const sshSegments = sliceSegments(commandSegments(SSH_CMD), sshRevealed);
 
@@ -304,7 +323,7 @@ export default function Terminal() {
           ))}
           {sshCursorOn && <span className="term-cursor" />}
         </div>
-        {CONNECTION_LINES.slice(0, linesRevealedFinal).map((line, i) => (
+        {connectionLines.slice(0, linesRevealedFinal).map((line, i) => (
           <div className="hero-terminal-line" key={i}>
             <span className={`term-${line.c}`}>{line.t}</span>
           </div>
@@ -326,7 +345,13 @@ export default function Terminal() {
           {outputVisible && (
             <div className="hero-terminal-output">
               {current.kind === 'banner' ? (
-                <pre className="hero-ascii-banner" aria-label="FAHAD">
+                // The banner glyphs themselves are Latin ASCII art and stay
+                // that way in every language (see GLYPHS above) — but the
+                // accessible name announced to screen readers is real
+                // content, not shell/art, so it comes from the same
+                // already-localized name used everywhere else (whoami's own
+                // output in Contact) rather than a second hardcoded "FAHAD".
+                <pre className="hero-ascii-banner" aria-label={t('contact.values.name')}>
                   {current.text.slice(0, outputRevealed)}
                 </pre>
               ) : (
