@@ -317,18 +317,68 @@ function Band({
             // Portrait sits in its own framed, rounded area with margin on every
             // side — an ID-badge portrait, not an edge-to-edge photo — so it
             // reads as a deliberate focal element rather than a full-bleed crop.
-            const frameW = 680;
-            const frameH = 780;
+            // ~15% larger than the original 680x780 frame (same aspect ratio,
+            // derived from it rather than a second guessed number) so the
+            // portrait reads as the clear focal point of the back face.
+            const ORIGINAL_PORTRAIT_ASPECT = 680 / 780;
+            const frameW = 780;
+            const frameH = Math.round(frameW / ORIGINAL_PORTRAIT_ASPECT);
             const frameX = (w - frameW) / 2;
-            const frameY = 110;
-            const frameRadius = 32;
+            const frameRadius = 36;
+
+            // Name — the largest, primary text on the back face. Portrait
+            // stays the dominant element; name is the clear secondary focus;
+            // role is comfortably readable without competing with either. Both
+            // use most of the card's printable width now instead of sitting in
+            // a narrow column — SAFE_MARGIN is the only hard edge constraint;
+            // fitFontSize below measures the actual rendered text and only
+            // ever shrinks a size down from its target, so this stays correct
+            // even if the translated name/role text changes length later.
+            const name = t('hero.lanyard.name');
+            const roleLine1 = t('hero.lanyard.roleLine1');
+            const roleLine2 = t('hero.lanyard.roleLine2');
+            const centerX = w / 2;
+            const SAFE_MARGIN = 72;
+            const printableWidth = w - SAFE_MARGIN * 2;
+
+            const nameFont = size => (isArabic ? `700 ${size}px "Thmanyah Display", serif` : `bold ${size}px Georgia, serif`);
+            const roleFont = size => (isArabic ? `600 ${size}px "Thmanyah Sans", sans-serif` : `500 ${size}px Inter, Arial, sans-serif`);
+            const fitFontSize = (text, baseSize, fontBuilder) => {
+                ctx.font = fontBuilder(baseSize);
+                const measured = ctx.measureText(text).width;
+                return measured > printableWidth ? baseSize * (printableWidth / measured) : baseSize;
+            };
+
+            const nameSize = fitFontSize(name, isArabic ? 92 : 104, nameFont);
+            const roleBaseSize = isArabic ? 48 : 44;
+            const roleSize = Math.min(
+                fitFontSize(roleLine1, roleBaseSize, roleFont),
+                fitFontSize(roleLine2, roleBaseSize, roleFont)
+            );
+
+            // Gap from the frame's bottom edge to the name's baseline, and from
+            // the name's baseline down through both role lines — both grew
+            // along with the type sizes above so the extra breathing room
+            // scales with what it's separating, rather than staying fixed
+            // while the text around it gets bigger.
+            const frameToNameGap = 130;
+            const roleGap1 = isArabic ? 80 : 68;
+            const roleLineHeight = roleSize * (isArabic ? 1.5 : 1.35);
+            // Rough descender clearance below the last role line's baseline —
+            // enough to know where the text block visually ends, for centering.
+            const roleDescender = roleSize * 0.28;
+
+            const contentHeight = frameH + frameToNameGap + roleGap1 + roleLineHeight + roleDescender;
+            const frameY = Math.round((h - contentHeight) / 2);
+            const nameY = frameY + frameH + frameToNameGap;
 
             // Soft elevation behind the frame, matching the card's own
-            // restrained, non-neon materials.
+            // restrained, non-neon materials — scaled with the frame so it
+            // reads the same relative weight as before, not thinner.
             ctx.save();
             ctx.shadowColor = 'rgba(0,0,0,0.16)';
-            ctx.shadowBlur = 36;
-            ctx.shadowOffsetY = 12;
+            ctx.shadowBlur = 41;
+            ctx.shadowOffsetY = 14;
             ctx.fillStyle = '#ffffff';
             traceRoundedRect(ctx, frameX, frameY, frameW, frameH, frameRadius);
             ctx.fill();
@@ -355,43 +405,17 @@ function Band({
             ctx.stroke();
             ctx.restore();
 
-            // Name — the largest, primary text on the back face. Portrait
-            // stays the dominant element; name is the clear secondary focus
-            // (noticeably larger than before); role is comfortably readable
-            // without competing with either. Both use most of the card's
-            // printable width now instead of sitting in a narrow column —
-            // SAFE_MARGIN is the only hard edge constraint; fitFontSize below
-            // measures the actual rendered text and only ever shrinks a size
-            // down from its target, so this stays correct even if the
-            // translated name/role text changes length later.
-            const name = t('hero.lanyard.name');
-            const roleLine1 = t('hero.lanyard.roleLine1');
-            const roleLine2 = t('hero.lanyard.roleLine2');
-            const centerX = w / 2;
-            const SAFE_MARGIN = 72;
-            const printableWidth = w - SAFE_MARGIN * 2;
-
-            const nameFont = size => (isArabic ? `700 ${size}px "Thmanyah Display", serif` : `bold ${size}px Georgia, serif`);
-            const roleFont = size => (isArabic ? `500 ${size}px "Thmanyah Sans", sans-serif` : `400 ${size}px Inter, Arial, sans-serif`);
-            const fitFontSize = (text, baseSize, fontBuilder) => {
-                ctx.font = fontBuilder(baseSize);
-                const measured = ctx.measureText(text).width;
-                return measured > printableWidth ? baseSize * (printableWidth / measured) : baseSize;
-            };
-
-            const nameSize = fitFontSize(name, isArabic ? 84 : 96, nameFont);
-            const roleBaseSize = isArabic ? 44 : 40;
-            const roleSize = Math.min(
-                fitFontSize(roleLine1, roleBaseSize, roleFont),
-                fitFontSize(roleLine2, roleBaseSize, roleFont)
-            );
-
-            const nameY = frameY + frameH + 120;
-
             ctx.textAlign = 'center';
             ctx.fillStyle = '#111111';
             ctx.font = nameFont(nameSize);
+            // A touch of tracking on the name only, Latin only — a classic
+            // premium wordmark treatment that Arabic's cursive letter-joining
+            // can't take (same reasoning as the hero terminal's ASCII banner
+            // staying Latin-only: tracking out a joined script breaks its
+            // letterforms rather than just spacing them).
+            if ('letterSpacing' in ctx) ctx.letterSpacing = isArabic ? '0px' : '0.5px';
             ctx.fillText(name, centerX, nameY);
+            if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
 
             // Role — visibly smaller and lighter, never competing with the name.
             // Arabic needs noticeably more line-height than Latin here: Thmanyah's
@@ -400,8 +424,6 @@ function Band({
             // terminal's banner/prompt sizing).
             ctx.fillStyle = '#666666';
             ctx.font = roleFont(roleSize);
-            const roleGap1 = isArabic ? 74 : 62;
-            const roleLineHeight = roleSize * (isArabic ? 1.5 : 1.35);
             ctx.fillText(roleLine1, centerX, nameY + roleGap1);
             ctx.fillText(roleLine2, centerX, nameY + roleGap1 + roleLineHeight);
 
