@@ -149,6 +149,31 @@
 
 }
 
+/* ── Laptop 1201px – 1920px ──────────────────────────────────
+   The hero's intended focus split is ~85% the interactive card, ~15% the
+   terminal. Below 1201px the terminal already has its own smaller clamp
+   (see the 901–1200 bracket above); above 1920px is large/ultra-wide
+   desktop, deliberately left on the unbounded base clamp below, untouched.
+   In between — the common laptop panel sizes (1366×768 up through
+   1920×1080) — the base clamp's preferred value keeps climbing on `vw`
+   while the card's own scale (see Lanyard.jsx's sceneConfig) used to sit
+   flat across most of that same span, so the terminal grew relative to
+   the card the wider the laptop got. Fixed on both sides: the card's
+   scale is now a continuous ramp across this exact range instead of flat
+   steps (Lanyard.jsx), and this bracket scales the terminal on the same
+   kind of continuous `clamp()` as the base rule, just proportionally
+   smaller (~12% off the base curve throughout), so the ratio between the
+   two stays consistent across the whole range rather than diverging. */
+@media (min-width: 1201px) and (max-width: 1920px) {
+  .hero-terminal-stage {
+    font-size: clamp(1.05rem, .75vw + .57rem, 1.42rem);
+  }
+
+  .hero-glass-text {
+    gap: clamp(.45rem, .85vw, .75rem);
+  }
+}
+
 /* ── Mobile  ≤600px ──────────────────────────────────────── */
 
 @media (max-width: 600px) {

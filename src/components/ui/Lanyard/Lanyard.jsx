@@ -33,6 +33,28 @@ const isFiniteVector = (value) => value
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
+// Laptop-range card scale/offset (see HeroSection.css's matching "Laptop
+// 1201px–1920px" bracket for the terminal-side half of this fix): this
+// used to be two flat steps in updateScene below (3.45 up to 1600px, then
+// a jump to 3.75) while the terminal's own font-size clamp kept growing
+// continuously with `vw` across that same span — so the terminal grew
+// relative to the card the wider a "laptop" screen got, even though
+// neither piece individually "changed". Replaced with a continuous ramp
+// across the whole 1200–1920 range instead, mirroring the terminal's
+// clamp() fix. Below 1200px and above 1920px (true ultra-wide desktop)
+// are untouched, still their own fixed/stepped values.
+const LAPTOP_MIN_W = 1200;
+const LAPTOP_MAX_W = 1920;
+const LAPTOP_SCALE_MIN = 3.45;
+const LAPTOP_SCALE_MAX = 3.9;
+const LAPTOP_CARD_Y_MIN = -1.0;
+const LAPTOP_CARD_Y_MAX = -0.95;
+
+function laptopProgress(w) {
+    const clamped = Math.min(Math.max(w, LAPTOP_MIN_W), LAPTOP_MAX_W);
+    return (clamped - LAPTOP_MIN_W) / (LAPTOP_MAX_W - LAPTOP_MIN_W);
+}
+
 export default function Lanyard({
     position = [0, 0, 30],
     gravity = [0, -40, 0],
@@ -106,11 +128,27 @@ export default function Lanyard({
 
             else if (w <= 1600) {
 
+                const t = laptopProgress(w);
+
                 setSceneConfig({
                     anchorX: dir * 3.0,
                     anchorY: 4.6,
-                    cardScale: 3.45,
-                    cardY: -1.0,
+                    cardScale: LAPTOP_SCALE_MIN + t * (LAPTOP_SCALE_MAX - LAPTOP_SCALE_MIN),
+                    cardY: LAPTOP_CARD_Y_MIN + t * (LAPTOP_CARD_Y_MAX - LAPTOP_CARD_Y_MIN),
+                    ropeScale: 1
+                });
+
+            }
+
+            else if (w <= LAPTOP_MAX_W) {
+
+                const t = laptopProgress(w);
+
+                setSceneConfig({
+                    anchorX: dir * 3.5,
+                    anchorY: 5.15,
+                    cardScale: LAPTOP_SCALE_MIN + t * (LAPTOP_SCALE_MAX - LAPTOP_SCALE_MIN),
+                    cardY: LAPTOP_CARD_Y_MIN + t * (LAPTOP_CARD_Y_MAX - LAPTOP_CARD_Y_MIN),
                     ropeScale: 1
                 });
 
