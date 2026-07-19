@@ -24,10 +24,11 @@ const useReducedMotion = () => {
 
 // Intro line above the terminal — a natural continuation of the Hero SSH
 // session ("launching" the interface the terminal below is about to show).
-// Terminal output, not UI copy: stays English in both languages, same
-// reasoning as COMMANDS/EXIT_MESSAGES below.
+// The command itself is terminal output, not UI copy, so it stays a JS
+// constant (same reasoning as COMMANDS/EXIT_MESSAGES below); the status
+// line under it is a real UI message, not a shell string, so it comes from
+// i18next (contact.intro.status) instead.
 const INTRO_COMMAND = "./contact";
-const INTRO_STATUS = "Launching communication interface...";
 
 // Same shell-prompt string used in the Hero terminal (Terminal.js) — a
 // system string, not content, so it's a JS constant rather than an
@@ -422,18 +423,18 @@ const ContactSequence = ({ t, opportunities, reducedMotion, visible }) => {
             below it). */}
         <div className="contact-intro-ghost" aria-hidden="true" inert="">
           <IntroCommandLine />
-          <p className="contact-intro-status">{INTRO_STATUS}</p>
+          <p className="contact-intro-status">{t("contact.intro.status")}</p>
         </div>
 
         <div className="contact-intro-live">
           <IntroCommandLine />
           {reducedMotion ? (
-            <p className="contact-intro-status">{INTRO_STATUS}</p>
+            <p className="contact-intro-status">{t("contact.intro.status")}</p>
           ) : (
             <TextType
               as="p"
               className="contact-intro-status"
-              text={INTRO_STATUS}
+              text={t("contact.intro.status")}
               loop={false}
               typingSpeed={28}
               cursorOnlyWhileTyping

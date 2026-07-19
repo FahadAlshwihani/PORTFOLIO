@@ -737,6 +737,9 @@
     }
   },
   "contact": {
+    "intro": {
+      "status": "جارٍ تشغيل واجهة التواصل..."
+    },
     "values": {
       "name": "Fahad Al-Shwihani",
       "role": "مطوّر برمجيات متكامل (Full-Stack)",

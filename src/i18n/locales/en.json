@@ -737,6 +737,9 @@
     }
   },
   "contact": {
+    "intro": {
+      "status": "Launching communication interface..."
+    },
     "values": {
       "name": "Fahad Al-Shwihani",
       "role": "Full-Stack Engineer",
