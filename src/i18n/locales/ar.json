@@ -741,7 +741,7 @@
       "status": "جارٍ تشغيل واجهة التواصل..."
     },
     "values": {
-      "name": "Fahad Al-Shwihani",
+      "name": "فهد الشويحاني",
       "role": "مطوّر برمجيات متكامل (Full-Stack)",
       "location": "المملكة العربية السعودية",
       "status": "متاح للفرص الوظيفية",
@@ -753,7 +753,7 @@
       ]
     },
     "actions": {
-      "resumeTitle": "Resume.pdf",
+      "resumeTitle": "السيرة الذاتية.pdf",
       "resumeSubtitle": "تحميل السيرة الذاتية",
       "whatsappTitle": "واتساب",
       "whatsappSubtitle": "فتح محادثة واتساب",
@@ -762,6 +762,16 @@
       "githubTitle": "قيت هب",
       "githubSubtitle": "عرض الملف الشخصي على قيت هب"
     },
+    "files": {
+      "resume": "السيرة الذاتية.pdf",
+      "whatsapp": "واتساب",
+      "linkedin": "لينكدإن",
+      "github": "جيت هب"
+    },
+    "exitMessages": [
+      "تم إنهاء الجلسة.",
+      "تم إغلاق الاتصال."
+    ],
     "note": "غالباً ما يكون الرد خلال 24 ساعة."
   },
   "footer": {

@@ -762,6 +762,16 @@
       "githubTitle": "GitHub",
       "githubSubtitle": "View GitHub profile"
     },
+    "files": {
+      "resume": "Resume.pdf",
+      "whatsapp": "WhatsApp",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    },
+    "exitMessages": [
+      "Session terminated.",
+      "Connection closed."
+    ],
     "note": "Response time usually within 24 hours."
   },
   "footer": {

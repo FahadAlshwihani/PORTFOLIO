@@ -25,9 +25,9 @@ const useReducedMotion = () => {
 // Intro line above the terminal — a natural continuation of the Hero SSH
 // session ("launching" the interface the terminal below is about to show).
 // The command itself is terminal output, not UI copy, so it stays a JS
-// constant (same reasoning as COMMANDS/EXIT_MESSAGES below); the status
-// line under it is a real UI message, not a shell string, so it comes from
-// i18next (contact.intro.status) instead.
+// constant (same reasoning as COMMANDS below); the status line under it is
+// a real UI message, not a shell string, so it comes from i18next
+// (contact.intro.status) instead.
 const INTRO_COMMAND = "./contact";
 
 // Same shell-prompt string used in the Hero terminal (Terminal.js) — a
@@ -82,10 +82,6 @@ const COMMANDS = {
   contact: "ls contact/",
   exit: "exit",
 };
-
-// Terminal output, not UI copy — stays English in both languages, same
-// reasoning as the commands themselves.
-const EXIT_MESSAGES = ["Session terminated.", "Connection closed."];
 
 const WHATSAPP_PATH = siWhatsapp.svg.match(/<path d="([^"]+)"/)?.[1] ?? "";
 const WHATSAPP_HEX = `#${siWhatsapp.hex}`;
@@ -240,17 +236,17 @@ const buildBlocks = (t, opportunities) => [
     command: COMMANDS.contact,
     listing: true,
     lines: [
-      { className: "contact-file", text: "Resume.pdf" },
-      { className: "contact-file", text: "WhatsApp" },
-      { className: "contact-file", text: "LinkedIn" },
-      { className: "contact-file", text: "GitHub" },
+      { className: "contact-file", text: t("contact.files.resume") },
+      { className: "contact-file", text: t("contact.files.whatsapp") },
+      { className: "contact-file", text: t("contact.files.linkedin") },
+      { className: "contact-file", text: t("contact.files.github") },
     ],
   },
   {
     key: "exit",
     command: COMMANDS.exit,
     listing: true,
-    lines: EXIT_MESSAGES.map((line) => ({ className: undefined, text: line })),
+    lines: t("contact.exitMessages", { returnObjects: true }).map((line) => ({ className: undefined, text: line })),
   },
 ];
 
