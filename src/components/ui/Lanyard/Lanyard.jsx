@@ -2,22 +2,18 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Canvas, extend, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
-import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
-import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
+import { BallCollider, CuboidCollider, Physics, RigidBody, interactionGroups, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
 
 // replace with your own imports, see the usage snippet for details
 import * as THREE from 'three';
-import lanyardTexture from '../../../assets/models/lanyard/lanyard.png'; // TODO: replace with your logo image
 import cardGLB from '../../../assets/models/lanyard/card.glb';
 import { usePerformanceTier } from '../../../hooks/usePerformanceTier';
 import useInViewport from '../../../hooks/useInViewport';
 import './Lanyard.css';
 
-extend({ MeshLineGeometry, MeshLineMaterial });
-
-// MeshLine smoothing is visual-only and must never extrapolate after a
+// Strap smoothing is visual-only and must never extrapolate after a
 // throttled Safari frame. Normal 60/120 Hz frames pass through unchanged.
 const MAX_ROPE_VISUAL_DELTA = 1 / 60;
 const isFiniteVector = (value) => value
@@ -32,6 +28,121 @@ const isFiniteVector = (value) => value
 // independently, aspect-preserving (no stretching).
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
+
+/* ── Woven-strap rendering ─────────────────────────────────────────────
+   The rope is no longer a MeshLine ribbon (a camera-facing flat spline —
+   exactly what read as "a curved line"). Each of the lanyard's two strands
+   is real extruded geometry: a flat, rounded-edge elliptical cross-section
+   swept along the physics curve using parallel-transport frames (Frenet
+   frames flip at inflection points; parallel transport doesn't), so the
+   strap has genuine width, thickness and volume, and lights correctly from
+   every viewing angle. The mesh topology (index buffer, attribute sizes)
+   is built exactly once; every frame only rewrites positions/normals in
+   place — no per-frame allocation, no geometry rebuilds. */
+
+// Cross-section half-extents, in world units, scaled by the lanyardWidth
+// prop. Width ≫ thickness is what makes it read as woven strap rather
+// than shoelace: sized against this scene's ~7.8-unit visible height so
+// the full ~0.11-unit width lands in real-lanyard proportion to the card.
+const STRAP_HALF_WIDTH = 0.055;
+const STRAP_HALF_THICK = 0.016;
+const STRAP_RINGS_DESKTOP = 36;
+const STRAP_RINGS_MOBILE = 22;
+const STRAP_RADIAL_DESKTOP = 10;
+const STRAP_RADIAL_MOBILE = 8;
+
+const Z_AXIS = new THREE.Vector3(0, 0, 1);
+// Scratch vectors reused across every strand and frame (single-threaded).
+const _sTan = new THREE.Vector3();
+const _sNor = new THREE.Vector3();
+const _sBin = new THREE.Vector3();
+
+function createStrapGeometry(rings, radial) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rings * radial * 3), 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(rings * radial * 3), 3));
+    const index = [];
+    for (let i = 0; i < rings - 1; i += 1) {
+        for (let k = 0; k < radial; k += 1) {
+            const a = i * radial + k;
+            const b = i * radial + ((k + 1) % radial);
+            const c = (i + 1) * radial + k;
+            const d = (i + 1) * radial + ((k + 1) % radial);
+            index.push(a, c, b, b, c, d);
+        }
+    }
+    geo.setIndex(index);
+    // Reused every frame to sample the spline without allocating.
+    geo.userData.ringPoints = Array.from({ length: rings }, () => new THREE.Vector3());
+    return geo;
+}
+
+// Sweeps the strap cross-section along `curve` (param 0 = anchor end,
+// 1 = card end) and writes positions + analytically-correct ellipse
+// normals straight into the geometry's buffers. `twist` is the torsion
+// angle at the card end, in radians; it falls off quadratically toward
+// the anchor, so a badge rotation visibly winds the strap near the clasp
+// and dissipates on the way up — how torsion actually propagates through
+// fabric held at the far end.
+function updateStrapGeometry(geo, curve, radial, halfWidth, halfThick, twist) {
+    const pts = geo.userData.ringPoints;
+    const rings = pts.length;
+    for (let i = 0; i < rings; i += 1) curve.getPoint(i / (rings - 1), pts[i]);
+
+    const pos = geo.attributes.position.array;
+    const nor = geo.attributes.normal.array;
+
+    for (let i = 0; i < rings; i += 1) {
+        _sTan.subVectors(pts[Math.min(rings - 1, i + 1)], pts[Math.max(0, i - 1)]);
+        if (_sTan.lengthSq() < 1e-10) _sTan.set(0, 1, 0);
+        else _sTan.normalize();
+
+        if (i === 0) {
+            // Seed frame: flat side facing the camera, as closely as the
+            // first tangent allows.
+            _sNor.crossVectors(_sTan, Z_AXIS);
+            if (_sNor.lengthSq() < 1e-6) _sNor.set(1, 0, 0);
+            else _sNor.normalize();
+        } else {
+            // Parallel transport: strip the new tangent's component out of
+            // the previous ring's normal — minimal rotation, no flipping.
+            _sNor.addScaledVector(_sTan, -_sNor.dot(_sTan));
+            if (_sNor.lengthSq() < 1e-6) _sNor.crossVectors(_sTan, Z_AXIS).normalize();
+            else _sNor.normalize();
+        }
+        _sBin.crossVectors(_sTan, _sNor);
+
+        const s = i / (rings - 1);
+        const theta = twist * s * s;
+        const p = pts[i];
+
+        for (let k = 0; k < radial; k += 1) {
+            const phi = (k / radial) * Math.PI * 2 + theta;
+            const cosPhi = Math.cos(phi);
+            const sinPhi = Math.sin(phi);
+            const o = (i * radial + k) * 3;
+
+            pos[o] = p.x + _sNor.x * cosPhi * halfWidth + _sBin.x * sinPhi * halfThick;
+            pos[o + 1] = p.y + _sNor.y * cosPhi * halfWidth + _sBin.y * sinPhi * halfThick;
+            pos[o + 2] = p.z + _sNor.z * cosPhi * halfWidth + _sBin.z * sinPhi * halfThick;
+
+            // Outward normal of an ellipse is (cos/a, sin/b), not the
+            // radial direction — using the radial direction would shade
+            // the flat faces as if the strap were a round cord.
+            let nx = cosPhi / halfWidth;
+            let ny = sinPhi / halfThick;
+            const invLen = 1 / Math.hypot(nx, ny);
+            nx *= invLen;
+            ny *= invLen;
+            nor[o] = _sNor.x * nx + _sBin.x * ny;
+            nor[o + 1] = _sNor.y * nx + _sBin.y * ny;
+            nor[o + 2] = _sNor.z * nx + _sBin.z * ny;
+        }
+    }
+
+    geo.attributes.position.needsUpdate = true;
+    geo.attributes.normal.needsUpdate = true;
+}
 
 // Laptop-range card scale/offset (see HeroSection.css's matching "Laptop
 // 1201px–1920px" bracket for the terminal-side half of this fix): this
@@ -63,7 +174,6 @@ export default function Lanyard({
     frontImage = null,
     backImage = null,
     imageFit = 'cover',
-    lanyardImage = null,
     lanyardWidth = 1,
     rtl = false
 }) {
@@ -225,7 +335,6 @@ export default function Lanyard({
                         frontImage={frontImage}
                         backImage={backImage}
                         imageFit={imageFit}
-                        lanyardImage={lanyardImage}
                         lanyardWidth={lanyardWidth}
                         anchorOffsetX={sceneConfig.anchorX}
                         anchorY={sceneConfig.anchorY}
@@ -282,8 +391,6 @@ function Band({
 
     imageFit = 'cover',
 
-    lanyardImage = null,
-
     lanyardWidth = 1,
 
     anchorOffsetX = 2.5,
@@ -297,12 +404,19 @@ function Band({
     ropeScale = 1
 
 }) {
-    const band = useRef(),
-        fixed = useRef(),
-        j1 = useRef(),
-        j2 = useRef(),
-        j3 = useRef(),
-        j4 = useRef(),
+    // Two strands (left/right) form the V: each is its own chain of three
+    // free bodies between a fixed anchor and the shared connector body the
+    // card hangs from — the physical clasp where both strands meet.
+    const fixedL = useRef(),
+        fixedR = useRef(),
+        l1 = useRef(),
+        l2 = useRef(),
+        l3 = useRef(),
+        r1 = useRef(),
+        r2 = useRef(),
+        r3 = useRef(),
+        connector = useRef(),
+        connectorMesh = useRef(),
         card = useRef(),
         anchorGroup = useRef();
 
@@ -315,8 +429,13 @@ function Band({
     // carry the card through a full rotation instead of dying out after a
     // quarter-turn. linearDamping (the swing/sway feel) is untouched.
     const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 3, linearDamping: 4 };
+    // Strand bodies exist purely to give the strap mass and constraint
+    // points — nothing in this scene should ever collide with them (the
+    // chains are held together by joints alone), so they're placed in a
+    // collision group that matches nothing. This also makes the two
+    // strands' overlapping initial positions safely inert.
+    const strandColliderProps = { args: [0.09], collisionGroups: interactionGroups(2, []) };
     const { nodes, materials } = useGLTF(cardGLB);
-    const texture = useTexture(lanyardImage || lanyardTexture);
     // useTexture must be called unconditionally; use a blank pixel when an image
     // isn't supplied for a given face, then skip compositing it below.
     const frontTex = useTexture(frontImage || '/ME.jpeg');
@@ -555,72 +674,73 @@ function Band({
         composite.needsUpdate = true;
         return composite;
     }, [backImage, frontTex, backTex, backCanvasTex, materials.base.map]);
-    // One more control point than before (5, not 4) — real fabric distributes
-    // its bend across many points along its length rather than a few long,
-    // stiff-feeling segments; this is the cheapest version of that (still a
-    // single Catmull-Rom spline, still the same render cost) that gives the
-    // curve room to show a gentler, more organic bend instead of a rigid
-    // 3-segment kink.
-    const [curve] = useState(
-        () =>
-            new THREE.CatmullRomCurve3([
-                new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()
-            ])
-    );
+    // One Catmull-Rom per strand, five control points each: fixed anchor,
+    // the strand's three physics bodies (smoothed), and the shared
+    // connector. Point order is anchor → connector so the sweep's `s`
+    // parameter runs 0 at the mount and 1 at the card — which is what the
+    // twist falloff in updateStrapGeometry keys off.
+    const [curves] = useState(() => ({
+        left: new THREE.CatmullRomCurve3(
+            Array.from({ length: 5 }, () => new THREE.Vector3()), false, 'chordal'
+        ),
+        right: new THREE.CatmullRomCurve3(
+            Array.from({ length: 5 }, () => new THREE.Vector3()), false, 'chordal'
+        ),
+    }));
     const [dragged, drag] = useState(false);
     const [hovered, hover] = useState(false);
     const idleStartedAt = useRef(null);
+    // Torsion currently applied at the card end of both strands — eased
+    // toward the card's live yaw every frame rather than snapped to it, so
+    // twists wind up and dissipate gradually.
+    const twistRef = useRef(0);
 
-    const ropeSegments = [
-        0.5 * ropeScale,
-        1.0 * ropeScale,
-        1.5 * ropeScale,
-        2.0 * ropeScale,
-        2.5 * ropeScale
-    ];
+    const strapRings = isMobile ? STRAP_RINGS_MOBILE : STRAP_RINGS_DESKTOP;
+    const strapRadial = isMobile ? STRAP_RADIAL_MOBILE : STRAP_RADIAL_DESKTOP;
+    const strapGeoL = useMemo(() => createStrapGeometry(strapRings, strapRadial), [strapRings, strapRadial]);
+    const strapGeoR = useMemo(() => createStrapGeometry(strapRings, strapRadial), [strapRings, strapRadial]);
+    useEffect(() => () => {
+        strapGeoL.dispose();
+        strapGeoR.dispose();
+    }, [strapGeoL, strapGeoR]);
 
-    // Split across one more segment now (see the extra curve point above),
-    // so each individual rope joint is shorter — scaled down proportionally
-    // (×0.75 = the old 3-segment total ÷ the new 4-segment count) so the
-    // rope's own total slack/length is unchanged, only how finely it's
-    // divided along that same length.
-    const ropeLength = (isMobile
-        ? ropeScale * 0.72
-        : ropeScale) * 0.75;
+    const strapHalfWidth = STRAP_HALF_WIDTH * lanyardWidth;
+    const strapHalfThick = STRAP_HALF_THICK * lanyardWidth;
+
+    // V-shape layout. hangLength is the vertical drop below the anchor
+    // bodies and reproduces the old rope's totals — desktop 4×0.75, mobile
+    // 4×0.54; the old [0,1,0] start-anchor lift is instead baked into the
+    // anchors' own y=+1 positions in the JSX below, NOT added here too —
+    // so the card still comes to rest at the same height as before. Each
+    // strand is the hypotenuse from its own spread-out anchor down to that
+    // meeting point. The two strands are deliberately NOT the same length:
+    // a real hanging lanyard always sits a hair uneven, so the left strand
+    // runs ~4% long (visible slack) against a near-taut right strand.
+    const anchorSpread = isMobile ? 0.5 : 0.7;
+    const hangLength = isMobile ? ropeScale * 2.16 : ropeScale * 3;
+    const strandTotal = Math.hypot(hangLength, anchorSpread);
+    const strandSegL = (strandTotal * 1.035) / 4;
+    const strandSegR = (strandTotal * 0.995) / 4;
 
     const cardJointOffset = isMobile
         ? 2.1 * ropeScale
         : (1.65 + (cardScale - 2.25) * 0.9 + (cardY + 1.2)) * ropeScale;
 
-    const ropeStartAnchor = isMobile
-        ? [0, 0, 0]
-        : [0, 1, 0];
+    useRopeJoint(fixedL, l1, [[0, 0, 0], [0, 0, 0], strandSegL]);
+    useRopeJoint(l1, l2, [[0, 0, 0], [0, 0, 0], strandSegL]);
+    useRopeJoint(l2, l3, [[0, 0, 0], [0, 0, 0], strandSegL]);
+    useRopeJoint(l3, connector, [[0, 0, 0], [0, 0, 0], strandSegL]);
 
-    useRopeJoint(
-        fixed,
-        j1,
-        [ropeStartAnchor, [0, 0, 0], ropeLength]
-    );
+    useRopeJoint(fixedR, r1, [[0, 0, 0], [0, 0, 0], strandSegR]);
+    useRopeJoint(r1, r2, [[0, 0, 0], [0, 0, 0], strandSegR]);
+    useRopeJoint(r2, r3, [[0, 0, 0], [0, 0, 0], strandSegR]);
+    useRopeJoint(r3, connector, [[0, 0, 0], [0, 0, 0], strandSegR]);
 
-    useRopeJoint(
-        j1,
-        j2,
-        [[0, 0, 0], [0, 0, 0], ropeLength]
-    );
-
-    useRopeJoint(
-        j2,
-        j3,
-        [[0, 0, 0], [0, 0, 0], ropeLength]
-    );
-
-    useRopeJoint(
-        j3,
-        j4,
-        [[0, 0, 0], [0, 0, 0], ropeLength]
-    );
-
-    useSphericalJoint(j4, card, [
+    // The card hangs off the connector — the one place both strands and
+    // the badge mechanically meet, exactly like a real clasp. A spherical
+    // joint (a hinge point, not a weld) is what lets the badge yaw/pitch
+    // under the clasp without the strands having to rigidly follow.
+    useSphericalJoint(connector, card, [
         [0, 0, 0],
         [0, cardJointOffset, 0],
     ]);
@@ -639,36 +759,42 @@ function Band({
             vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
             dir.copy(vec).sub(state.camera.position).normalize();
             vec.add(dir.multiplyScalar(state.camera.position.length()));
-            [card, j1, j2, j3, j4, fixed].forEach(ref => ref.current?.wakeUp());
+            [card, connector, l1, l2, l3, r1, r2, r3, fixedL, fixedR].forEach(ref => ref.current?.wakeUp());
             card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
         }
-        if (fixed.current && j1.current && j2.current && j3.current && j4.current && card.current && band.current) {
+        const bodiesReady = fixedL.current && fixedR.current
+            && l1.current && l2.current && l3.current
+            && r1.current && r2.current && r3.current
+            && connector.current && card.current;
+        if (bodiesReady) {
             const safeDelta = Number.isFinite(delta)
                 ? THREE.MathUtils.clamp(delta, 0, MAX_ROPE_VISUAL_DELTA)
                 : 0;
-            const fixedPosition = fixed.current.translation();
-            const j1Position = j1.current.translation();
-            const j2Position = j2.current.translation();
-            const j3Position = j3.current.translation();
-            const j4Position = j4.current.translation();
-            const ropePositionsAreValid = [fixedPosition, j1Position, j2Position, j3Position, j4Position]
-                .every(isFiniteVector);
+            const anchorLPos = fixedL.current.translation();
+            const anchorRPos = fixedR.current.translation();
+            const l1Pos = l1.current.translation();
+            const l2Pos = l2.current.translation();
+            const l3Pos = l3.current.translation();
+            const r1Pos = r1.current.translation();
+            const r2Pos = r2.current.translation();
+            const r3Pos = r3.current.translation();
+            const connectorPos = connector.current.translation();
+            const ropePositionsAreValid = [
+                anchorLPos, anchorRPos, l1Pos, l2Pos, l3Pos, r1Pos, r2Pos, r3Pos, connectorPos,
+            ].every(isFiniteVector);
 
             if (ropePositionsAreValid) {
-                // A real strap isn't equally slack everywhere along its length —
-                // it's more restrained near where it's mounted and has more give
-                // toward its free end. j1 (nearest the fixed anchor) settles
-                // fastest/stiffest, j3 (nearest the card, but not the joint
-                // itself) settles slowest/softest; j2 sits at the original
-                // baseline speed in between. j4 — the segment that actually
-                // hinges onto the card — deliberately has NO smoothing at all
-                // here, same as before: it must track the card's live rotation
-                // with zero added lag, or the rope would visibly detach from
-                // the card's own motion.
+                // A real strap isn't equally slack everywhere along its
+                // length — it's more restrained near where it's mounted and
+                // has more give toward its free end. Per strand: the body
+                // nearest the anchor settles fastest/stiffest, the one
+                // nearest the clasp slowest/softest. The connector itself is
+                // NEVER smoothed: it's the point the card physically hangs
+                // from, and any added lag there would visibly detach the
+                // strap from the badge's own motion.
                 [
-                    [j1, j1Position, 1.25],
-                    [j2, j2Position, 1],
-                    [j3, j3Position, 0.78],
+                    [l1, l1Pos, 1.25], [l2, l2Pos, 1], [l3, l3Pos, 0.78],
+                    [r1, r1Pos, 1.25], [r2, r2Pos, 1], [r3, r3Pos, 0.78],
                 ].forEach(([ref, position, speedMultiplier]) => {
                     if (!ref.current.lerped || !isFiniteVector(ref.current.lerped)) {
                         ref.current.lerped = new THREE.Vector3().copy(position);
@@ -684,12 +810,46 @@ function Band({
                     ref.current.lerped.lerp(position, interpolationAlpha);
                 });
 
-                curve.points[0].copy(j4Position);
-                curve.points[1].copy(j3.current.lerped);
-                curve.points[2].copy(j2.current.lerped);
-                curve.points[3].copy(j1.current.lerped);
-                curve.points[4].copy(fixedPosition);
-                band.current.geometry.setPoints(curve.getPoints(isMobile ? 16 : 32));
+                curves.left.points[0].copy(anchorLPos);
+                curves.left.points[1].copy(l1.current.lerped);
+                curves.left.points[2].copy(l2.current.lerped);
+                curves.left.points[3].copy(l3.current.lerped);
+                curves.left.points[4].copy(connectorPos);
+
+                curves.right.points[0].copy(anchorRPos);
+                curves.right.points[1].copy(r1.current.lerped);
+                curves.right.points[2].copy(r2.current.lerped);
+                curves.right.points[3].copy(r3.current.lerped);
+                curves.right.points[4].copy(connectorPos);
+
+                // Torsion follows the badge's yaw, eased in over ~0.2s so a
+                // spin winds the strap up and a stop lets it visibly relax
+                // back — never an instant snap. The proxy for "how far
+                // yawed" is the rotation quaternion's own y-component (the
+                // same cheap trick the face-forward restoring torque below
+                // already uses on this exact value) rather than an Euler
+                // decomposition: Euler angles wrap at ±π, which the card's
+                // own momentum can carry it through mid-spin (see the idle
+                // torque below), and that wrap would show up here as
+                // exactly the instant snap this is supposed to avoid. The
+                // quaternion component has no such discontinuity and
+                // naturally saturates instead of growing unboundedly,
+                // which is also a closer match to how real fabric resists
+                // torsion than a raw angle would be.
+                const cardRotQ = card.current.rotation();
+                if (isFiniteVector(cardRotQ)) {
+                    const targetTwist = THREE.MathUtils.clamp(cardRotQ.y * 2.2, -1.1, 1.1);
+                    twistRef.current += (targetTwist - twistRef.current) * Math.min(1, safeDelta * 5);
+                }
+
+                updateStrapGeometry(strapGeoL, curves.left, strapRadial, strapHalfWidth, strapHalfThick, twistRef.current);
+                // Marginally different torsion on the second strand — the two
+                // sides of a real lanyard never wind identically.
+                updateStrapGeometry(strapGeoR, curves.right, strapRadial, strapHalfWidth, strapHalfThick, twistRef.current * 0.88);
+
+                if (connectorMesh.current) {
+                    connectorMesh.current.position.set(connectorPos.x, connectorPos.y, connectorPos.z);
+                }
             }
 
             const cardAngularVelocity = card.current.angvel();
@@ -756,9 +916,6 @@ function Band({
 
     });
 
-    curve.curveType = 'chordal';
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-
     return (
         <>
             <group
@@ -767,20 +924,42 @@ function Band({
 
                 position={[anchorOffsetX, anchorY, 0]}
             >
-                <RigidBody ref={fixed} {...segmentProps} type="kinematicPosition" />
-                <RigidBody position={[ropeSegments[0], 0, 0]} ref={j1} {...segmentProps}>
-                    <BallCollider args={[0.1]} />
+                {/* Two fixed mounts, spread apart — the top of the V. The left
+                    one hangs a hair higher: real lanyards are never mounted
+                    perfectly level, and this seeds the natural asymmetry the
+                    unequal strand lengths continue below. */}
+                <RigidBody ref={fixedL} {...segmentProps} type="kinematicPosition" position={[-anchorSpread, isMobile ? 0.06 : 1.06, 0]} />
+                <RigidBody ref={fixedR} {...segmentProps} type="kinematicPosition" position={[anchorSpread, isMobile ? 0 : 1, 0]} />
+
+                {/* Strand bodies start fanned along each side; gravity pulls
+                    them into the V on the first frames — the same "drop in"
+                    the single rope had. Their colliders match nothing (see
+                    strandColliderProps), so the two chains can cross and
+                    converge freely without contact jitter. */}
+                <RigidBody position={[-anchorSpread * 0.75, 0, 0]} ref={l1} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
                 </RigidBody>
-                <RigidBody position={[ropeSegments[1], 0, 0]} ref={j2} {...segmentProps}>
-                    <BallCollider args={[0.1]} />
+                <RigidBody position={[-anchorSpread * 0.5, 0, 0]} ref={l2} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
                 </RigidBody>
-                <RigidBody position={[ropeSegments[2], 0, 0]} ref={j3} {...segmentProps}>
-                    <BallCollider args={[0.1]} />
+                <RigidBody position={[-anchorSpread * 0.25, 0, 0]} ref={l3} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
                 </RigidBody>
-                <RigidBody position={[ropeSegments[3], 0, 0]} ref={j4} {...segmentProps}>
-                    <BallCollider args={[0.1]} />
+                <RigidBody position={[anchorSpread * 0.75, 0, 0]} ref={r1} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
                 </RigidBody>
-                <RigidBody position={[ropeSegments[4], 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
+                <RigidBody position={[anchorSpread * 0.5, 0, 0]} ref={r2} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
+                </RigidBody>
+                <RigidBody position={[anchorSpread * 0.25, 0, 0]} ref={r3} {...segmentProps}>
+                    <BallCollider {...strandColliderProps} />
+                </RigidBody>
+
+                <RigidBody position={[0, -0.25, 0]} ref={connector} {...segmentProps}>
+                    <BallCollider args={[0.05]} collisionGroups={interactionGroups(2, [])} />
+                </RigidBody>
+
+                <RigidBody position={[1.2, -0.4, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
                     <CuboidCollider args={[0.8, 1.125, 0.01]} />
                     <group
                         scale={cardScale}
@@ -827,23 +1006,27 @@ function Band({
                     </group>
                 </RigidBody>
             </group>
-            <mesh ref={band}>
-                <meshLineGeometry />
-                {/* <meshLineMaterial
-                    color="black"
-                    depthTest={false}
-                    resolution={isMobile ? [1000, 2000] : [1000, 1000]}
-                    useMap
-                    map={texture}
-                    repeat={[-4, 1]}
-                    lineWidth={lanyardWidth}
-                /> */}
-                <meshLineMaterial
-                    depthTest={false}
-                    resolution={isMobile ? [1000, 2000] : [1000, 1000]}
-                    lineWidth={lanyardWidth}
-                    color="#1a1a1a"
-                />
+            {/* The straps render in world space (their vertex positions come
+                straight from body translations), so they live outside the
+                anchor group at identity transform. frustumCulled off because
+                positions stream in-place — the stale bounding sphere would
+                let the camera cull a mid-swing strap. Matte, high-roughness,
+                near-zero-metalness material is the woven-fabric read; the
+                Environment lightformers give the rounded edges their sheen. */}
+            <mesh geometry={strapGeoL} frustumCulled={false}>
+                <meshStandardMaterial color="#1a1a1a" roughness={0.88} metalness={0.04} side={THREE.DoubleSide} />
+            </mesh>
+            <mesh geometry={strapGeoR} frustumCulled={false}>
+                <meshStandardMaterial color="#1a1a1a" roughness={0.88} metalness={0.04} side={THREE.DoubleSide} />
+            </mesh>
+            {/* The clasp: a small polished-metal bead at the exact physics
+                point where both strands and the card's own joint meet. It's
+                what visually closes the V — both strap ends terminate inside
+                it, so there's no floating end or hard intersection at the
+                junction. Position follows the connector body every frame. */}
+            <mesh ref={connectorMesh} frustumCulled={false}>
+                <sphereGeometry args={[0.075, 20, 14]} />
+                <meshStandardMaterial color="#26262b" roughness={0.32} metalness={0.85} />
             </mesh>
         </>
     );
