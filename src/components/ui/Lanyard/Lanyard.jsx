@@ -191,7 +191,12 @@ export default function Lanyard({
 }) {
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
     const wrapperRef = useRef(null);
-    const { dpr: tierDpr, physicsHz, reducedMotion } = usePerformanceTier();
+    const { tier, dpr: tierDpr, physicsHz, reducedMotion } = usePerformanceTier();
+    // On the lowest tiers, drop the card's clearcoat pass and use the
+    // cheaper mobile-density strap geometry even on desktop — real
+    // GPU/per-frame-CPU savings on weak hardware, and the difference is
+    // marginal on a small, constantly-moving prop.
+    const lowDetail = tier === 'low' || tier === 'very-low';
     // Generous lead so physics/rendering are already warmed back up before
     // the card actually scrolls into view — no frozen-frame pop-in.
     const inView = useInViewport(wrapperRef, { rootMargin: '300px 0px' });
@@ -354,6 +359,7 @@ export default function Lanyard({
                 <Physics gravity={gravity} timeStep={1 / effectivePhysicsHz}>
                     <Band
                         isMobile={isMobile}
+                        lowDetail={lowDetail}
                         frontImage={frontImage}
                         backImage={backImage}
                         imageFit={imageFit}
@@ -406,6 +412,8 @@ function Band({
     minSpeed = 0,
 
     isMobile = false,
+
+    lowDetail = false,
 
     frontImage = null,
 
@@ -737,8 +745,9 @@ function Band({
     // twists wind up and dissipate gradually.
     const twistRef = useRef(0);
 
-    const strapRings = isMobile ? STRAP_RINGS_MOBILE : STRAP_RINGS_DESKTOP;
-    const strapRadial = isMobile ? STRAP_RADIAL_MOBILE : STRAP_RADIAL_DESKTOP;
+    const cheapStrap = isMobile || lowDetail;
+    const strapRings = cheapStrap ? STRAP_RINGS_MOBILE : STRAP_RINGS_DESKTOP;
+    const strapRadial = cheapStrap ? STRAP_RADIAL_MOBILE : STRAP_RADIAL_DESKTOP;
     const strapGeoL = useMemo(() => createStrapGeometry(strapRings, strapRadial), [strapRings, strapRadial]);
     const strapGeoR = useMemo(() => createStrapGeometry(strapRings, strapRadial), [strapRings, strapRadial]);
     useEffect(() => () => {
@@ -1042,7 +1051,7 @@ function Band({
                             <meshPhysicalMaterial
                                 map={cardMap}
                                 map-anisotropy={16}
-                                clearcoat={isMobile ? 0 : 1}
+                                clearcoat={isMobile || lowDetail ? 0 : 1}
                                 clearcoatRoughness={0.15}
                                 roughness={0.9}
                                 metalness={0.8}
