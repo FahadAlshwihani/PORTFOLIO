@@ -51,6 +51,18 @@ const STRAP_RINGS_MOBILE = 22;
 const STRAP_RADIAL_DESKTOP = 10;
 const STRAP_RADIAL_MOBILE = 8;
 
+// angularDamping lowered from 4 — a spin now bleeds off more slowly, so
+// momentum from a drag-release or the idle torque below can actually
+// carry the card through a full rotation instead of dying out after a
+// quarter-turn. linearDamping (the swing/sway feel) is untouched.
+// Static — hoisted out of Band so it isn't re-allocated per render.
+const SEGMENT_PROPS = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 3, linearDamping: 4 };
+// Strand bodies exist purely to give the strap mass and constraint
+// points — nothing in this scene should ever collide with them (the
+// chains are held together by joints alone), so they're placed in a
+// collision group that matches nothing.
+const STRAND_COLLIDER_PROPS = { args: [0.09], collisionGroups: interactionGroups(2, []) };
+
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
 // Scratch vectors reused across every strand and frame (single-threaded).
 const _sTan = new THREE.Vector3();
@@ -430,21 +442,22 @@ function Band({
         card = useRef(),
         anchorGroup = useRef();
 
-    const vec = new THREE.Vector3(),
-        ang = new THREE.Vector3(),
-        rot = new THREE.Vector3(),
-        dir = new THREE.Vector3();
-    // angularDamping lowered from 4 — a spin now bleeds off more slowly, so
-    // momentum from a drag-release or the idle torque below can actually
-    // carry the card through a full rotation instead of dying out after a
-    // quarter-turn. linearDamping (the swing/sway feel) is untouched.
-    const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 3, linearDamping: 4 };
-    // Strand bodies exist purely to give the strap mass and constraint
-    // points — nothing in this scene should ever collide with them (the
-    // chains are held together by joints alone), so they're placed in a
-    // collision group that matches nothing. This also makes the two
-    // strands' overlapping initial positions safely inert.
-    const strandColliderProps = { args: [0.09], collisionGroups: interactionGroups(2, []) };
+    // Per-frame scratch vectors — one set for the component's lifetime,
+    // not re-allocated on every React render (Band re-renders on
+    // hover/drag state changes).
+    const scratch = useRef(null);
+    if (scratch.current === null) {
+        scratch.current = {
+            vec: new THREE.Vector3(),
+            ang: new THREE.Vector3(),
+            rot: new THREE.Vector3(),
+            dir: new THREE.Vector3()
+        };
+    }
+    const { vec, ang, rot, dir } = scratch.current;
+    // Last touch-action written to the canvas, so useFrame only touches
+    // the DOM when it actually changes instead of every single frame.
+    const lastTouchActionRef = useRef('');
     const { nodes, materials } = useGLTF(cardGLB);
     // useTexture must be called unconditionally; use a blank pixel when an image
     // isn't supplied for a given face, then skip compositing it below.
@@ -937,11 +950,16 @@ function Band({
             }
         }
 
-        // project card to screen coords and move hit zone + enable canvas events on hover
-        const canvas = state.gl.domElement;
-
-        canvas.style.pointerEvents = 'auto';
-        canvas.style.touchAction = dragged ? 'none' : (isMobile ? 'pan-y' : 'auto');
+        // Keep the canvas' touch-action in sync with drag state, but only
+        // write to the DOM when it actually changes — this used to run
+        // two style assignments on every single frame.
+        const nextTouchAction = dragged ? 'none' : (isMobile ? 'pan-y' : 'auto');
+        if (lastTouchActionRef.current !== nextTouchAction) {
+            lastTouchActionRef.current = nextTouchAction;
+            const canvas = state.gl.domElement;
+            canvas.style.pointerEvents = 'auto';
+            canvas.style.touchAction = nextTouchAction;
+        }
 
     });
 
@@ -957,38 +975,38 @@ function Band({
                     one hangs a hair higher: real lanyards are never mounted
                     perfectly level, and this seeds the natural asymmetry the
                     unequal strand lengths continue below. */}
-                <RigidBody ref={fixedL} {...segmentProps} type="kinematicPosition" position={[-anchorSpread, isMobile ? 0.06 : 1.06, 0]} />
-                <RigidBody ref={fixedR} {...segmentProps} type="kinematicPosition" position={[anchorSpread, isMobile ? 0 : 1, 0]} />
+                <RigidBody ref={fixedL} {...SEGMENT_PROPS} type="kinematicPosition" position={[-anchorSpread, isMobile ? 0.06 : 1.06, 0]} />
+                <RigidBody ref={fixedR} {...SEGMENT_PROPS} type="kinematicPosition" position={[anchorSpread, isMobile ? 0 : 1, 0]} />
 
                 {/* Strand bodies start fanned along each side; gravity pulls
                     them into the V on the first frames — the same "drop in"
                     the single rope had. Their colliders match nothing (see
-                    strandColliderProps), so the two chains can cross and
+                    STRAND_COLLIDER_PROPS), so the two chains can cross and
                     converge freely without contact jitter. */}
-                <RigidBody position={[-anchorSpread * 0.75, 0, 0]} ref={l1} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[-anchorSpread * 0.75, 0, 0]} ref={l1} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
-                <RigidBody position={[-anchorSpread * 0.5, 0, 0]} ref={l2} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[-anchorSpread * 0.5, 0, 0]} ref={l2} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
-                <RigidBody position={[-anchorSpread * 0.25, 0, 0]} ref={l3} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[-anchorSpread * 0.25, 0, 0]} ref={l3} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
-                <RigidBody position={[anchorSpread * 0.75, 0, 0]} ref={r1} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[anchorSpread * 0.75, 0, 0]} ref={r1} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
-                <RigidBody position={[anchorSpread * 0.5, 0, 0]} ref={r2} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[anchorSpread * 0.5, 0, 0]} ref={r2} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
-                <RigidBody position={[anchorSpread * 0.25, 0, 0]} ref={r3} {...segmentProps}>
-                    <BallCollider {...strandColliderProps} />
+                <RigidBody position={[anchorSpread * 0.25, 0, 0]} ref={r3} {...SEGMENT_PROPS}>
+                    <BallCollider {...STRAND_COLLIDER_PROPS} />
                 </RigidBody>
 
-                <RigidBody position={[0, -0.25, 0]} ref={connector} {...segmentProps}>
+                <RigidBody position={[0, -0.25, 0]} ref={connector} {...SEGMENT_PROPS}>
                     <BallCollider args={[0.05]} collisionGroups={interactionGroups(2, [])} />
                 </RigidBody>
 
-                <RigidBody position={[1.2, -0.4, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
+                <RigidBody position={[1.2, -0.4, 0]} ref={card} {...SEGMENT_PROPS} type={dragged ? 'kinematicPosition' : 'dynamic'}>
                     <CuboidCollider args={[0.8, 1.125, 0.01]} />
                     <group
                         scale={cardScale}
