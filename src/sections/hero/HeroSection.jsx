@@ -1,5 +1,4 @@
-import { Suspense } from 'react';
-import { LazyLanyard } from './heroCanvases';
+import Lanyard from '../../components/ui/Lanyard/Lanyard';
 import Terminal from './Terminal';
 import './HeroSection.css';
 
@@ -7,6 +6,12 @@ import './HeroSection.css';
 // sibling positioned behind both Hero and About, so its canvas can bleed
 // past this section's own overflow:hidden (which stays in place for the
 // Lanyard) into the top of About. Hero's own box/height is unchanged.
+//
+// The hero canvases are imported eagerly (NOT code-split): they are the
+// above-the-fold primary visual, so they must be available on first
+// paint with no Suspense fallback. Only below-the-fold WebGL
+// (FaultyTerminal) and interaction-only components (ProjectModal) stay
+// lazy.
 export default function HeroSection() {
   return (
     <div className="hero-section">
@@ -39,14 +44,12 @@ export default function HeroSection() {
           <Terminal />
         </div>
         <div className="hero-lanyard">
-          <Suspense fallback={null}>
-            <LazyLanyard
-              position={[0, 0, 22]}
-              gravity={[0, -40, 0]}
-              frontImage="/ME.jpeg"
-              imageFit="cover"
-            />
-          </Suspense>
+          <Lanyard
+            position={[0, 0, 22]}
+            gravity={[0, -40, 0]}
+            frontImage="/ME.jpeg"
+            imageFit="cover"
+          />
         </div>
       </div>
     </div>
