@@ -7,7 +7,10 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
+  /* overflow:hidden removed on purpose: it would turn this element into a
+     scroll container and break position:sticky on .ending-scene-canvas
+     below. The mask-image already confines what paints, and the sticky
+     canvas is bounded to this box by its own containing block. */
   pointer-events: none;
   user-select: none;
 
@@ -47,6 +50,26 @@
     rgba(0, 0, 0, 0.32) calc(100% - var(--sh) * 0.58),
     transparent calc(100% - var(--sh) * 0.48)
   );
+}
+
+/* Pins the shader to roughly one viewport and lets it scroll-follow the
+   lower sections, instead of the canvas being stretched to the full
+   Skills+Contact+Footer height (which meant rendering an enormous,
+   mostly-offscreen drawing buffer of a very heavy fragment shader every
+   frame). Sticky rather than fixed so it stays clipped to this region
+   and inherits the parent's mask/blur stack. */
+.ending-scene-canvas {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  width: 100%;
+}
+
+/* Older browsers without svh support. */
+@supports not (height: 100svh) {
+  .ending-scene-canvas {
+    height: 100vh;
+  }
 }
 
 .ending-scene-background canvas {

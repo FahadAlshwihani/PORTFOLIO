@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import FaultyTerminal from './FaultyTerminal';
 import { usePerformanceTier } from '../../hooks/usePerformanceTier';
+import usePointerCapabilities from '../../hooks/usePointerCapabilities';
 import './EndingScene.css';
+
+// Per-tier budget for the shared background shader. `maxPixels` is the
+// real governor (see FaultyTerminal's resize()): the canvas is now only
+// ~one viewport tall, and this ceiling keeps a large/high-DPR monitor
+// from rendering this very heavy shader at native 4K when it sits behind
+// an 18px blur where the extra resolution isn't perceptible anyway.
+const SHADER_TIER = {
+  high: { dpr: 2, maxPixels: 3_500_000, glyphAA: 1 },
+  medium: { dpr: 1.5, maxPixels: 2_200_000, glyphAA: 1 },
+  low: { dpr: 1, maxPixels: 1_500_000, glyphAA: 0 },
+  'very-low': { dpr: 0.8, maxPixels: 1_000_000, glyphAA: 0 }
+};
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -34,7 +47,9 @@ export default function EndingScene({ skills, children }) {
   const [isNearViewport, setIsNearViewport] = useState(true);
   const [skillsHeight, setSkillsHeight] = useState(700);
   const reducedMotion = useReducedMotion();
-  const { dpr: tierDpr } = usePerformanceTier();
+  const { tier } = usePerformanceTier();
+  const { finePointer } = usePointerCapabilities();
+  const shaderCfg = SHADER_TIER[tier] || SHADER_TIER.medium;
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -59,26 +74,35 @@ export default function EndingScene({ skills, children }) {
   return (
     <div className="ending-scene" ref={wrapperRef} style={{ '--skills-height': `${skillsHeight}px` }}>
       <div className="ending-scene-background" aria-hidden="true">
-        <FaultyTerminal
-          dpr={Math.min(tierDpr, 2)}
-          scale={2.6}
-          gridMul={[2, 1]}
-          digitSize={0.85}
-          timeScale={0.24}
-          pause={reducedMotion || !isNearViewport}
-          scanlineIntensity={0.22}
-          glitchAmount={0.35}
-          flickerAmount={0.18}
-          noiseAmp={1.1}
-          chromaticAberration={0}
-          dither={0}
-          curvature={0.08}
-          tint="#5227FF"
-          mouseReact={!reducedMotion}
-          mouseStrength={0.4}
-          pageLoadAnimation={false}
-          brightness={0.6}
-        />
+        {/* The shader canvas is pinned to ~one viewport (sticky) instead
+            of being stretched to the full Skills+Contact+Footer height.
+            That alone cuts its per-frame fragment count by ~4-15x. The
+            dissolve still reads correctly because the mask lives on the
+            full-height parent above, not on this element. */}
+        <div className="ending-scene-canvas">
+          <FaultyTerminal
+            dpr={shaderCfg.dpr}
+            maxPixels={shaderCfg.maxPixels}
+            glyphAA={shaderCfg.glyphAA}
+            scale={2.6}
+            gridMul={[2, 1]}
+            digitSize={0.85}
+            timeScale={0.24}
+            pause={reducedMotion || !isNearViewport}
+            scanlineIntensity={0.22}
+            glitchAmount={0.35}
+            flickerAmount={0.18}
+            noiseAmp={1.1}
+            chromaticAberration={0}
+            dither={0}
+            curvature={0.08}
+            tint="#5227FF"
+            mouseReact={!reducedMotion && finePointer}
+            mouseStrength={0.4}
+            pageLoadAnimation={false}
+            brightness={0.6}
+          />
+        </div>
         <div className="ending-scene-blur ending-scene-blur-1" />
         <div className="ending-scene-blur ending-scene-blur-2" />
         <div className="ending-scene-blur ending-scene-blur-3" />
