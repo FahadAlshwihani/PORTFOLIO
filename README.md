@@ -4,6 +4,8 @@ An interactive, bilingual (English / Arabic) developer portfolio built with Reac
 
 **Live site: [fyaa.io](https://fyaa.io)**
 
+> This repository is public so the source can be read and reviewed. It is **not open-source** — see [License](#license) and [`LICENSE`](./LICENSE).
+
 ---
 
 ## Overview
@@ -339,9 +341,13 @@ A distinction applies:
 
 ## License
 
-This repository does not include a `LICENSE` file and is **not** released under an open-source license. Being publicly viewable on GitHub does not make it free to reuse.
+**This repository is publicly viewable, but it is not open-source.**
 
-This repository is published for portfolio review and educational reading only. No permission is granted to copy, redistribute, sublicense, sell, or reuse the original portfolio design, branding, content, or custom implementation without explicit authorization from the copyright holder. Third-party dependencies remain under their respective licenses, as noted above.
+It is covered by a proprietary, all-rights-reserved notice — see [`LICENSE`](./LICENSE). No open-source license (MIT, Apache, GPL, BSD, ISC, or otherwise) applies. Being publicly viewable on GitHub does not grant permission to fork for reuse, redistribute, re-host, or use the project as a template.
+
+You may view and read the source, and clone it for local private inspection and learning. Any use beyond that requires prior written permission from the copyright holder. Third-party dependencies remain under their respective licenses, and the notice in `LICENSE` does not modify or override them.
+
+The `package.json` `license` field is set to `UNLICENSED` to reflect this.
 
 ---
 
