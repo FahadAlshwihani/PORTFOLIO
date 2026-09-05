@@ -228,9 +228,18 @@ export const LogoLoop = memo(
       return () => observer.disconnect();
     }, [isVertical]);
 
-    useResizeObserver(updateDimensions, [containerRef, seqRef], [logos, gap, logoHeight, isVertical]);
+    // Memoized so the two hooks below don't tear down and rebuild their
+    // ResizeObserver / image listeners on every single render (their
+    // effects key on these array identities).
+    const observeTargets = useMemo(() => [containerRef, seqRef], []);
+    const measureDeps = useMemo(
+      () => [logos, gap, logoHeight, isVertical],
+      [logos, gap, logoHeight, isVertical]
+    );
 
-    useImageLoader(seqRef, updateDimensions, [logos, gap, logoHeight, isVertical]);
+    useResizeObserver(updateDimensions, observeTargets, measureDeps);
+
+    useImageLoader(seqRef, updateDimensions, measureDeps);
 
     useAnimationLoop(trackRef, targetVelocity, seqWidth, seqHeight, isHovered, effectiveHoverSpeed, isVertical, isRtl, inView);
 

@@ -14,6 +14,10 @@ const LOOP_SIZES = {
 
 const bucketFor = (w) => (w < 640 ? "sm" : w < 900 ? "md" : "lg");
 
+// Stable identity so LogoLoop's renderLogoItem/logoLists memoization
+// isn't invalidated every Skills render by a fresh inline arrow.
+const renderPillNode = (item) => item.node;
+
 const useResponsiveLoopSize = () => {
   const [bucket, setBucket] = useState(() =>
     typeof window === "undefined" ? "lg" : bucketFor(window.innerWidth)
@@ -95,7 +99,7 @@ const Skills = () => {
                   width="100%"
                   pauseOnHover
                   ariaLabel={t(category.titleKey)}
-                  renderItem={(item) => item.node}
+                  renderItem={renderPillNode}
                 />
               </div>
             </Reveal>
