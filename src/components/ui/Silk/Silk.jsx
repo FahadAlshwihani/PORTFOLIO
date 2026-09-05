@@ -5,6 +5,7 @@ import { forwardRef, useRef, useMemo, useLayoutEffect } from 'react';
 import { Color } from 'three';
 import { usePerformanceTier } from '../../../hooks/usePerformanceTier';
 import useInViewport from '../../../hooks/useInViewport';
+import useHasScrolled from '../../../hooks/useHasScrolled';
 import ResumeRender from '../ResumeRender';
 
 const hexToNormalizedRGB = hex => {
@@ -104,7 +105,11 @@ const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, r
   // 400px lead so the shader is already animating again before the canvas
   // itself scrolls into view — no frozen-frame pop-in.
   const inView = useInViewport(wrapperRef, { rootMargin: '400px 0px' });
-  const active = inView && !reducedMotion;
+  // While the page is still at the very top the hero is unambiguously on
+  // screen — don't let a not-yet-fired observer callback gate it off and
+  // flash the background on first load.
+  const hasScrolled = useHasScrolled();
+  const active = (inView || !hasScrolled) && !reducedMotion;
   // active         -> "always" (full-rate animation)
   // idle, normal   -> "demand" (no RAF, but invalidate() can wake one frame)
   // reduced motion -> "never"  (unchanged pre-existing behaviour)

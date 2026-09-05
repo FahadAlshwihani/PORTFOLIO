@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import cardGLB from '../../../assets/models/lanyard/card.glb';
 import { usePerformanceTier } from '../../../hooks/usePerformanceTier';
 import useInViewport from '../../../hooks/useInViewport';
+import useHasScrolled from '../../../hooks/useHasScrolled';
 import ResumeRender from '../ResumeRender';
 import './Lanyard.css';
 
@@ -201,7 +202,11 @@ export default function Lanyard({
     // Generous lead so physics/rendering are already warmed back up before
     // the card actually scrolls into view — no frozen-frame pop-in.
     const inView = useInViewport(wrapperRef, { rootMargin: '300px 0px' });
-    const active = inView && !reducedMotion;
+    // While the page is still at the very top the hero is unambiguously
+    // on screen — don't let a not-yet-fired observer callback gate the
+    // card off and flash it away on first load.
+    const hasScrolled = useHasScrolled();
+    const active = (inView || !hasScrolled) && !reducedMotion;
     // active         -> "always" (full-rate physics + rendering)
     // idle, normal   -> "demand" (no RAF; invalidate() can wake one frame)
     // reduced motion -> "never"  (unchanged pre-existing behaviour)
