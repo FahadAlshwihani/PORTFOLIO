@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useInViewport from '../../hooks/useInViewport';
+import useReducedMotion from '../../hooks/useReducedMotion';
 import './Terminal.css';
 
 // The prompt on fahad's own machine, before the SSH connection exists —
@@ -138,19 +139,6 @@ function commandSegments(cmd) {
     { t: cmd.slice(0, boundary), c: 'command-exec' },
     { t: cmd.slice(boundary), c: 'command' },
   ];
-}
-
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return reduced;
 }
 
 export default function Terminal() {

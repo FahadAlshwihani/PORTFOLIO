@@ -3,24 +3,10 @@ import { useTranslation } from "react-i18next";
 import { siWhatsapp, siGithub } from "simple-icons";
 import Reveal from "../../components/ui/Reveal/Reveal";
 import TextType from "../../components/ui/TextType/TextType";
+import useReducedMotion from "../../hooks/useReducedMotion";
 import resumeFile from "../../assets/Resume/Fahad_Alshwihani_Full-stack.pdf";
 import "../hero/Terminal.css";
 import "./Contact.css";
-
-// Same reduced-motion detection Terminal.jsx already uses (not shared —
-// each terminal-like section keeps its own small, local copy).
-const useReducedMotion = () => {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
-};
 
 // Intro line above the terminal — a natural continuation of the Hero SSH
 // session ("launching" the interface the terminal below is about to show).

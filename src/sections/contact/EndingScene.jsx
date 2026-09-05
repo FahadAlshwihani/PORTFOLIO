@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { usePerformanceTier } from '../../hooks/usePerformanceTier';
 import usePointerCapabilities from '../../hooks/usePointerCapabilities';
+import useReducedMotion from '../../hooks/useReducedMotion';
 import './EndingScene.css';
 
 // ogl + this heavy shader are pulled into their own chunk. The canvas
@@ -20,21 +21,6 @@ const SHADER_TIER = {
   low: { dpr: 1, maxPixels: 1_500_000, glyphAA: 0 },
   'very-low': { dpr: 0.8, maxPixels: 1_000_000, glyphAA: 0 }
 };
-
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  return reduced;
-}
 
 // The single, shared FaultyTerminal canvas behind Skills' lower half +
 // Contact + Footer. Mirrors HeroSilkTransition's role at the top of the

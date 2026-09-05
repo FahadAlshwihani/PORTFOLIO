@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Folder, { ROW_CAPACITY } from './Folder';
 import { getProjectImages } from './projectImages';
 import Reveal from '../../components/ui/Reveal/Reveal';
+import useReducedMotion from '../../hooks/useReducedMotion';
 import './Projects.css';
 
 // Only ever rendered after a project card is clicked — no reason for it
@@ -72,19 +73,6 @@ const CoachMark = ({ container, variant, text, leaving, direction, style }) => {
     </span>,
     container
   );
-};
-
-const useReducedMotion = () => {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handler = () => setReduced(mq.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  return reduced;
 };
 
 const Projects = () => {
