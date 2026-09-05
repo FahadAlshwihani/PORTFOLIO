@@ -1,4 +1,5 @@
-import Lanyard from '../../components/ui/Lanyard/Lanyard';
+import { Suspense } from 'react';
+import { LazyLanyard } from './heroCanvases';
 import Terminal from './Terminal';
 import './HeroSection.css';
 
@@ -38,12 +39,14 @@ export default function HeroSection() {
           <Terminal />
         </div>
         <div className="hero-lanyard">
-          <Lanyard
-            position={[0, 0, 22]}
-            gravity={[0, -40, 0]}
-            frontImage="/ME.jpeg"
-            imageFit="cover"
-          />
+          <Suspense fallback={null}>
+            <LazyLanyard
+              position={[0, 0, 22]}
+              gravity={[0, -40, 0]}
+              frontImage="/ME.jpeg"
+              imageFit="cover"
+            />
+          </Suspense>
         </div>
       </div>
     </div>

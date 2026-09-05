@@ -35,6 +35,11 @@
   pointer-events: none;
   overflow: hidden;
 
+  /* Stand-in tone while the code-split Silk canvas loads (it paints
+     opaque on top the moment it mounts). Same deep-violet family as
+     Silk's own color prop so there is no visible colour jump. */
+  background: radial-gradient(120% 80% at 50% 0%, #3d1a6e 0%, #1c1033 55%, #0b0714 100%);
+
   /* Opacity envelope for the whole region: fully opaque through Hero's
      own height, then a soft multi-stop curve (not a flat linear ramp)
      down to fully transparent by the end of the bleed — this is the

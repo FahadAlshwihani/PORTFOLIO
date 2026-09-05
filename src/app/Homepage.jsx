@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import HeroSection from "../sections/hero/HeroSection";
 import HeroSilkTransition from "../sections/hero/HeroSilkTransition";
+import { preloadHeroCanvases } from "../sections/hero/heroCanvases";
 import EndingScene from "../sections/contact/EndingScene";
 import About from "../sections/about/About";
 import Experience from "../sections/experience/Experience";
@@ -13,6 +14,13 @@ import Footer from "../layout/Footer/Footer";
 const Homepage = () => {
   const location = useLocation();
   const { t } = useTranslation();
+
+  // Start fetching the code-split hero 3D canvases (three / fiber / drei
+  // / rapier) as early as possible so they're generally ready by first
+  // paint despite living in their own chunk.
+  useEffect(() => {
+    preloadHeroCanvases();
+  }, []);
 
   useEffect(() => {
     // Scroll smoothly to section based on hash (e.g. #about)

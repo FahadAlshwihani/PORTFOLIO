@@ -1,4 +1,5 @@
-import Silk from '../../components/ui/Silk/Silk';
+import { Suspense } from 'react';
+import { LazySilk } from './heroCanvases';
 import './HeroSilkTransition.css';
 
 // The one and only Silk canvas on the page — Hero no longer renders its
@@ -13,7 +14,9 @@ import './HeroSilkTransition.css';
 export default function HeroSilkTransition() {
   return (
     <div className="hero-silk-region" aria-hidden="true">
-      <Silk speed={9} scale={1.2} color="#3d1a6e" noiseIntensity={1.2} rotation={0.5} />
+      <Suspense fallback={null}>
+        <LazySilk speed={9} scale={1.2} color="#3d1a6e" noiseIntensity={1.2} rotation={0.5} />
+      </Suspense>
       {/* Two progressive backdrop-blur bands (was three) — each re-blurs
           the animated Silk canvas every frame it renders. */}
       <div className="hero-silk-blur-band hero-silk-blur-band-1" />
