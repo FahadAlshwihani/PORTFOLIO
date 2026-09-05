@@ -103,9 +103,12 @@ export default function EndingScene({ skills, children }) {
             brightness={0.6}
           />
         </div>
+        {/* Two progressive backdrop-blur bands (was three). Each one
+            re-blurs the animated shader behind it every frame, so the
+            count and radii are kept as low as the look allows and scale
+            down further by tier — see EndingScene.css. */}
         <div className="ending-scene-blur ending-scene-blur-1" />
         <div className="ending-scene-blur ending-scene-blur-2" />
-        <div className="ending-scene-blur ending-scene-blur-3" />
       </div>
       <div className="ending-scene-foreground">
         <div ref={skillsRef}>{skills}</div>
