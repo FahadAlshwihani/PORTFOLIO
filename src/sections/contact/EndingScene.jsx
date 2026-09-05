@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import FaultyTerminal from './FaultyTerminal';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { usePerformanceTier } from '../../hooks/usePerformanceTier';
 import usePointerCapabilities from '../../hooks/usePointerCapabilities';
 import './EndingScene.css';
+
+// ogl + this heavy shader are pulled into their own chunk. The canvas
+// lives behind Skills/Contact/Footer content and a blur stack, and its
+// container carries the scene's solid backdrop, so there is no visible
+// flash while the chunk loads — it simply starts a beat later.
+const FaultyTerminal = lazy(() => import('./FaultyTerminal'));
 
 // Per-tier budget for the shared background shader. `maxPixels` is the
 // real governor (see FaultyTerminal's resize()): the canvas is now only
@@ -80,6 +85,7 @@ export default function EndingScene({ skills, children }) {
             dissolve still reads correctly because the mask lives on the
             full-height parent above, not on this element. */}
         <div className="ending-scene-canvas">
+          <Suspense fallback={null}>
           <FaultyTerminal
             dpr={shaderCfg.dpr}
             maxPixels={shaderCfg.maxPixels}
@@ -102,6 +108,7 @@ export default function EndingScene({ skills, children }) {
             pageLoadAnimation={false}
             brightness={0.6}
           />
+          </Suspense>
         </div>
         {/* Two progressive backdrop-blur bands (was three). Each one
             re-blurs the animated shader behind it every frame, so the
