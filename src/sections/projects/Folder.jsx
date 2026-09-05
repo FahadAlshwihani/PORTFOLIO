@@ -1,5 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './Folder.css';
+
+const setRef = (ref, value) => {
+  if (typeof ref === 'function') ref(value);
+  else if (ref && typeof ref === 'object') ref.current = value;
+};
 
 const darkenColor = (hex, percent) => {
   let color = hex.startsWith('#') ? hex.slice(1) : hex;
@@ -110,30 +115,71 @@ const Folder = ({
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = isControlled ? controlledOpen : uncontrolledOpen;
 
-  const [paperOffsets, setPaperOffsets] = useState({});
+  const backRef = useRef(null);
+  const openRef = useRef(open);
+  openRef.current = open;
+  // Coalesces pointer moves to one write per frame per paper.
+  const pendingMagnetRef = useRef(new Map());
+  const magnetRafRef = useRef(0);
 
   const folderBackColor = darkenColor(color, 0.08);
+
+  const flushMagnet = useCallback(() => {
+    magnetRafRef.current = 0;
+    for (const [el, offset] of pendingMagnetRef.current) {
+      el.style.setProperty('--magnet-x', `${offset.x}px`);
+      el.style.setProperty('--magnet-y', `${offset.y}px`);
+    }
+    pendingMagnetRef.current.clear();
+  }, []);
+
+  const queueMagnet = useCallback(
+    (el, x, y) => {
+      pendingMagnetRef.current.set(el, { x, y });
+      if (magnetRafRef.current === 0) {
+        magnetRafRef.current = requestAnimationFrame(flushMagnet);
+      }
+    },
+    [flushMagnet]
+  );
+
+  useEffect(
+    () => () => {
+      if (magnetRafRef.current) cancelAnimationFrame(magnetRafRef.current);
+    },
+    []
+  );
 
   const handleClick = () => {
     if (!interactive) return;
     const next = !open;
     onToggle?.(next);
     if (!isControlled) setUncontrolledOpen(next);
-    if (!next) setPaperOffsets({});
+    if (!next && backRef.current) {
+      // Clear any lingering magnet offset directly on the DOM (was a
+      // setPaperOffsets({}) state reset before).
+      backRef.current.querySelectorAll('.paper').forEach(paper => {
+        paper.style.removeProperty('--magnet-x');
+        paper.style.removeProperty('--magnet-y');
+      });
+    }
   };
 
+  // Pointer-magnet is a hover affordance with no touch equivalent, and
+  // it now writes CSS custom properties straight to the paper element on
+  // an rAF instead of round-tripping through React state (which
+  // re-rendered the folder and every paper on every mousemove).
   const handlePaperMouseMove = (e, index) => {
-    if (!open || !interactive) return;
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (!openRef.current || !interactive) return;
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const offsetX = (e.clientX - centerX) * 0.15;
-    const offsetY = (e.clientY - centerY) * 0.15;
-    setPaperOffsets(prev => ({ ...prev, [index]: { x: offsetX, y: offsetY } }));
+    queueMagnet(el, (e.clientX - centerX) * 0.15, (e.clientY - centerY) * 0.15);
   };
 
-  const handlePaperMouseLeave = (_e, index) => {
-    setPaperOffsets(prev => ({ ...prev, [index]: { x: 0, y: 0 } }));
+  const handlePaperMouseLeave = e => {
+    queueMagnet(e.currentTarget, 0, 0);
   };
 
   const folderStyle = {
@@ -171,16 +217,22 @@ const Folder = ({
   return (
     <div style={scaleStyle} className={className}>
       <div ref={interactiveRef} className={folderClassName} style={folderStyle} {...interactiveProps}>
-        <div ref={contentRef} className="folder__back" inert={!open}>
+        <div
+          ref={node => {
+            backRef.current = node;
+            setRef(contentRef, node);
+          }}
+          className="folder__back"
+          inert={!open}
+        >
           {papers.map((item, i) => {
             const fan = computeFan(i, papers.length);
-            const offset = paperOffsets[i] || { x: 0, y: 0 };
             return (
               <div
                 key={i}
                 className={`paper paper-${i + 1}`}
                 onMouseMove={e => handlePaperMouseMove(e, i)}
-                onMouseLeave={e => handlePaperMouseLeave(e, i)}
+                onMouseLeave={handlePaperMouseLeave}
                 style={{
                   '--fan-x': fan.x,
                   '--fan-y': fan.y,
@@ -191,8 +243,6 @@ const Folder = ({
                   // rule in Folder.css, which wins regardless of this value.
                   '--fan-delay': `${LID_LEAD_MS + fan.delay}ms`,
                   '--paper-tint': fan.tint,
-                  '--magnet-x': `${offset.x}px`,
-                  '--magnet-y': `${offset.y}px`,
                 }}
               >
                 {item}
