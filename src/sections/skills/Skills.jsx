@@ -6,25 +6,40 @@ import Reveal from "../../components/ui/Reveal/Reveal";
 import { SKILL_CATEGORIES } from "./skillsData";
 import "./Skills.css";
 
+const LOOP_SIZES = {
+  sm: { logoHeight: 18, gap: 18 },
+  md: { logoHeight: 20, gap: 22 },
+  lg: { logoHeight: 22, gap: 28 },
+};
+
+const bucketFor = (w) => (w < 640 ? "sm" : w < 900 ? "md" : "lg");
+
 const useResponsiveLoopSize = () => {
-  const [size, setSize] = useState({ logoHeight: 22, gap: 28 });
+  const [bucket, setBucket] = useState(() =>
+    typeof window === "undefined" ? "lg" : bucketFor(window.innerWidth)
+  );
 
   useEffect(() => {
-    const updateSize = () => {
-      if (window.innerWidth < 640) {
-        setSize({ logoHeight: 18, gap: 18 });
-      } else if (window.innerWidth < 900) {
-        setSize({ logoHeight: 20, gap: 22 });
-      } else {
-        setSize({ logoHeight: 22, gap: 28 });
-      }
+    let rafId = 0;
+    const measure = () => {
+      rafId = 0;
+      const next = bucketFor(window.innerWidth);
+      // Only re-render when the breakpoint bucket actually changes, not
+      // on every resize event (each of which previously allocated a new
+      // size object and re-rendered Skills + all six marquees).
+      setBucket((prev) => (prev === next ? prev : next));
     };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+    const onResize = () => {
+      if (rafId === 0) rafId = requestAnimationFrame(measure);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
-  return size;
+  return LOOP_SIZES[bucket];
 };
 
 const Skills = () => {
