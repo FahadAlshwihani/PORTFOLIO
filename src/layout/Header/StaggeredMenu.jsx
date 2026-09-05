@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
 
-export const StaggeredMenu = ({
+const StaggeredMenuComponent = ({
   position = 'right',
   colors = ['#B19EEF', '#5227FF'],
   items = [],
@@ -608,5 +608,11 @@ export const StaggeredMenu = ({
     </div>
   );
 };
+
+// Header re-renders on every scroll-driven active-section change; with
+// its other props memoized upstream, this lets the large nav-panel
+// subtree re-render only when activeItemId (or language text) actually
+// changes.
+export const StaggeredMenu = memo(StaggeredMenuComponent);
 
 export default StaggeredMenu;
