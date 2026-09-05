@@ -73,7 +73,9 @@ void main() {
 `;
 
 const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
-  const { viewport } = useThree();
+  // Selector form: re-run only when the viewport actually changes, not on
+  // every unrelated R3F store update (pointer move, frame count, ...).
+  const viewport = useThree(state => state.viewport);
 
   useLayoutEffect(() => {
     if (ref.current) {
