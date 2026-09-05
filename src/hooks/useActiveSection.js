@@ -18,10 +18,15 @@ export function useActiveSection(ids) {
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible[0]) {
-          setActiveId(visible[0].target.id);
+          setActiveId((prev) => (prev === visible[0].target.id ? prev : visible[0].target.id));
         }
       },
-      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      // The rootMargin already narrows observation to a ~10% band at the
+      // viewport's vertical centre, so a section is either crossing that
+      // band or it isn't — the extra 0.25/0.5/0.75 thresholds only made
+      // the callback fire (and re-filter/sort) several more times per
+      // section per scroll for no change in result.
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
     );
 
     elements.forEach((el) => observer.observe(el));

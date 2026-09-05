@@ -46,9 +46,10 @@ export default function EndingScene({ skills, children }) {
     const el = wrapperRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return undefined;
 
-    const observer = new IntersectionObserver(([entry]) => setIsNearViewport(entry.isIntersecting), {
-      rootMargin: '200px 0px'
-    });
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsNearViewport(prev => (prev === entry.isIntersecting ? prev : entry.isIntersecting)),
+      { rootMargin: '200px 0px' }
+    );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -57,7 +58,13 @@ export default function EndingScene({ skills, children }) {
     const el = skillsRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
 
-    const ro = new ResizeObserver(([entry]) => setSkillsHeight(entry.contentRect.height));
+    // Round and only commit real changes — this drives a CSS var, and a
+    // sub-pixel ResizeObserver jitter shouldn't re-render EndingScene
+    // (and recompute the mask) for a difference nobody can see.
+    const ro = new ResizeObserver(([entry]) => {
+      const next = Math.round(entry.contentRect.height);
+      setSkillsHeight(prev => (Math.abs(prev - next) < 1 ? prev : next));
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
