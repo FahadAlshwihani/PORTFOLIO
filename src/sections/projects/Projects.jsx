@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Folder, { ROW_CAPACITY } from './Folder';
@@ -85,7 +85,14 @@ const useReducedMotion = () => {
 const Projects = () => {
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
-  const items = t('projects.items', { returnObjects: true });
+  // returnObjects hands back a fresh array/object graph every call;
+  // pin it to the language so unrelated state changes (folder open,
+  // modal, coach marks) don't rebuild it and everything derived from it.
+  const items = useMemo(
+    () => t('projects.items', { returnObjects: true }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, i18n.language]
+  );
   const reducedMotion = useReducedMotion();
   // A row holds up to ROW_CAPACITY papers before Folder starts a new arc
   // above it — reserve extra headroom above the folder per additional row
@@ -208,6 +215,11 @@ const Projects = () => {
     setSelectedProject(index);
     setModalOpen(true);
   };
+  // Kept current every render so the memoized paper buttons below can
+  // call the latest openProject without listing it (and the unstable
+  // functions it closes over) as a memo dependency.
+  const openProjectRef = useRef(openProject);
+  openProjectRef.current = openProject;
 
   const closeModal = () => {
     setModalOpen(false);
@@ -221,27 +233,31 @@ const Projects = () => {
   // component's own physical open/close behavior. Each one is a genuine
   // button so it's independently keyboard-operable and never toggles the
   // folder it lives inside (stopPropagation on click/keydown).
-  const paperElements = items.map((item, i) => {
-    const handleSelect = (e) => {
-      e.stopPropagation();
-      openProject(i, e.currentTarget);
-    };
-    return (
-      <button
-        key={item.slug}
-        type="button"
-        className={`paper-btn${i === selectedProject ? ' is-selected' : ''}`}
-        onClick={handleSelect}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
-        }}
-        aria-label={item.title}
-      >
-        <span className="paper-btn-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-        <span className="paper-btn-title">{item.title}</span>
-      </button>
-    );
-  });
+  const paperElements = useMemo(
+    () =>
+      items.map((item, i) => {
+        const handleSelect = (e) => {
+          e.stopPropagation();
+          openProjectRef.current(i, e.currentTarget);
+        };
+        return (
+          <button
+            key={item.slug}
+            type="button"
+            className={`paper-btn${i === selectedProject ? ' is-selected' : ''}`}
+            onClick={handleSelect}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+            }}
+            aria-label={item.title}
+          >
+            <span className="paper-btn-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <span className="paper-btn-title">{item.title}</span>
+          </button>
+        );
+      }),
+    [items, selectedProject]
+  );
 
   return (
     <section className="projects-section">
