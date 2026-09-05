@@ -131,6 +131,16 @@ export function PerformanceTierProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reducedMotion]);
 
+  // Mirror the resolved tier onto <html> so purely-visual CSS (e.g. the
+  // progressive backdrop-blur stacks over the animated canvases) can
+  // scale itself down on weaker devices without every stylesheet needing
+  // a JS bridge of its own.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.dataset.perfTier = tier;
+    document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false';
+  }, [tier, reducedMotion]);
+
   const value = useMemo(() => {
     const config = TIER_CONFIG[tier];
     return { tier, reducedMotion, ...config };
