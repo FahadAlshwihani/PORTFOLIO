@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import useRevealObserver from '../../../hooks/useRevealObserver';
 import './Reveal.css';
 
 // One reveal engine for the whole site (Hero excluded — it has its own
@@ -29,30 +29,15 @@ export default function Reveal({
   children,
   ...rest
 }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
   const observerThreshold = threshold ?? (preset ? PRESET_THRESHOLDS[preset] : 0.2);
 
-  // Lets a caller observe the same visibility transitions this component
-  // already detects, instead of attaching a second IntersectionObserver of
-  // their own (which would inevitably watch different geometry and drift
-  // out of sync with this one). Kept in a ref so passing a new inline
-  // function each render doesn't re-create the observer below.
-  const onVisibleChangeRef = useRef(onVisibleChange);
-  onVisibleChangeRef.current = onVisibleChange;
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const observer = new IntersectionObserver(([entry]) => {
-      setVisible(entry.isIntersecting);
-      onVisibleChangeRef.current?.(entry.isIntersecting);
-    }, {
-      threshold: observerThreshold,
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [observerThreshold]);
+  // One shared IntersectionObserver per distinct threshold (see
+  // useRevealObserver) instead of one per Reveal instance. Same
+  // semantics: `visible` is exactly isIntersecting, nothing is
+  // unobserved early, so it still animates both directions on every
+  // scroll pass. `onVisibleChange` is forwarded through the hook, which
+  // keeps its own ref so a new inline function each render is fine.
+  const [ref, visible] = useRevealObserver(observerThreshold, onVisibleChange);
 
   // Presets bring their own `reveal`/`reveal--*` classes and built-in CSS.
   // Without a preset, this only adds the is-visible toggle to whatever
