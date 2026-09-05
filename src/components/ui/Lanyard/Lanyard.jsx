@@ -196,9 +196,24 @@ export default function Lanyard({
     const dir = rtl ? -1 : 1;
 
     useEffect(() => {
-        const updateScene = () => {
+        let rafId = 0;
 
+        const applyResize = () => {
+            rafId = 0;
             const w = window.innerWidth;
+            const nextIsMobile = w < 768;
+            setIsMobile(prev => (prev === nextIsMobile ? prev : nextIsMobile));
+            updateScene(w);
+        };
+
+        // One rAF-coalesced resize handler for both the responsive scene
+        // config and the isMobile flag — was two independent listeners
+        // each doing a synchronous setState per resize event.
+        const onResize = () => {
+            if (rafId === 0) rafId = requestAnimationFrame(applyResize);
+        };
+
+        const updateScene = (w) => {
 
             if (w <= 600) {
 
@@ -278,23 +293,18 @@ export default function Lanyard({
 
         };
 
-        updateScene();
+        updateScene(window.innerWidth);
 
-        window.addEventListener("resize", updateScene);
+        window.addEventListener("resize", onResize, { passive: true });
 
-        return () => window.removeEventListener("resize", updateScene);
+        return () => {
+            window.removeEventListener("resize", onResize);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
         // dir is derived from the rtl prop; this component isn't currently
         // passed a live-changing rtl value anywhere, so recomputing only on
         // resize (not on dir change) matches existing behavior exactly.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const effectiveDpr = Math.min(tierDpr, isMobile ? 1.5 : 2);
