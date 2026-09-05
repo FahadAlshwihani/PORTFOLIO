@@ -37,6 +37,7 @@ uniform float uUseMouse;
 uniform float uPageLoadProgress;
 uniform float uUsePageLoadAnimation;
 uniform float uBrightness;
+uniform float uGlyphAA;
 
 float time;
 
@@ -163,10 +164,20 @@ vec3 getColor(vec2 p){
 
     float middle = digit(p);
 
-    const float off = 0.002;
-    float sum = digit(p + vec2(-off, -off)) + digit(p + vec2(0.0, -off)) + digit(p + vec2(off, -off)) +
-                digit(p + vec2(-off, 0.0)) + digit(p + vec2(0.0, 0.0)) + digit(p + vec2(off, 0.0)) +
-                digit(p + vec2(-off, off)) + digit(p + vec2(0.0, off)) + digit(p + vec2(off, off));
+    // The 3x3 supersample below evaluates the (already very expensive)
+    // digit() nine extra times per pixel purely for a soft bloom around
+    // the glyphs. Kept at full strength on the top quality tier; on lower
+    // tiers uGlyphAA is 0 and the bloom term drops out — the glyphs
+    // themselves are unchanged, they just lose the faint halo.
+    float sum;
+    if (uGlyphAA > 0.5) {
+      const float off = 0.002;
+      sum = digit(p + vec2(-off, -off)) + digit(p + vec2(0.0, -off)) + digit(p + vec2(off, -off)) +
+            digit(p + vec2(-off, 0.0)) + digit(p + vec2(0.0, 0.0)) + digit(p + vec2(off, 0.0)) +
+            digit(p + vec2(-off, off)) + digit(p + vec2(0.0, off)) + digit(p + vec2(off, off));
+    } else {
+      sum = 0.0;
+    }
 
     vec3 baseColor = vec3(0.9) * middle + sum * 0.1 * vec3(1.0) * bar;
     return baseColor;
@@ -236,6 +247,14 @@ export default function FaultyTerminal({
   mouseReact = true,
   mouseStrength = 0.2,
   dpr = Math.min(window.devicePixelRatio || 1, 2),
+  // Hard ceiling on the drawing buffer for this shader specifically. It
+  // is one of the heaviest fragment shaders on the page (digit() runs a
+  // multi-octave fbm, and the glyph bloom calls it 10x), so its fragment
+  // count has to be bounded independently of the CSS size the canvas is
+  // stretched to. ~1080p worth of fragments.
+  maxPixels = 2_200_000,
+  // 1 = full 3x3 glyph bloom supersample, 0 = glyphs only (see shader).
+  glyphAA = 1,
   pageLoadAnimation = true,
   brightness = 1,
   className,
@@ -336,7 +355,8 @@ export default function FaultyTerminal({
         uUseMouse: { value: mouseReact ? 1 : 0 },
         uPageLoadProgress: { value: pageLoadAnimation ? 0 : 1 },
         uUsePageLoadAnimation: { value: pageLoadAnimation ? 1 : 0 },
-        uBrightness: { value: brightness }
+        uBrightness: { value: brightness },
+        uGlyphAA: { value: glyphAA }
       }
     });
     programRef.current = program;
@@ -345,7 +365,14 @@ export default function FaultyTerminal({
 
     function resize() {
       if (!ctn || !renderer) return;
-      renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
+      const cssW = ctn.offsetWidth;
+      const cssH = ctn.offsetHeight;
+      // Clamp the effective device-pixel-ratio so cssW*cssH*dpr^2 never
+      // exceeds maxPixels for this shader — independent of how large the
+      // container is stretched or how high the tier's own dpr is.
+      const fitDpr = Math.sqrt(maxPixels / Math.max(1, cssW * cssH));
+      renderer.dpr = Math.max(0.5, Math.min(dpr, fitDpr));
+      renderer.setSize(cssW, cssH);
       program.uniforms.iResolution.value = new Color(
         gl.canvas.width,
         gl.canvas.height,
@@ -440,6 +467,8 @@ export default function FaultyTerminal({
     mouseStrength,
     pageLoadAnimation,
     brightness,
+    maxPixels,
+    glyphAA,
     handleMouseMove,
     handleTouchMove
   ]);
