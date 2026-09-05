@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import useInViewport from '../../hooks/useInViewport';
+import { registerSharedFrame } from '../../hooks/useSharedRAF';
 import './LogoLoop.css';
 
 const ANIMATION_CONFIG = { SMOOTH_TAU: 0.25, MIN_COPIES: 2, COPY_HEADROOM: 2 };
@@ -58,8 +59,6 @@ const useImageLoader = (seqRef, onLoad, dependencies) => {
 };
 
 const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, isRtl, inView) => {
-  const rafRef = useRef(null);
-  const lastTimestampRef = useRef(null);
   const offsetRef = useRef(0);
   const velocityRef = useRef(0);
 
@@ -67,9 +66,12 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
     const track = trackRef.current;
     // Skipping the effect entirely while out of view — rather than
     // scheduling a frame just to check a flag and bail — is what actually
-    // stops the RAF loop instead of merely hiding its output. The effect
-    // re-runs (and restarts the loop fresh, with lastTimestampRef reset
-    // below) the moment `inView` flips back to true.
+    // stops the work instead of merely hiding its output. The effect
+    // re-runs the moment `inView` flips back to true. Registration is
+    // with the ONE page-wide RAF loop (useSharedRAF), not a per-instance
+    // requestAnimationFrame: Skills mounts six of these marquees, so this
+    // is six loops folded into one shared tick that also stops itself
+    // entirely when the tab is backgrounded.
     if (!track || !inView) return;
 
     const seqSize = isVertical ? seqHeight : seqWidth;
@@ -94,13 +96,11 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
       track.style.transform = transformValue;
     }
 
-    const animate = timestamp => {
-      if (lastTimestampRef.current === null) {
-        lastTimestampRef.current = timestamp;
-      }
-
-      const deltaTime = Math.max(0, timestamp - lastTimestampRef.current) / 1000;
-      lastTimestampRef.current = timestamp;
+    const animate = (_now, deltaMs) => {
+      // Shared loop hands us the ms since the previous frame directly.
+      // Clamp so a long idle gap (loop was stopped, tab was hidden, this
+      // callback just registered) can't produce one huge jump.
+      const deltaTime = Math.min(Math.max(0, deltaMs) / 1000, 0.05);
 
       const target = isHovered && hoverSpeed !== undefined ? hoverSpeed : targetVelocity;
 
@@ -117,19 +117,9 @@ const useAnimationLoop = (trackRef, targetVelocity, seqWidth, seqHeight, isHover
           : `translate3d(${horizontalSign * offsetRef.current}px, 0, 0)`;
         track.style.transform = transformValue;
       }
-
-      rafRef.current = requestAnimationFrame(animate);
     };
 
-    rafRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-      lastTimestampRef.current = null;
-    };
+    return registerSharedFrame(animate);
   }, [targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical, trackRef, isRtl, inView]);
 };
 
