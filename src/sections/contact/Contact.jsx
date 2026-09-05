@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siWhatsapp, siGithub } from "simple-icons";
 import Reveal from "../../components/ui/Reveal/Reveal";
@@ -245,7 +245,11 @@ const buildBlocks = (t, opportunities) => [
 // see the CSS: the ghost is `visibility:hidden` but still takes up space;
 // the live layer is `position:absolute; inset:0`, which takes it out of
 // flow entirely. `inert` drops it from focus/AT since it's a duplicate.
-const TerminalGhost = ({ t, blocks }) => (
+// Static duplicate of the finished transcript, rendered only to reserve
+// the terminal body's final height. It never changes once built, so
+// memoize it — ContactSequence otherwise re-rendered this entire DOM
+// subtree on every keystroke of the live typing layer.
+const TerminalGhost = memo(({ t, blocks }) => (
   <div className="contact-terminal-body-ghost" aria-hidden="true" inert="">
     {blocks.map((block) => (
       <div className="contact-block" key={block.key}>
@@ -268,7 +272,8 @@ const TerminalGhost = ({ t, blocks }) => (
       </div>
     ))}
   </div>
-);
+));
+TerminalGhost.displayName = "TerminalGhost";
 
 const ContactActions = ({ t }) => (
   <>
@@ -321,7 +326,9 @@ const ContactActions = ({ t }) => (
 // reset via `resetKey`, so it restarts through its own internal state too,
 // never by being torn down and rebuilt.
 const ContactSequence = ({ t, opportunities, reducedMotion, visible }) => {
-  const blocks = buildBlocks(t, opportunities);
+  // Rebuilt only when language/content changes — not on every keystroke
+  // of the typing state below (which also feeds the memoized ghost).
+  const blocks = useMemo(() => buildBlocks(t, opportunities), [t, opportunities]);
   const terminalRef = useRef(null);
   const wasVisibleRef = useRef(false);
 
@@ -517,11 +524,17 @@ const ContactSequence = ({ t, opportunities, reducedMotion, visible }) => {
 };
 
 const Contact = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [visible, setVisible] = useState(false);
 
-  const opportunities = t("contact.values.opportunities", { returnObjects: true });
+  // returnObjects yields a fresh array each call; pin it to the language
+  // so it isn't a churning dependency of the memoized blocks below.
+  const opportunities = useMemo(
+    () => t("contact.values.opportunities", { returnObjects: true }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, i18n.language]
+  );
 
   // Same single observer every other section uses — Reveal's own — just
   // also reporting its visibility transitions up so the sequence below
