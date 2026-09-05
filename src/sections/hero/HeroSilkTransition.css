@@ -57,14 +57,14 @@
   );
 }
 
-/* Progressive blur, built from three stacked backdrop-filter bands
-   instead of one uniform filter (which can't vary spatially) or a
-   second rendered canvas (expensive, and explicitly what we're
-   avoiding). Each band blurs whatever's compositing behind it — the
-   single Silk canvas — a little more than the last, fading its own
-   edges in via its own mask so the three blend into one continuous
-   increasing-blur curve rather than visible bands. This is a
-   compositor-level effect: no WebGL re-render, no extra frame cost. */
+/* Progressive blur, built from stacked backdrop-filter bands instead of
+   one uniform filter (which can't vary spatially) or a second rendered
+   canvas. Each band blurs whatever composites behind it — the single
+   Silk canvas — more than the last, fading its own edges in via its own
+   mask so they blend into one continuous increasing-blur curve. NOTE:
+   this is not free while Silk animates — every band re-runs its blur on
+   every canvas frame — so it's two bands, not three, and the radii
+   scale down by device tier below. */
 .hero-silk-blur-band {
   position: absolute;
   inset-inline: 0;
@@ -74,26 +74,38 @@
 .hero-silk-blur-band-1 {
   top: 100svh;
   height: 45svh;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   mask-image: linear-gradient(to bottom, transparent 0, black 35%, black 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 35%, black 100%);
 }
 
+/* Absorbs the old band-2 + band-3: ramp is now 5px -> 18px instead of
+   4 -> 14 -> 30. Peak blur at the bottom of the dissolve is softer. */
 .hero-silk-blur-band-2 {
-  top: 112svh;
-  height: 33svh;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  mask-image: linear-gradient(to bottom, transparent 0, black 40%, black 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40%, black 100%);
+  top: 116svh;
+  height: 29svh;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 42%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 42%, black 100%);
 }
 
-.hero-silk-blur-band-3 {
-  top: 124svh;
-  height: 21svh;
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  mask-image: linear-gradient(to bottom, transparent 0, black 45%, black 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 45%, black 100%);
+:root[data-perf-tier='medium'] .hero-silk-blur-band-1 {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+:root[data-perf-tier='medium'] .hero-silk-blur-band-2 {
+  backdrop-filter: blur(13px);
+  -webkit-backdrop-filter: blur(13px);
+}
+:root[data-perf-tier='low'] .hero-silk-blur-band-1,
+:root[data-perf-tier='very-low'] .hero-silk-blur-band-1 {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+:root[data-perf-tier='low'] .hero-silk-blur-band-2,
+:root[data-perf-tier='very-low'] .hero-silk-blur-band-2 {
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
 }

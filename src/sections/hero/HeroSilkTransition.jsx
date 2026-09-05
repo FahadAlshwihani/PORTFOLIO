@@ -14,9 +14,10 @@ export default function HeroSilkTransition() {
   return (
     <div className="hero-silk-region" aria-hidden="true">
       <Silk speed={9} scale={1.2} color="#3d1a6e" noiseIntensity={1.2} rotation={0.5} />
+      {/* Two progressive backdrop-blur bands (was three) — each re-blurs
+          the animated Silk canvas every frame it renders. */}
       <div className="hero-silk-blur-band hero-silk-blur-band-1" />
       <div className="hero-silk-blur-band hero-silk-blur-band-2" />
-      <div className="hero-silk-blur-band hero-silk-blur-band-3" />
     </div>
   );
 }
