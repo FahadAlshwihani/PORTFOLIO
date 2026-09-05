@@ -598,7 +598,13 @@ function Band({
             const tex = new THREE.CanvasTexture(c);
             tex.colorSpace = THREE.SRGBColorSpace;
             tex.needsUpdate = true;
-            setBackCanvasTex(tex);
+            // Release the previous back-face texture's GPU memory before
+            // swapping in the new one (this effect re-runs on every
+            // language switch).
+            setBackCanvasTex(prev => {
+                if (prev && prev !== tex) prev.dispose();
+                return tex;
+            });
         };
 
         const img = new Image();
@@ -684,6 +690,19 @@ function Band({
         composite.needsUpdate = true;
         return composite;
     }, [backImage, frontTex, backTex, backCanvasTex, materials.base.map]);
+
+    // Dispose the composited atlas texture when it's replaced (deps above
+    // change, e.g. language switch) or on unmount — it's a texture we
+    // allocate here, not the shared glTF material map, so nothing else
+    // frees it.
+    useEffect(() => {
+        const baseMap = materials.base.map;
+        return () => {
+            if (cardMap && cardMap !== baseMap && typeof cardMap.dispose === 'function') {
+                cardMap.dispose();
+            }
+        };
+    }, [cardMap, materials.base.map]);
     // One Catmull-Rom per strand, five control points each: fixed anchor,
     // the strand's three physics bodies (smoothed), and the shared
     // connector. Point order is anchor → connector so the sweep's `s`
