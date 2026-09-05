@@ -5,6 +5,7 @@ import { forwardRef, useRef, useMemo, useLayoutEffect } from 'react';
 import { Color } from 'three';
 import { usePerformanceTier } from '../../../hooks/usePerformanceTier';
 import useInViewport from '../../../hooks/useInViewport';
+import ResumeRender from '../ResumeRender';
 
 const hexToNormalizedRGB = hex => {
   hex = hex.replace('#', '');
@@ -104,6 +105,10 @@ const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, r
   // itself scrolls into view — no frozen-frame pop-in.
   const inView = useInViewport(wrapperRef, { rootMargin: '400px 0px' });
   const active = inView && !reducedMotion;
+  // active         -> "always" (full-rate animation)
+  // idle, normal   -> "demand" (no RAF, but invalidate() can wake one frame)
+  // reduced motion -> "never"  (unchanged pre-existing behaviour)
+  const frameloop = active ? 'always' : reducedMotion ? 'never' : 'demand';
 
   const uniforms = useMemo(
     () => ({
@@ -119,12 +124,15 @@ const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, r
 
   return (
     <div className="silk-wrapper" ref={wrapperRef}>
-      {/* frameloop="never" doesn't just skip a render, it stops R3F from
-          scheduling its internal RAF loop at all — the actual "stop the
-          RAF loop, don't just hide it" behavior this canvas needs when
-          scrolled far away or when the OS asks for reduced motion. */}
-      <Canvas dpr={[Math.min(1, dpr), dpr]} frameloop={active ? 'always' : 'never'}>
+      {/* active  -> "always": full-rate animation while on screen.
+          idle    -> "demand": R3F schedules no RAF, so an off-screen or
+          reduced-motion canvas costs nothing — but unlike "never",
+          invalidate() still works, so ResumeRender can force an
+          immediate repaint on re-entry / resize / tab-refocus and the
+          canvas never comes back blank or white. */}
+      <Canvas dpr={[Math.min(1, dpr), dpr]} frameloop={frameloop}>
         <SilkPlane ref={meshRef} uniforms={uniforms} />
+        <ResumeRender active={active} />
       </Canvas>
     </div>
   );

@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import cardGLB from '../../../assets/models/lanyard/card.glb';
 import { usePerformanceTier } from '../../../hooks/usePerformanceTier';
 import useInViewport from '../../../hooks/useInViewport';
+import ResumeRender from '../ResumeRender';
 import './Lanyard.css';
 
 // Strap smoothing is visual-only and must never extrapolate after a
@@ -201,6 +202,10 @@ export default function Lanyard({
     // the card actually scrolls into view — no frozen-frame pop-in.
     const inView = useInViewport(wrapperRef, { rootMargin: '300px 0px' });
     const active = inView && !reducedMotion;
+    // active         -> "always" (full-rate physics + rendering)
+    // idle, normal   -> "demand" (no RAF; invalidate() can wake one frame)
+    // reduced motion -> "never"  (unchanged pre-existing behaviour)
+    const frameloop = active ? 'always' : reducedMotion ? 'never' : 'demand';
 
     const [sceneConfig, setSceneConfig] = useState({
         anchorX: 3.5,
@@ -337,12 +342,15 @@ export default function Lanyard({
                 camera={{ position: position, fov: fov }}
                 dpr={[Math.min(1, effectiveDpr), effectiveDpr]}
                 gl={{ alpha: transparent }}
-                // "never" fully stops R3F's RAF loop (and, with it, Rapier's
-                // physics stepping and Band's own useFrame) rather than just
-                // hiding a frame that's still being computed underneath —
-                // real idle cost when the card is scrolled far away or
-                // reduced-motion is on, not a cosmetic pause.
-                frameloop={active ? 'always' : 'never'}
+                // active -> "always": full-rate physics + rendering while
+                // on screen. idle -> "demand": R3F schedules no RAF, so
+                // Rapier stepping and Band's useFrame stop entirely (real
+                // idle cost, not a cosmetic pause) — but invalidate() still
+                // works, so ResumeRender forces an immediate repaint on
+                // re-entry / resize / tab-refocus. "never" was used before
+                // and left the canvas blank/white on the way back because
+                // nothing could kick a single frame.
+                frameloop={frameloop}
                 style={{
                     position: 'absolute',
                     inset: 0,
@@ -401,6 +409,7 @@ export default function Lanyard({
                         scale={[100, 10, 1]}
                     />
                 </Environment>
+                <ResumeRender active={active} />
             </Canvas>
         </div>
     );
