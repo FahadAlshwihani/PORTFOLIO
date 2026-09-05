@@ -78,17 +78,25 @@ const TextType = memo(({
   }, [startOnVisible]);
 
   useEffect(() => {
-    if (showCursor && cursorRef.current) {
-      gsap.set(cursorRef.current, { opacity: 1 });
-      gsap.to(cursorRef.current, {
-        opacity: 0,
-        duration: cursorBlinkDuration,
-        repeat: -1,
-        yoyo: true,
-        ease: 'power2.inOut'
-      });
-    }
-  }, [showCursor, cursorBlinkDuration]);
+    if (!showCursor || !cursorRef.current) return undefined;
+    gsap.set(cursorRef.current, { opacity: 1 });
+
+    // Was previously created with repeat:-1 and never killed — an
+    // infinite tween per mounted instance that kept running off-screen
+    // and leaked on unmount. Now it's stored, paused whenever this
+    // instance isn't active/visible, and killed on cleanup.
+    const tween = gsap.to(cursorRef.current, {
+      opacity: 0,
+      duration: cursorBlinkDuration,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power2.inOut'
+    });
+
+    if (!isVisible || !active) tween.pause();
+
+    return () => tween.kill();
+  }, [showCursor, cursorBlinkDuration, isVisible, active]);
 
   useEffect(() => {
     if (!isVisible || !active) return;
