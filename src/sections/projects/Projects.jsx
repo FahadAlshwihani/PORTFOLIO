@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Folder, { ROW_CAPACITY } from './Folder';
 import { getProjectImages } from './projectImages';
-import ProjectModal from './ProjectModal';
 import Reveal from '../../components/ui/Reveal/Reveal';
 import './Projects.css';
+
+// Only ever rendered after a project card is clicked — no reason for it
+// (or its image manifest) to sit in the initial bundle. The open FLIP is
+// driven from inside the modal off an origin rect captured before this
+// resolves, so a one-tick chunk fetch is imperceptible.
+const ProjectModal = lazy(() => import('./ProjectModal'));
 
 const FOLDER_COACH_KEY = 'portfolio.projects.folder-coach-complete';
 const PROJECT_COACH_KEY = 'portfolio.projects.project-coach-complete';
@@ -319,14 +324,16 @@ const Projects = () => {
       </div>
 
       {activeProject && (
-        <ProjectModal
-          project={activeProject}
-          gallery={getProjectImages(activeProject.slug)}
-          originRect={originRectRef.current}
-          reducedMotion={reducedMotion}
-          onClose={closeModal}
-          t={t}
-        />
+        <Suspense fallback={null}>
+          <ProjectModal
+            project={activeProject}
+            gallery={getProjectImages(activeProject.slug)}
+            originRect={originRectRef.current}
+            reducedMotion={reducedMotion}
+            onClose={closeModal}
+            t={t}
+          />
+        </Suspense>
       )}
     </section>
   );
