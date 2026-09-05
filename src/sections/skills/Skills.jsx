@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LogoLoop } from "./LogoLoop";
 import TechIcon from "./TechIcon";
@@ -31,6 +31,27 @@ const Skills = () => {
   const { t } = useTranslation();
   const { logoHeight, gap } = useResponsiveLoopSize();
 
+  // The marquee content (icon + name nodes) only depends on the skill
+  // data, which is static — never on logoHeight/gap (passed to LogoLoop
+  // as their own props). Rebuilding these arrays on every resize handled
+  // by useResponsiveLoopSize would hand LogoLoop (memo'd) fresh `logos`
+  // references and force all six to re-render their full list DOM.
+  const categoryItems = useMemo(
+    () =>
+      SKILL_CATEGORIES.map((category) =>
+        category.items.map((item) => ({
+          key: `${category.id}-${item.icon}-${item.name}`,
+          node: (
+            <span className="skill-pill">
+              <TechIcon icon={item.icon} />
+              <span className="skill-pill-name">{item.name}</span>
+            </span>
+          ),
+        }))
+      ),
+    []
+  );
+
   return (
     <section className="skills-section">
       <div className="skills-header skills-container">
@@ -41,15 +62,7 @@ const Skills = () => {
 
       <div className="skills-categories">
         {SKILL_CATEGORIES.map((category, i) => {
-          const items = category.items.map((item) => ({
-            key: `${category.id}-${item.icon}-${item.name}`,
-            node: (
-              <span className="skill-pill">
-                <TechIcon icon={item.icon} />
-                <span className="skill-pill-name">{item.name}</span>
-              </span>
-            ),
-          }));
+          const items = categoryItems[i];
 
           return (
             <Reveal as="div" preset="card" className="skills-category" key={category.id} delay={i * 0.1}>
