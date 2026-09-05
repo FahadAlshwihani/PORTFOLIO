@@ -107,8 +107,12 @@
   width: min(850px, calc(100% - 3rem));
   margin-inline: auto;
   background: rgba(8, 8, 8, 0.47);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  /* Sits directly over the animated FaultyTerminal, so this blur is
+     re-computed on every shader frame across the full card. Dropped from
+     24px to 16px (the 0.47-alpha fill already does most of the
+     separation) and scaled down further by device tier. */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, .09);
   border-top-color: rgba(255, 255, 255, .24);
   border-radius: 16px;
@@ -120,6 +124,18 @@
   opacity: 0;
   transform: translateY(16px);
   transition: opacity .6s ease, transform .6s ease;
+}
+
+:root[data-perf-tier='medium'] .contact-terminal {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+:root[data-perf-tier='low'] .contact-terminal,
+:root[data-perf-tier='very-low'] .contact-terminal {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  /* Lean a little more on the fill to compensate for the smaller blur. */
+  background: rgba(8, 8, 8, 0.62);
 }
 
 .contact-terminal.is-visible {
