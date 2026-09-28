@@ -2,14 +2,9 @@ import useRevealObserver from '../../../hooks/useRevealObserver';
 import './Reveal.css';
 
 // One reveal engine for the whole site (Hero excluded — it has its own
-// animation). Built the same way the three reveals it replaces already
-// worked (IntersectionObserver + a toggled `is-visible` class), just
-// generalized and fixed to run both ways: the old per-page versions called
-// `observer.disconnect()`/`unobserve()` the first time an element appeared,
-// so they could only ever animate in once and never reversed. Here,
-// visibility is just `entry.isIntersecting` with nothing ever disconnected,
-// so the same element naturally animates out on exit and back in on
-// re-entry, from either scroll direction, indefinitely.
+// animation). Reversible by default; callers with expensive nested entrance
+// sequences can opt into `once` so completed content is not torn down and
+// reconstructed every time an adjacent section crosses the viewport.
 const PRESET_THRESHOLDS = {
   section: 0.15,
   title: 0.3,
@@ -26,25 +21,20 @@ export default function Reveal({
   threshold,
   style: styleProp,
   onVisibleChange,
+  once = false,
   children,
   ...rest
 }) {
   const observerThreshold = threshold ?? (preset ? PRESET_THRESHOLDS[preset] : 0.2);
 
-  // One shared IntersectionObserver per distinct threshold (see
-  // useRevealObserver) instead of one per Reveal instance. Same
-  // semantics: `visible` is exactly isIntersecting, nothing is
-  // unobserved early, so it still animates both directions on every
-  // scroll pass. `onVisibleChange` is forwarded through the hook, which
-  // keeps its own ref so a new inline function each render is fine.
-  const [ref, visible] = useRevealObserver(observerThreshold, onVisibleChange);
+  // Reuse origin/main's observer pool for both modes. Reversible reveals
+  // stay subscribed indefinitely; `once` reveals remove only their own
+  // target from the shared pool after the first intersection.
+  const [ref, visible] = useRevealObserver(observerThreshold, onVisibleChange, { once });
 
   // Presets bring their own `reveal`/`reveal--*` classes and built-in CSS.
-  // Without a preset, this only adds the is-visible toggle to whatever
-  // className the caller already owns — used for the three sections that
-  // already had their own hand-authored reveal CSS (About, Experience,
-  // Contact), so their exact existing look carries over untouched; only
-  // the JS behavior underneath changes.
+  // Without a preset, this only adds the visibility toggle to the caller's
+  // hand-authored section animation.
   const classes = [preset ? 'reveal' : '', preset ? `reveal--${preset}` : '', className, visible ? 'is-visible' : '']
     .filter(Boolean)
     .join(' ');

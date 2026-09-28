@@ -255,11 +255,11 @@ const Projects = () => {
   return (
     <section className="projects-section">
       <div className="projects-inner">
-        <Reveal as="p" preset="subtitle" className="projects-eyebrow">{t('projects.eyebrow')}</Reveal>
-        <Reveal as="h2" preset="title" className="projects-title" delay={0.08}>{t('projects.title')}</Reveal>
-        <Reveal as="p" preset="paragraph" className="projects-subtitle" delay={0.16}>{t('projects.subtitle')}</Reveal>
+        <Reveal as="p" preset="subtitle" className="projects-eyebrow" once>{t('projects.eyebrow')}</Reveal>
+        <Reveal as="h2" preset="title" className="projects-title" delay={0.08} once>{t('projects.title')}</Reveal>
+        <Reveal as="p" preset="paragraph" className="projects-subtitle" delay={0.16} once>{t('projects.subtitle')}</Reveal>
 
-        <Reveal as="div" preset="card" className="projects-workspace" delay={0.1} style={{ '--row-count': rowCount }}>
+        <Reveal as="div" preset="card" className="projects-workspace" delay={0.1} style={{ '--row-count': rowCount }} once>
           <div className="projects-folder-stage">
             <span className="projects-folder-icon-wrap">
               <Folder

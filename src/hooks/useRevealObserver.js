@@ -8,10 +8,10 @@ import { useEffect, useRef, useState } from 'react';
 // scroll-driven recalculation — collapsing them to ~3 (one per preset
 // threshold in use) removes that per-instance bookkeeping.
 //
-// Behaviour is otherwise identical to the old per-instance observer:
-// visibility is exactly `entry.isIntersecting`, nothing is ever
-// unobserved early, so elements still animate out on exit and back in on
-// re-entry from either scroll direction, indefinitely.
+// Reversible reveals keep the original semantics: visibility is exactly
+// `entry.isIntersecting`. Callers may opt into `once`; those targets leave
+// the shared pool after their first intersection while every other target
+// continues using the same observer normally.
 
 const pools = new Map(); // thresholdKey -> { observer, callbacks: Map<Element, fn> }
 
@@ -39,7 +39,7 @@ function getPool(threshold) {
   return pool;
 }
 
-export default function useRevealObserver(threshold, onChange) {
+export default function useRevealObserver(threshold, onChange, { once = false } = {}) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -52,7 +52,19 @@ export default function useRevealObserver(threshold, onChange) {
     if (!el) return undefined;
 
     const pool = getPool(threshold);
+    const unregister = () => {
+      pool.observer?.unobserve(el);
+      pool.callbacks.delete(el);
+    };
     const handler = isIntersecting => {
+      if (once) {
+        if (!isIntersecting) return;
+        setVisible(true);
+        onChangeRef.current?.(true);
+        unregister();
+        return;
+      }
+
       setVisible(isIntersecting);
       onChangeRef.current?.(isIntersecting);
     };
@@ -67,11 +79,8 @@ export default function useRevealObserver(threshold, onChange) {
     pool.callbacks.set(el, handler);
     pool.observer.observe(el);
 
-    return () => {
-      pool.observer.unobserve(el);
-      pool.callbacks.delete(el);
-    };
-  }, [threshold]);
+    return unregister;
+  }, [threshold, once]);
 
   return [ref, visible];
 }
