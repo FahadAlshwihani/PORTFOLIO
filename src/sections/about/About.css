@@ -172,6 +172,63 @@
   color: rgba(255, 255, 255, .82);
 }
 
+/* ── Desktop / laptop: let the profile occupy the canvas ──────
+   The base layout above remains the compact fallback used by tablet and
+   mobile. Wide screens get a fluid, viewport-led grid with a sensible
+   ceiling, so the section no longer collapses into a 1200px document while
+   its text still keeps editorial line-length limits. */
+
+@media (min-width: 901px) {
+  .profile-inner {
+    grid-template-columns: minmax(0, 1.6fr) minmax(20rem, 1fr);
+    gap: clamp(3.5rem, 4.2vw, 7rem);
+    width: min(92vw, 137.5rem);
+    max-width: none;
+    padding-block: clamp(8.5rem, 9vw, 11rem);
+    padding-inline: clamp(2.25rem, 3.2vw, 5rem);
+  }
+
+  .profile-lede {
+    font-size: clamp(2.35rem, 1.55rem + 1.7vw, 4rem);
+    line-height: 1.18;
+    max-width: 26ch;
+    margin-bottom: clamp(1.75rem, 2.2vw, 2.5rem);
+  }
+
+  .profile-paragraph {
+    font-size: clamp(1.05rem, .91rem + .28vw, 1.3rem);
+    line-height: 1.72;
+    max-width: 68ch;
+    margin-bottom: clamp(1.25rem, 1.5vw, 1.75rem);
+  }
+
+  .profile-meta {
+    padding-inline-start: clamp(2.5rem, 3.5vw, 5rem);
+  }
+
+  .profile-meta-row + .profile-meta-row {
+    margin-top: clamp(1.75rem, 2.2vw, 2.5rem);
+    padding-top: clamp(1.75rem, 2.2vw, 2.5rem);
+  }
+
+  .profile-meta-label {
+    font-size: clamp(.72rem, .67rem + .08vw, .82rem);
+    margin-bottom: clamp(.6rem, .7vw, .85rem);
+  }
+
+  .profile-meta-value {
+    font-size: clamp(1.05rem, .91rem + .25vw, 1.28rem);
+  }
+
+  .profile-meta-list {
+    gap: clamp(.35rem, .4vw, .55rem);
+  }
+
+  .profile-meta-list li {
+    font-size: clamp(1rem, .9rem + .2vw, 1.2rem);
+  }
+}
+
 /* ── Tablet 601px – 900px ─────────────────────────────────── */
 
 @media (min-width: 601px) and (max-width: 900px) {
