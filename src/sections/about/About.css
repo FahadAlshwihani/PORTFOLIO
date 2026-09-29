@@ -178,14 +178,20 @@
    ceiling, so the section no longer collapses into a 1200px document while
    its text still keeps editorial line-length limits. */
 
-@media (min-width: 901px) {
+@media (min-width: 1024px) {
   .profile-inner {
-    grid-template-columns: minmax(0, 1.6fr) minmax(20rem, 1fr);
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: clamp(3.5rem, 4.2vw, 7rem);
-    width: min(92vw, 137.5rem);
-    max-width: none;
+    width: var(--page-content-width);
+    max-width: 100%;
     padding-block: clamp(8.5rem, 9vw, 11rem);
-    padding-inline: clamp(2.25rem, 3.2vw, 5rem);
+    padding-inline: var(--page-content-gutter);
+  }
+
+  .profile-editorial,
+  .profile-meta,
+  .profile-meta-row {
+    min-width: 0;
   }
 
   .profile-lede {

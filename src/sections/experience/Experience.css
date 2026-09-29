@@ -416,6 +416,61 @@
   line-height: 1;
 }
 
+/* ── Laptop / desktop: shared wide section system ─────────── */
+
+@media (min-width: 1024px) {
+  .experience-inner {
+    width: var(--page-content-width);
+    max-width: 100%;
+    padding-block: clamp(8.5rem, 9vw, 11rem);
+    padding-inline: var(--page-content-gutter);
+  }
+
+  .experience-timeline,
+  .experience-chapter,
+  .experience-row,
+  .experience-marker,
+  .experience-content {
+    min-width: 0;
+  }
+
+  .experience-chapter {
+    --experience-content-offset: clamp(3rem, 4vw, 5rem);
+    padding-top: clamp(3.5rem, 4vw, 5rem);
+    padding-bottom: clamp(4rem, 4.5vw, 5.5rem);
+  }
+
+  .experience-content {
+    width: calc(100% - var(--experience-content-offset));
+    max-width: 44rem;
+  }
+
+  .experience-year {
+    font-size: clamp(2rem, 1.35rem + 1.15vw, 2.8rem);
+  }
+
+  .experience-range {
+    font-size: clamp(.78rem, .7rem + .12vw, .88rem);
+  }
+
+  .experience-company-mark {
+    font-size: clamp(1.65rem, 1.2rem + .8vw, 2.25rem);
+  }
+
+  .experience-role {
+    font-size: clamp(1rem, .9rem + .2vw, 1.2rem);
+  }
+
+  .experience-description {
+    max-width: 58ch;
+  }
+
+  .experience-description-line {
+    font-size: clamp(1rem, .9rem + .2vw, 1.15rem);
+    line-height: 1.68;
+  }
+}
+
 /* ── Tablet 601px – 900px ─────────────────────────────────── */
 
 @media (min-width: 601px) and (max-width: 900px) {

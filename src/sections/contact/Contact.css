@@ -218,6 +218,34 @@
   padding-inline: clamp(1.25rem, 5.5%, 2.25rem);
 }
 
+/* Laptop/desktop: the terminal is the section's primary content surface, so
+   it participates in the same wide page system as About and Experience.
+   Its transcript retains a readable internal measure while the wider shell
+   gives the action row and terminal chrome the intended canvas presence. */
+@media (min-width: 1024px) {
+  .contact-intro,
+  .contact-terminal {
+    width: min(calc(var(--page-content-width) - (2 * var(--page-content-gutter))), 90rem);
+    max-width: 100%;
+  }
+
+  .contact-terminal-content {
+    width: min(100%, 68rem);
+    min-width: 0;
+  }
+
+  .contact-terminal-body-ghost,
+  .contact-terminal-body-live,
+  .contact-block,
+  .contact-line,
+  .contact-output,
+  .contact-actions,
+  .contact-action,
+  .contact-action-text {
+    min-width: 0;
+  }
+}
+
 /* The typed reveal is an invisible-duplicate-plus-overlay: the ghost below
    (full, final transcript, `visibility: hidden`) sits in normal flow and is
    the only thing that gives this container its height, reserved from the

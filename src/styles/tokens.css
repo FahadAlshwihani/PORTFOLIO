@@ -102,4 +102,17 @@
   --ls-wide: .08em;
   --ls-ultra: .22em;
 
+
+  /* ===========================================================
+   PAGE LAYOUT
+=========================================================== */
+
+  /* Shared by the major content sections on laptop/desktop. The
+     viewport-led width keeps the composition confident, while the ceiling
+     prevents ultra-wide displays from stretching editorial content without
+     limit. These are intentionally consumed only by desktop media queries;
+     tablet and mobile keep their existing compact layouts. */
+  --page-content-width: min(92vw, 137.5rem);
+  --page-content-gutter: clamp(2.25rem, 3.2vw, 5rem);
+
 }

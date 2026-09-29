@@ -32,6 +32,14 @@
   box-sizing: border-box;
 }
 
+@media (min-width: 1024px) {
+  .skills-container {
+    width: var(--page-content-width);
+    max-width: 100%;
+    padding-inline: var(--page-content-gutter);
+  }
+}
+
 .skills-eyebrow {
   font-family: var(--font-heading);
   font-size: .8rem;
