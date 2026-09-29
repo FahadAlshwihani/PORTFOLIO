@@ -72,8 +72,8 @@ export default function EndingScene({ skills, children }) {
   return (
     <div className="ending-scene" ref={wrapperRef} style={{ '--skills-height': `${skillsHeight}px` }}>
       <div className="ending-scene-background" aria-hidden="true">
-        {/* The shader canvas is pinned to ~one viewport (sticky) instead
-            of being stretched to the full Skills+Contact+Footer height.
+        {/* The shader canvas is pinned to one maximum viewport (sticky)
+            instead of being stretched to the full Skills+Contact+Footer height.
             That alone cuts its per-frame fragment count by ~4-15x. The
             dissolve still reads correctly because the mask lives on the
             full-height parent above, not on this element. */}

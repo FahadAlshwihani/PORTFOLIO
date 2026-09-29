@@ -52,24 +52,23 @@
   );
 }
 
-/* Pins the shader to roughly one viewport and lets it scroll-follow the
-   lower sections, instead of the canvas being stretched to the full
-   Skills+Contact+Footer height (which meant rendering an enormous,
-   mostly-offscreen drawing buffer of a very heavy fragment shader every
-   frame). Sticky rather than fixed so it stays clipped to this region
-   and inherits the parent's mask/blur stack. */
+/* Pins the shader to one maximum viewport and lets it scroll-follow the
+   lower sections, instead of stretching it to the full Skills + Contact +
+   Footer height. `lvh` is intentional here: this is a background surface,
+   so it must keep covering the visible viewport when mobile Safari hides
+   its browser chrome. `svh` only covers Safari's smallest viewport and
+   leaves the newly exposed strip black after the toolbar collapses.
+
+   A stable largest-viewport surface also avoids reallocating the WebGL
+   drawing buffer throughout Safari's toolbar animation (as `dvh` would),
+   while remaining approximately one screen tall. Sticky rather than fixed
+   keeps the shader bounded to EndingScene and under its full-height mask. */
 .ending-scene-canvas {
   position: sticky;
   top: 0;
-  height: 100svh;
+  height: 100vh;
+  height: 100lvh;
   width: 100%;
-}
-
-/* Older browsers without svh support. */
-@supports not (height: 100svh) {
-  .ending-scene-canvas {
-    height: 100vh;
-  }
 }
 
 .ending-scene-background canvas {
