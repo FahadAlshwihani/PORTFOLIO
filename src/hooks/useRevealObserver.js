@@ -13,10 +13,11 @@ import { useEffect, useRef, useState } from 'react';
 // the shared pool after their first intersection while every other target
 // continues using the same observer normally.
 
-const pools = new Map(); // thresholdKey -> { observer, callbacks: Map<Element, fn> }
+const pools = new Map(); // threshold/mode key -> { observer, callbacks: Map<Element, fn> }
+const EXIT_THRESHOLD = 0.0001;
 
-function getPool(threshold) {
-  const key = String(threshold);
+function getPool(threshold, resetOnExit) {
+  const key = `${threshold}:${resetOnExit ? 'reset-on-exit' : 'standard'}`;
   let pool = pools.get(key);
   if (pool) return pool;
 
@@ -28,10 +29,10 @@ function getPool(threshold) {
           entries => {
             for (const entry of entries) {
               const cb = callbacks.get(entry.target);
-              if (cb) cb(entry.isIntersecting);
+              if (cb) cb(entry);
             }
           },
-          { threshold }
+          { threshold: resetOnExit ? [...new Set([EXIT_THRESHOLD, threshold])] : threshold }
         );
 
   pool = { observer, callbacks };
@@ -39,7 +40,7 @@ function getPool(threshold) {
   return pool;
 }
 
-export default function useRevealObserver(threshold, onChange, { once = false } = {}) {
+export default function useRevealObserver(threshold, onChange, { once = false, resetOnExit = false } = {}) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -51,17 +52,34 @@ export default function useRevealObserver(threshold, onChange, { once = false } 
     const el = ref.current;
     if (!el) return undefined;
 
-    const pool = getPool(threshold);
+    const pool = getPool(threshold, resetOnExit);
     const unregister = () => {
       pool.observer?.unobserve(el);
       pool.callbacks.delete(el);
     };
-    const handler = isIntersecting => {
+    const handler = entry => {
+      const { isIntersecting, intersectionRatio = isIntersecting ? 1 : 0 } = entry;
       if (once) {
         if (!isIntersecting) return;
         setVisible(true);
         onChangeRef.current?.(true);
         unregister();
+        return;
+      }
+
+      // Some reveals need entrance hysteresis: wait for their normal
+      // threshold on the way in, but do not hide again until they are fully
+      // outside. The near-zero threshold in this opt-in pool gives us that
+      // final exit callback without making tiny movements around the entrance
+      // threshold flicker the element on and off.
+      if (resetOnExit) {
+        if (!isIntersecting || intersectionRatio < EXIT_THRESHOLD) {
+          setVisible(false);
+          onChangeRef.current?.(false);
+        } else if (intersectionRatio >= threshold) {
+          setVisible(true);
+          onChangeRef.current?.(true);
+        }
         return;
       }
 
@@ -72,7 +90,7 @@ export default function useRevealObserver(threshold, onChange, { once = false } 
     if (!pool.observer) {
       // No IO support (very old browsers / SSR): reveal immediately, same
       // graceful degradation the per-instance version implied.
-      handler(true);
+      handler({ isIntersecting: true, intersectionRatio: 1 });
       return undefined;
     }
 
@@ -80,7 +98,7 @@ export default function useRevealObserver(threshold, onChange, { once = false } 
     pool.observer.observe(el);
 
     return unregister;
-  }, [threshold, once]);
+  }, [threshold, once, resetOnExit]);
 
   return [ref, visible];
 }

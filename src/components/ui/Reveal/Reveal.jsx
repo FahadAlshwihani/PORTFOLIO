@@ -22,6 +22,7 @@ export default function Reveal({
   style: styleProp,
   onVisibleChange,
   once = false,
+  resetOnExit = false,
   children,
   ...rest
 }) {
@@ -30,7 +31,7 @@ export default function Reveal({
   // Reuse origin/main's observer pool for both modes. Reversible reveals
   // stay subscribed indefinitely; `once` reveals remove only their own
   // target from the shared pool after the first intersection.
-  const [ref, visible] = useRevealObserver(observerThreshold, onVisibleChange, { once });
+  const [ref, visible] = useRevealObserver(observerThreshold, onVisibleChange, { once, resetOnExit });
 
   // Presets bring their own `reveal`/`reveal--*` classes and built-in CSS.
   // Without a preset, this only adds the visibility toggle to the caller's
