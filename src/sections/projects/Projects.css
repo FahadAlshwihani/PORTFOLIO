@@ -295,10 +295,10 @@
   50% { margin-block-start: calc(.35rem + 3px); }
 }
 
-/* Narrow viewports: side placement runs out of room, so the arrow/tooltip
-   move below the outline instead — a plain breakpoint, not a runtime
-   "does this fit" check. */
-@media (max-width: 640px) {
+/* Narrow and compact desktop viewports: the tooltip inherits the Folder's
+   1.6 scale, so side placement needs more room than its unscaled CSS width
+   suggests. Keep it centered below until the side callout fits completely. */
+@media (max-width: 1200px) {
   /* `left` (physical), not `inset-inline-start`: this centers the element,
      and centering is symmetric regardless of direction. Pairing a logical
      inset with `translateX(-50%)` centers correctly in LTR (left edge
