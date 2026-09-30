@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { getProjectImageAlt } from './projectImages';
+import { getProjectImageAlt } from './projectMedia';
 
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])';
 
 const ArrowIcon = () => (
   <svg className="project-case-link-icon project-case-link-icon--arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
@@ -17,6 +17,38 @@ const LockIcon = () => (
   </svg>
 );
 
+const ShareIcon = () => (
+  <svg className="project-case-share-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+    <circle cx="4" cy="8" r="1.75" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <circle cx="12" cy="3.5" r="1.75" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <circle cx="12" cy="12.5" r="1.75" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M5.5 7.1 10.4 4.4M5.5 8.9l4.9 2.7" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+);
+
+export const copyShareUrl = async (url) => {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(url);
+      return;
+    } catch {
+      // Clipboard permissions can be denied even when the API exists.
+      // Continue to the synchronous fallback instead of failing the share.
+    }
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = url;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand('copy');
+  textarea.remove();
+  if (!copied) throw new Error('Unable to copy project share URL');
+};
+
 // Container-transform open/close: the panel is FLIP-animated between the
 // clicked directory item's rect (origin) and its natural centered rect,
 // using gsap (already a project dependency) instead of hand-rolled rAF
@@ -30,9 +62,9 @@ const LockIcon = () => (
 // Links) in DOM order, so the last one is always the Links/buttons section
 // regardless of which optional sections a project has — which is exactly
 // the "buttons always last" behavior, without hardcoding section names.
-const CONTENT_SELECTOR = '.project-case-header, .project-case-info, .project-case-media, .project-case-section';
+const CONTENT_SELECTOR = '.project-case-header, .project-case-info, .project-case-media-block, .project-case-section';
 
-const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t }) => {
+const ProjectModal = ({ project, media, originRect, reducedMotion, onClose, t }) => {
   const backdropRef = useRef(null);
   const panelRef = useRef(null);
   const closeBtnRef = useRef(null);
@@ -42,13 +74,30 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
   const lastRectRef = useRef(null);
   const ctxRef = useRef(null);
   const onCloseRef = useRef(onClose);
+  const videoRef = useRef(null);
+  const shareFeedbackTimerRef = useRef(null);
   onCloseRef.current = onClose;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [shareStatus, setShareStatus] = useState('');
+  const gallery = media.type === 'images' ? media.items : [];
   const gallerySignature = gallery.map((image) => `${image.filename}:${image.src}`).join('|');
 
   useEffect(() => {
     setActiveImageIndex(0);
+    setShareStatus('');
   }, [project.slug, gallerySignature]);
+
+  useEffect(() => () => {
+    window.clearTimeout(shareFeedbackTimerRef.current);
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    try {
+      video.currentTime = 0;
+    } catch {
+      // Metadata may not have loaded before a very fast close.
+    }
+  }, [project.slug, media.type, media.src]);
 
   // Closing mirrors opening exactly because it IS the same timeline, played
   // backward — the container-transform, the content stagger, and the
@@ -57,6 +106,15 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
   const requestClose = useCallback(() => {
     if (closingRef.current) return;
     closingRef.current = true;
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      try {
+        video.currentTime = 0;
+      } catch {
+        // A source that has not loaded metadata cannot be seeked yet.
+      }
+    }
 
     if (reducedMotion || !tlRef.current) {
       onCloseRef.current();
@@ -233,6 +291,38 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
   const activeImage = gallery[safeImageIndex];
   const activeImageAlt = getProjectImageAlt(project.title, activeImage);
 
+  const handleShare = async () => {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.search = '';
+    shareUrl.hash = 'projects';
+    const payload = {
+      title: project.title,
+      text: t('projects.shareVideoText', { title: project.title }),
+      url: shareUrl.toString(),
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(payload);
+        setShareStatus(t('projects.sharedVideo'));
+      } else {
+        await copyShareUrl(payload.url);
+        setShareStatus(t('projects.copiedVideoLink'));
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      try {
+        await copyShareUrl(payload.url);
+        setShareStatus(t('projects.copiedVideoLink'));
+      } catch {
+        setShareStatus(t('projects.shareVideoFailed'));
+      }
+    }
+
+    window.clearTimeout(shareFeedbackTimerRef.current);
+    shareFeedbackTimerRef.current = window.setTimeout(() => setShareStatus(''), 2400);
+  };
+
   return (
     <div className="project-modal-backdrop" ref={backdropRef} onClick={requestClose}>
       <div
@@ -283,9 +373,43 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
               </div>
             )}
 
-            {activeImage && (
-              <div className="project-case-media">
-                <img src={activeImage.src} alt={activeImageAlt} decoding="async" />
+            {media.type === 'video' && (
+              <div className="project-case-media-block">
+                <div className="project-case-media project-case-media--video">
+                  <video
+                    ref={videoRef}
+                    src={media.src}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    dir="ltr"
+                    aria-label={t('projects.videoAria', { title: project.title })}
+                  >
+                    {t('projects.videoUnsupported')}
+                  </video>
+                </div>
+                <div className="project-case-media-actions">
+                  <button
+                    type="button"
+                    className="project-case-share"
+                    onClick={handleShare}
+                    aria-label={t('projects.shareVideoAria', { title: project.title })}
+                  >
+                    <ShareIcon />
+                    <span>{t('projects.shareVideo')}</span>
+                  </button>
+                  <span className="project-case-share-status" role="status" aria-live="polite">
+                    {shareStatus}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {media.type === 'images' && activeImage && (
+              <div className="project-case-media-block">
+                <div className="project-case-media project-case-media--images">
+                  <img src={activeImage.src} alt={activeImageAlt} decoding="async" />
+                </div>
               </div>
             )}
 
@@ -352,7 +476,7 @@ const ProjectModal = ({ project, gallery, originRect, reducedMotion, onClose, t 
               </section>
             )}
 
-            {gallery.length > 1 && (
+            {media.type === 'images' && gallery.length > 1 && (
               <section className="project-case-section">
                 <h4 className="project-case-heading">{t('projects.galleryLabel')}</h4>
                 <div className="project-case-thumbs">

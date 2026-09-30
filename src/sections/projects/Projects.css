@@ -713,11 +713,70 @@
   background: rgba(255, 255, 255, .03);
 }
 
-.project-case-media img {
+.project-case-media img,
+.project-case-media video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
+}
+
+.project-case-media--images img {
+  object-fit: cover;
+}
+
+.project-case-media--video {
+  background: #000;
+}
+
+.project-case-media--video video {
+  object-fit: contain;
+  direction: ltr;
+}
+
+.project-case-media-actions {
+  min-height: 2rem;
+  margin-top: .7rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .75rem;
+}
+
+.project-case-share {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 2rem;
+  padding-inline: .15rem;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: rgba(255, 255, 255, .66);
+  cursor: pointer;
+  transition: color .2s ease;
+}
+
+.project-case-share:hover {
+  color: #fff;
+}
+
+.project-case-share:focus-visible {
+  outline: 2px solid #5227FF;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.project-case-share-icon {
+  flex: 0 0 auto;
+  color: #8d7bff;
+}
+
+.project-case-share-status {
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  color: rgba(255, 255, 255, .46);
 }
 
 /* ── Section rhythm ───────────────────────────────────────── */
@@ -942,7 +1001,8 @@ a.project-case-link:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-case-thumb {
+  .project-case-thumb,
+  .project-case-share {
     transition: none;
   }
 }
@@ -973,7 +1033,12 @@ a.project-case-link:focus-visible {
     padding: clamp(1.5rem, 6vw, 2rem);
   }
 
-  .project-case-media {
+  .project-case-media--images {
     aspect-ratio: 16 / 11;
+  }
+
+  .project-case-media-actions {
+    align-items: flex-start;
+    justify-content: space-between;
   }
 }

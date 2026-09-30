@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Folder, { ROW_CAPACITY } from './Folder';
-import { getProjectImages } from './projectImages';
+import { getProjectMedia } from './projectMedia';
 import Reveal from '../../components/ui/Reveal/Reveal';
 import useReducedMotion from '../../hooks/useReducedMotion';
 import './Projects.css';
@@ -315,7 +315,7 @@ const Projects = () => {
         <Suspense fallback={null}>
           <ProjectModal
             project={activeProject}
-            gallery={getProjectImages(activeProject.slug)}
+            media={getProjectMedia(activeProject.slug)}
             originRect={originRectRef.current}
             reducedMotion={reducedMotion}
             onClose={closeModal}
