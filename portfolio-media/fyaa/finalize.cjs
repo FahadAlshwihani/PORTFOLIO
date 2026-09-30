@@ -1,0 +1,15 @@
+const fs=require('fs');const path=require('path');const {spawnSync}=require('child_process');
+const meta=JSON.parse(fs.readFileSync(path.join(__dirname,'recording-metadata.json')));
+const concat=path.join(meta.framesDirectory,'frames.ffconcat');
+const lines=fs.readFileSync(concat,'utf8').split('\n');
+const durationIndices=lines.flatMap((l,i)=>l.startsWith('duration ')?[i]:[]);
+const beforeLast=durationIndices.slice(0,-1).reduce((s,i)=>s+Number(lines[i].split(' ')[1]),0);
+lines[durationIndices.at(-1)]='duration '+Math.max(.04,meta.captureDuration-beforeLast);
+fs.writeFileSync(concat,lines.join('\n'));
+const output=path.join(__dirname,'fyaa-portfolio-showcase.webm');
+const previous=path.join(meta.framesDirectory,'pre-review.webm');
+if(fs.existsSync(previous))throw Error('Review backup already exists');
+fs.renameSync(output,previous);
+const r=spawnSync('ffmpeg',['-hide_banner','-loglevel','error','-n','-f','concat','-safe','0','-i',concat,'-vf','fps=30','-t',String(meta.captureDuration),'-c:v','libvpx-vp9','-b:v','0','-crf','25','-row-mt','1','-pix_fmt','yuv420p','-an',output],{stdio:'inherit'});
+if(r.status!==0)throw Error('Encoding failed');
+console.log('Final hold preserved; saved '+output);

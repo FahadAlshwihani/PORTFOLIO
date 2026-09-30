@@ -1,0 +1,50 @@
+const {chromium}=require('C:/Users/DELL/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('fs'); const path=require('path'); const {spawnSync}=require('child_process');
+const out=__dirname;
+const output=path.join(out,'fyaa-portfolio-showcase.webm');
+if(fs.existsSync(output)) throw Error('Output already exists; refusing to overwrite.');
+const framesDir=path.join(out,'capture-'+Date.now()); fs.mkdirSync(framesDir);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+(async()=>{
+ const b=await chromium.launch({headless:true,executablePath:'C:/Users/DELL/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});
+ const context=await b.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+ const p=await context.newPage();
+ await p.goto('https://fyaa.io/',{waitUntil:'networkidle'});
+ await p.evaluate(()=>document.fonts.ready);
+ // Warm the exact public case-study image before capture, without recording setup.
+ await p.locator('#projects').scrollIntoViewIfNeeded();
+ await p.getByRole('button',{name:'Open folder',exact:true}).click(); await sleep(1500);
+ await p.getByRole('button',{name:'AARC',exact:true}).click(); await sleep(1600);
+ await p.locator('img').evaluateAll(es=>Promise.all(es.filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.top<innerHeight&&r.bottom>0&&e.complete;}).map(e=>e.decode().catch(()=>{}))));
+ await p.getByRole('button',{name:'Close',exact:true}).click(); await sleep(800);
+ await p.getByRole('button',{name:'Close folder',exact:true}).click(); await sleep(700);
+ await p.evaluate(()=>window.scrollTo({top:0,behavior:'instant'})); await sleep(11000);
+ await p.mouse.move(1380,820);
+ const sections=await p.locator('#about, #projects').evaluateAll(es=>Object.fromEntries(es.map(e=>[e.id,e.getBoundingClientRect().top+scrollY])));
+ const cdp=await context.newCDPSession(p); const frames=[]; let capturing=true;
+ cdp.on('Page.screencastFrame',async e=>{
+   if(capturing){const filename=String(frames.length).padStart(5,'0')+'.jpg';fs.writeFileSync(path.join(framesDir,filename),Buffer.from(e.data,'base64'));frames.push({filename,time:e.metadata.timestamp});}
+   await cdp.send('Page.screencastFrameAck',{sessionId:e.sessionId}).catch(()=>{});
+ });
+ const marks=[]; const start=Date.now(); const mark=label=>marks.push({label,seconds:(Date.now()-start)/1000});
+ const scroll=async(top,duration)=>p.evaluate(({top,duration})=>new Promise(resolve=>{const from=scrollY;const begin=performance.now(); const step=now=>{const t=Math.min(1,(now-begin)/duration); const q=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;window.scrollTo({top:from+(top-from)*q,behavior:'instant'});if(t<1)requestAnimationFrame(step);else resolve();};requestAnimationFrame(step);}),{top,duration});
+ const deliberateClick=async locator=>{const box=await locator.boundingBox();if(!box)throw Error('Missing target');await p.mouse.move(box.x+box.width/2,box.y+box.height/2,{steps:24});await sleep(350);await locator.click();};
+ await cdp.send('Page.startScreencast',{format:'jpeg',quality:95,maxWidth:1440,maxHeight:900,everyNthFrame:1});
+ mark('Hero: live animated identity');await sleep(3800);
+ mark('Smooth scroll to profile');await scroll(sections.about,2800);await sleep(2200);
+ mark('Engineering timeline to selected work');await scroll(sections.projects,6500);await sleep(1400);
+ mark('Expand project folder');await deliberateClick(p.getByRole('button',{name:'Open folder',exact:true}));await sleep(3000);
+ mark('Open AARC public case study');await deliberateClick(p.getByRole('button',{name:'AARC',exact:true}));await sleep(6000);
+ capturing=false;await cdp.send('Page.stopScreencast');
+ const duration=(Date.now()-start)/1000;
+ await p.screenshot({path:path.join(out,'final-frame.png')});
+ await b.close();
+ const lines=['ffconcat version 1.0'];
+ frames.forEach((f,i)=>{lines.push(`file '${f.filename}'`);lines.push(`duration ${i<frames.length-1?Math.max(.001,frames[i+1].time-f.time):Math.max(.04,duration-(f.time-frames[0].time))}`);});
+ lines.push(`file '${frames.at(-1).filename}'`);
+ fs.writeFileSync(path.join(framesDir,'frames.ffconcat'),lines.join('\n'));
+ fs.writeFileSync(path.join(out,'recording-metadata.json'),JSON.stringify({url:'https://fyaa.io/',viewport:{width:1440,height:900},captureDuration:duration,frames:frames.length,marks,authentication:false,framesDirectory:framesDir},null,2));
+ console.log(JSON.stringify({duration,frames:frames.length,marks}));
+ const result=spawnSync('ffmpeg',['-hide_banner','-loglevel','error','-n','-f','concat','-safe','0','-i',path.join(framesDir,'frames.ffconcat'),'-vf','fps=30','-c:v','libvpx-vp9','-b:v','0','-crf','25','-row-mt','1','-pix_fmt','yuv420p','-an',output],{stdio:'inherit'});
+ if(result.status!==0)throw Error('Encoding failed');console.log('Saved '+output);
+})().catch(e=>{console.error(e);process.exit(1)});

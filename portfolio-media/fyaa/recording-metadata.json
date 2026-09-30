@@ -1,0 +1,33 @@
+{
+  "url": "https://fyaa.io/",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "captureDuration": 28.489,
+  "frames": 543,
+  "marks": [
+    {
+      "label": "Hero: live animated identity",
+      "seconds": 0.014
+    },
+    {
+      "label": "Smooth scroll to profile",
+      "seconds": 3.822
+    },
+    {
+      "label": "Engineering timeline to selected work",
+      "seconds": 8.876
+    },
+    {
+      "label": "Expand project folder",
+      "seconds": 17.725
+    },
+    {
+      "label": "Open AARC public case study",
+      "seconds": 21.568
+    }
+  ],
+  "authentication": false,
+  "framesDirectory": "C:\\Users\\DELL\\Projects\\PORTFOLIO-main\\portfolio-media\\fyaa\\capture-1790752788909"
+}
